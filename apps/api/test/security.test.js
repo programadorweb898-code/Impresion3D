@@ -1,11 +1,52 @@
-import {test} from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
-import {createApp} from '../src/app.js';
-import {registerSchema,orderSchema} from '@impresion3d/shared';
-const app=createApp({sessionSecret:'test-secret-with-at-least-32-characters',webOrigin:'http://localhost:5173'});
-test('rechaza mutaciones sin CSRF',async()=>{await request(app).post('/api/auth/register').set('Origin','http://localhost:5173').send({}).expect(403);});
-test('rechaza origen externo incluso con CSRF válido',async()=>{const agent=request.agent(app);const {body}=await agent.get('/api/csrf').expect(200);await agent.post('/api/auth/logout').set('Origin','https://otro.example').set('x-csrf-token',body.token).expect(403);});
-test('historial requiere autenticación',async()=>{await request(app).get('/api/orders').expect(401);});
-test('validación de contraseñas y cantidades',()=>{assert.equal(registerSchema.safeParse({name:'Ana',email:'ana@example.com',password:'corta'}).success,false);assert.equal(orderSchema.safeParse({productId:'a'.repeat(24),quantity:-1}).success,false);});
-test('registro inválido no llega a la base',async()=>{const agent=request.agent(app);const {body}=await agent.get('/api/csrf');await agent.post('/api/auth/register').set('Origin','http://localhost:5173').set('x-csrf-token',body.token).send({name:'Ana',email:'invalid',password:'123'}).expect(400);});
+import { createApp } from '../src/app.js';
+import { registerSchema, orderSchema } from '@impresion3d/shared';
+const app = createApp({
+  sessionSecret: 'test-secret-with-at-least-32-characters',
+  webOrigin: 'http://localhost:5173',
+});
+test('rechaza mutaciones sin CSRF', async () => {
+  await request(app)
+    .post('/api/auth/register')
+    .set('Origin', 'http://localhost:5173')
+    .send({})
+    .expect(403);
+});
+test('rechaza origen externo incluso con CSRF válido', async () => {
+  const agent = request.agent(app);
+  const { body } = await agent.get('/api/csrf').expect(200);
+  await agent
+    .post('/api/auth/logout')
+    .set('Origin', 'https://otro.example')
+    .set('x-csrf-token', body.token)
+    .expect(403);
+});
+test('historial requiere autenticación', async () => {
+  await request(app).get('/api/orders').expect(401);
+});
+test('validación de contraseñas y cantidades', () => {
+  assert.equal(
+    registerSchema.safeParse({
+      name: 'Ana',
+      email: 'ana@example.com',
+      password: 'corta',
+    }).success,
+    false,
+  );
+  assert.equal(
+    orderSchema.safeParse({ productId: 'a'.repeat(24), quantity: -1 }).success,
+    false,
+  );
+});
+test('registro inválido no llega a la base', async () => {
+  const agent = request.agent(app);
+  const { body } = await agent.get('/api/csrf');
+  await agent
+    .post('/api/auth/register')
+    .set('Origin', 'http://localhost:5173')
+    .set('x-csrf-token', body.token)
+    .send({ name: 'Ana', email: 'invalid', password: '123' })
+    .expect(400);
+});

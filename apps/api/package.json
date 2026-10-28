@@ -7,7 +7,8 @@
     "dev": "node --env-file-if-exists=.env --watch src/server.js",
     "start": "node --env-file-if-exists=.env src/server.js",
     "seed": "node --env-file-if-exists=.env src/seed.js",
-    "test": "node --test"
+    "test": "node --test",
+    "admin:promote": "node --env-file-if-exists=.env src/promote-admin.js"
   },
   "dependencies": {
     "@impresion3d/shared": "*",
@@ -21,6 +22,8 @@
     "zod": "^4.1.0"
   },
   "devDependencies": {
+    "mongodb-memory-server": "^11.3.0",
+    "prettier": "^3.9.10",
     "supertest": "^7.1.4"
   }
 }

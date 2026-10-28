@@ -9,6 +9,8 @@
     "dev:web": "npm run dev -w @impresion3d/web",
     "dev:api": "npm run dev -w @impresion3d/api",
     "build": "npm run build -w @impresion3d/web",
-    "test": "npm run test -w @impresion3d/api"
+    "test": "npm run test -w @impresion3d/api",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   }
 }

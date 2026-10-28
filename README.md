@@ -1,6 +1,6 @@
 # Impresión3D
 
-Tienda personal de productos impresos en 3D. Primera versión: catálogo, registro, inicio/cierre de sesión, solicitudes de pedidos e historial privado. No procesa pagos online.
+Tienda personal de productos impresos en 3D. Catálogo, registro, inicio/cierre de sesión, solicitudes de pedidos, historial privado y administración de productos y seguimiento. No procesa pagos online.
 
 ## Requisitos y ejecución
 
@@ -44,6 +44,24 @@ MongoDB guarda usuarios, catálogo, pedidos y sesiones. Argon2id usa 19 MiB, 2 i
 
 Serví el frontend compilado y `/api` bajo el mismo origen HTTPS mediante un proxy inverso; configurá WEB_ORIGIN con ese origen y NODE_ENV=production. TRUST_PROXY=1 solamente si existe exactamente un proxy confiable delante de Express. Persistí MongoDB y configurá sus copias de seguridad. No hay despliegue automático configurado.
 
-Todavía no hay panel administrativo para cargar productos o actualizar estados: el historial registra la recepción y muestra los cambios que luego se incorporen desde administración. No se inventan plazos ni cuenta regresiva. Falta recuperación de contraseña, verificación de correo, pruebas de integración con MongoDB y revisión operativa antes de abrir al público.
+El panel Administración permite crear y editar productos, ocultarlos del catálogo, consultar pedidos paginados, avanzar estados y establecer o quitar una fecha estimada de entrega. Los pedidos cerrados no se reabren. Los cambios concurrentes se rechazan para evitar pisar trabajo de otra pestaña. El rol se comprueba en MongoDB en cada solicitud administrativa; no se acepta desde el registro.
 
-Próximas etapas: administración y seguimiento; visor y modelos paramétricos propios con límites por producto; estimación mediante slicer y cola de fabricación; por último generación desde imágenes (por ejemplo Meshy), moderación y revisión de imprimibilidad. Esta versión no acepta archivos ni genera modelos 3D.
+Para habilitar tu cuenta: registrala primero y ejecutá desde una terminal con acceso autorizado a tu base:
+
+```sh
+npm run admin:promote -w @impresion3d/api -- tu-correo@example.com
+```
+
+Volvé a iniciar sesión para ver Administración. No existe una contraseña administrativa predeterminada ni un endpoint público para otorgar permisos. Los productos se ocultan en lugar de eliminarse; los pedidos conservan su copia histórica.
+
+Falta carga de fotos reales, recuperación de contraseña, verificación de correo y revisión operativa antes de abrir al público. No se inventan plazos ni cuenta regresiva.
+
+Próximas etapas: fotos de productos y mejoras operativas; visor y modelos paramétricos propios con límites por producto; estimación mediante slicer y cola de fabricación; por último generación desde imágenes (por ejemplo Meshy), moderación y revisión de imprimibilidad. Esta versión no acepta archivos ni genera modelos 3D.
+
+## Pruebas con MongoDB real y aislado
+
+`npm test` incluye pruebas de integración con `mongodb-memory-server`. A pesar de su nombre, arranca un binario real de MongoDB temporal; no reemplaza las consultas por mocks. Descarga el binario en la primera ejecución y requiere red y permisos para abrir puertos locales. Los datos de prueba desaparecen al terminar. No utiliza MONGODB_URI ni tu base de producción.
+
+Se verifican registro, hash Argon2id, login, regeneración y revocación de sesiones persistidas en MongoDB, aislamiento de pedidos, precios calculados en servidor, copia histórica, permisos administrativos, ocultación de productos, estados y conflictos de edición. Estas pruebas no sustituyen comprobar tu conexión y despliegue de Atlas.
+
+`npm run format` aplica formato al código; `npm run format:check` lo verifica.
