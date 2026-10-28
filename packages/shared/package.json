@@ -1,0 +1,9 @@
+{
+  "name": "@impresion3d/shared",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": "./index.js",
+  "dependencies": {
+    "zod": "^4.1.0"
+  }
+}
