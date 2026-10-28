@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'node:path';
+import mongoose from 'mongoose';
 import helmet from 'helmet';
 import session from 'express-session';
 import { rateLimit } from 'express-rate-limit';
@@ -13,6 +15,7 @@ export function createApp({
   webOrigin,
   production = false,
   trustProxy = false,
+  staticDirectory,
 }) {
   const app = express();
   if (trustProxy) app.set('trust proxy', 1);
@@ -42,6 +45,16 @@ export function createApp({
       },
     }),
   );
+  app.get('/api/ready', (_req, res) => {
+    const ready = mongoose.connection.readyState === 1;
+    res
+      .status(ready ? 200 : 503)
+      .json({ status: ready ? 'ready' : 'unavailable' });
+  });
+  app.use('/api', (_req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
   app.get('/api/csrf', (req, res) => {
     req.session.csrf ||= randomBytes(32).toString('hex');
     res.json({ token: req.session.csrf });
@@ -207,7 +220,24 @@ export function createApp({
   app.use('/api', (_req, res) =>
     res.status(404).json({ message: 'Ruta no encontrada' }),
   );
+  if (staticDirectory) {
+    app.use(
+      '/assets',
+      express.static(path.join(staticDirectory, 'assets'), {
+        immutable: true,
+        maxAge: '1y',
+        fallthrough: false,
+      }),
+    );
+    app.use(express.static(staticDirectory, { maxAge: 0 }));
+    app.get('/{*path}', (req, res, next) => {
+      if (path.extname(req.path)) return res.status(404).end();
+      res.set('Cache-Control', 'no-cache');
+      res.sendFile(path.join(staticDirectory, 'index.html'));
+    });
+  }
   app.use((err, _req, res, _next) => {
+    if (err.status === 404) return res.status(404).end();
     if (err.code === 11000)
       return res
         .status(409)

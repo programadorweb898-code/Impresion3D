@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: impresion3d-web
+    runtime: node
+    plan: free
+    repo: https://github.com/programadorweb898-code/Impresion3D
+    branch: main
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/ready
+    autoDeployTrigger: 'off'
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: TRUST_PROXY
+        value: '1'
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false

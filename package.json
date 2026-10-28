@@ -11,6 +11,10 @@
     "build": "npm run build -w @impresion3d/web",
     "test": "npm run test -w @impresion3d/api",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "start": "npm run start -w @impresion3d/api"
+  },
+  "engines": {
+    "node": ">=24 <25"
   }
 }

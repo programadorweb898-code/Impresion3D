@@ -42,7 +42,9 @@ MongoDB guarda usuarios, catálogo, pedidos y sesiones. Argon2id usa 19 MiB, 2 i
 
 ## Producción y trabajo pendiente
 
-Serví el frontend compilado y `/api` bajo el mismo origen HTTPS mediante un proxy inverso; configurá WEB_ORIGIN con ese origen y NODE_ENV=production. TRUST_PROXY=1 solamente si existe exactamente un proxy confiable delante de Express. Persistí MongoDB y configurá sus copias de seguridad. No hay despliegue automático configurado.
+La configuración de publicación está en `render.yaml`. Seguí [la guía de despliegue](docs/deployment.md) para conectar Atlas, configurar secretos y verificar el sitio. El repositorio preparado no implica que el servicio ya esté publicado.
+
+En producción Express sirve el frontend compilado y `/api` bajo el mismo origen HTTPS. Ejecutá `npm run build` y luego `npm start`; configurá WEB_ORIGIN con ese origen y NODE_ENV=production, o usá el origen que Render proporciona automáticamente. TRUST_PROXY=1 solamente si existe exactamente un proxy confiable delante de Express. Persistí MongoDB y configurá sus copias de seguridad. El Blueprint deja los despliegues automáticos desactivados.
 
 El panel Administración permite crear y editar productos, ocultarlos del catálogo, consultar pedidos paginados, avanzar estados y establecer o quitar una fecha estimada de entrega. Los pedidos cerrados no se reabren. Los cambios concurrentes se rechazan para evitar pisar trabajo de otra pestaña. El rol se comprueba en MongoDB en cada solicitud administrativa; no se acepta desde el registro.
 
