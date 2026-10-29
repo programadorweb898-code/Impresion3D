@@ -22,6 +22,7 @@ export const Product = model(
       currency: { type: String, default: 'ARS' },
       dimensions: { width: Number, height: Number, depth: Number },
       active: { type: Boolean, default: true },
+      image: { url: String, publicId: String, width: Number, height: Number },
     },
     { timestamps: true },
   ),

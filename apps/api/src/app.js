@@ -8,7 +8,7 @@ import argon2 from 'argon2';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { loginSchema, registerSchema, orderSchema } from '@impresion3d/shared';
 import { User, Product, Order } from './models.js';
-import { adminRouter } from './admin.js';
+import { createAdminRouter } from './admin.js';
 export function createApp({
   sessionStore,
   sessionSecret,
@@ -16,10 +16,19 @@ export function createApp({
   production = false,
   trustProxy = false,
   staticDirectory,
+  imageStorage,
 }) {
   const app = express();
   if (trustProxy) app.set('trust proxy', 1);
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
+        },
+      },
+    }),
+  );
   app.use(express.json({ limit: '16kb' }));
   app.use(
     '/api',
@@ -216,7 +225,7 @@ export function createApp({
       res.status(201).json(order);
     },
   );
-  app.use('/api/admin', authenticated, adminRouter);
+  app.use('/api/admin', authenticated, createAdminRouter({ imageStorage }));
   app.use('/api', (_req, res) =>
     res.status(404).json({ message: 'Ruta no encontrada' }),
   );
@@ -237,6 +246,17 @@ export function createApp({
     });
   }
   app.use((err, _req, res, _next) => {
+    if (err.name === 'MulterError')
+      return res.status(400).json({
+        message:
+          err.code === 'LIMIT_FILE_SIZE'
+            ? 'La foto supera el límite de 5 MiB'
+            : 'Subí una sola foto, sin campos adicionales',
+      });
+    if (err.status === 400 && err.message === 'Usá una foto JPG, PNG o WebP')
+      return res.status(400).json({ message: err.message });
+    if (err.status === 400 && err.message.startsWith('La foto no es válida'))
+      return res.status(400).json({ message: err.message });
     if (err.status === 404) return res.status(404).end();
     if (err.code === 11000)
       return res

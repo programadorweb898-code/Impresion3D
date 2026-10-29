@@ -252,14 +252,28 @@ function App() {
                     .map((p, i) => (
                       <article key={p._id}>
                         <div className={'product-art color-' + p.color}>
-                          <span className="piece-number">
-                            PIEZA / {String(i + 1).padStart(2, '0')}
-                          </span>
-                          <div
-                            className={'object object-' + (i % 3)}
-                            aria-hidden="true"
-                          />
-                          <span className="small">Ilustración conceptual</span>
+                          {p.image?.url ? (
+                            <img
+                              className="product-photo"
+                              src={p.image.url}
+                              alt={p.name}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ) : (
+                            <>
+                              <span className="piece-number">
+                                PIEZA / {String(i + 1).padStart(2, '0')}
+                              </span>
+                              <div
+                                className={'object object-' + (i % 3)}
+                                aria-hidden="true"
+                              />
+                              <span className="small">
+                                Ilustración conceptual
+                              </span>
+                            </>
+                          )}
                         </div>
                         <div className="flex justify-between items-start gap-4 mt-5">
                           <div>

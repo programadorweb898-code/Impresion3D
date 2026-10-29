@@ -1,5 +1,8 @@
 export async function api(path, options = {}) {
-  const headers = { 'Content-Type': 'application/json' };
+  const headers =
+    options.body instanceof FormData
+      ? {}
+      : { 'Content-Type': 'application/json' };
   if (options.method && options.method !== 'GET') {
     const response = await fetch('/api/csrf');
     if (!response.ok) throw new Error('No se pudo establecer la sesión');

@@ -56,9 +56,9 @@ npm run admin:promote -w @impresion3d/api -- tu-correo@example.com
 
 Volvé a iniciar sesión para ver Administración. No existe una contraseña administrativa predeterminada ni un endpoint público para otorgar permisos. Los productos se ocultan en lugar de eliminarse; los pedidos conservan su copia histórica.
 
-Falta carga de fotos reales, recuperación de contraseña, verificación de correo y revisión operativa antes de abrir al público. No se inventan plazos ni cuenta regresiva.
+Las fotos reales se cargan desde Administración con Cloudinary: seguí [la guía de fotos](docs/product-photos.md) para habilitar las tres variables del servidor. Falta recuperación de contraseña, verificación de correo y revisión operativa antes de abrir al público. No se inventan plazos ni cuenta regresiva.
 
-Próximas etapas: fotos de productos y mejoras operativas; visor y modelos paramétricos propios con límites por producto; estimación mediante slicer y cola de fabricación; por último generación desde imágenes (por ejemplo Meshy), moderación y revisión de imprimibilidad. Esta versión no acepta archivos ni genera modelos 3D.
+Próximas etapas: mejoras operativas; visor y modelos paramétricos propios con límites por producto; estimación mediante slicer y cola de fabricación; por último generación desde imágenes (por ejemplo Meshy), moderación y revisión de imprimibilidad. Esta versión no acepta archivos ni genera modelos 3D.
 
 ## Pruebas con MongoDB real y aislado
 

@@ -4,9 +4,13 @@ import { existsSync } from 'node:fs';
 import MongoStore from 'connect-mongo';
 import { z } from 'zod';
 import { createApp } from './app.js';
+import { createImageStorage } from './images.js';
 const env = z
   .object({
     MONGODB_URI: z.string().min(1),
+    CLOUDINARY_CLOUD_NAME: z.string().trim().min(1).optional(),
+    CLOUDINARY_API_KEY: z.string().trim().min(1).optional(),
+    CLOUDINARY_API_SECRET: z.string().trim().min(1).optional(),
     SESSION_SECRET: z.string().min(32),
     WEB_ORIGIN: z.url().optional(),
     RENDER_EXTERNAL_URL: z.url().optional(),
@@ -17,6 +21,11 @@ const env = z
     TRUST_PROXY: z.enum(['0', '1']).default('0'),
   })
   .parse(process.env);
+const imageStorage = createImageStorage({
+  cloudName: env.CLOUDINARY_CLOUD_NAME,
+  apiKey: env.CLOUDINARY_API_KEY,
+  apiSecret: env.CLOUDINARY_API_SECRET,
+});
 const originValue = env.WEB_ORIGIN || env.RENDER_EXTERNAL_URL;
 if (!originValue) throw new Error('Configurá WEB_ORIGIN');
 const webOrigin = new URL(originValue).origin;
@@ -39,6 +48,7 @@ const app = createApp({
   sessionSecret: env.SESSION_SECRET,
   webOrigin,
   staticDirectory,
+  imageStorage,
   production: env.NODE_ENV === 'production',
   trustProxy: env.TRUST_PROXY === '1',
 });

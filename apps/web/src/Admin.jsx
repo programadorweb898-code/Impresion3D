@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
+import { ProductPhoto } from './ProductPhoto.jsx';
 import {
   productSchema,
   statusLabels,
@@ -353,8 +354,8 @@ export function Admin({ onCatalogChange }) {
                 Visible en el catálogo
               </label>
               <p className="small">
-                Las imágenes siguen siendo ilustraciones. La carga de fotos se
-                incorporará después.
+                Guardá el producto y luego agregá su foto desde la tarjeta de
+                abajo.
               </p>
               <button className="primary" disabled={busy}>
                 Guardar producto
@@ -372,6 +373,13 @@ export function Admin({ onCatalogChange }) {
             {products.map((p) => (
               <article className="order" key={p._id}>
                 <h3>{p.name}</h3>
+                <ProductPhoto
+                  product={p}
+                  onSaved={async () => {
+                    setNotice('Foto guardada.');
+                    await Promise.all([load(data.page), onCatalogChange()]);
+                  }}
+                />
                 <p>
                   {p.active ? 'Publicado' : 'Oculto'} ·{' '}
                   {new Intl.NumberFormat('es-AR', {

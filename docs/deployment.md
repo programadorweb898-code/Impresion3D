@@ -51,4 +51,4 @@ Volvé a ingresar al sitio para ver Administración. El plan gratuito de Render 
 
 El servicio gratuito se suspende después de 15 minutos sin actividad y puede tardar aproximadamente un minuto en reactivarse. Las sesiones y los pedidos permanecen en Atlas. Para una tienda con tráfico real y respuesta constante, evaluá un plan sin suspensión.
 
-Todavía faltan fotos reales, verificación de correo y recuperación de contraseña. Los plazos se confirman manualmente; no hay generación de modelos ni pagos online. Configurá las copias de seguridad que correspondan a tu plan de Atlas antes de guardar pedidos reales.
+Para habilitar fotos reales, seguí [la configuración de Cloudinary](product-photos.md). Todavía faltan verificación de correo y recuperación de contraseña. Los plazos se confirman manualmente; no hay generación de modelos ni pagos online. Configurá las copias de seguridad que correspondan a tu plan de Atlas antes de guardar pedidos reales.
