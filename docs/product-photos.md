@@ -35,3 +35,11 @@ Al reemplazar una foto, primero se guarda la nueva referencia en MongoDB y despu
 `npm test` incluye permisos, CSRF, archivos falsos, formatos, tamaño, conversión, persistencia, reemplazo y fallas del almacenamiento externo. MongoDB y el procesamiento de imágenes son reales. Sólo la frontera con Cloudinary se reemplaza por un adaptador de prueba, para no necesitar credenciales ni subir archivos a tu cuenta en cada test.
 
 La primera subida real a tu cuenta debe comprobarse después de configurar las tres variables. Revisá los límites y consumo de tu plan de Cloudinary.
+
+## Si falla una subida
+
+El frontend diferencia fallos al verificar la sesión, leer el archivo local, enviar la foto, interpretar la respuesta y actualizar la lista después de guardar. No reintenta automáticamente una subida: si se corta la respuesta, la foto podría haberse guardado. Revisá la lista antes de repetir.
+
+En teléfonos, los bytes del archivo se copian al seleccionarlo para no depender de un proveedor de archivos temporal durante la subida. Si no se puede leer, descargá el archivo al dispositivo y seleccionalo otra vez.
+
+Las respuestas de la ruta de fotos incluyen una referencia `x-request-id`. Los logs `photo_upload_started`, `photo_upload_finished`, `photo_upload_aborted` y `photo_storage_failed` permiten ubicar el intento y su etapa sin registrar fotos, nombres de archivo, contraseñas ni credenciales. Si Cloudinary responde 401 o 403 se informa revisar sus credenciales o permisos; otros fallos del proveedor se mantienen como errores de almacenamiento.

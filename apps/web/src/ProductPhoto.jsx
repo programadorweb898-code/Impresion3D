@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from './api.js';
 export function ProductPhoto({ product, onSaved }) {
   const [file, setFile] = useState(null),
     [preview, setPreview] = useState(''),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
-    [notice, setNotice] = useState('');
+    [notice, setNotice] = useState(''),
+    [reading, setReading] = useState(false);
+  const selection = useRef(0);
   useEffect(() => {
     if (!file) {
       setPreview('');
@@ -23,16 +25,22 @@ export function ProductPhoto({ product, onSaved }) {
     setNotice('');
     const form = new FormData();
     form.append('image', file);
+    let saved = false;
     try {
       await api('/admin/products/' + product._id + '/image', {
         method: 'POST',
         body: form,
       });
+      saved = true;
       setFile(null);
       await onSaved();
       setNotice('Foto guardada.');
     } catch (e) {
-      setError(e.message);
+      setError(
+        saved
+          ? 'La foto se guardó, pero no pudimos actualizar la lista. Recargá la página para verla.'
+          : e.message,
+      );
     } finally {
       setBusy(false);
     }
@@ -53,23 +61,45 @@ export function ProductPhoto({ product, onSaved }) {
           type="file"
           accept="image/jpeg,image/png,image/webp"
           disabled={busy}
-          onChange={(e) => {
-            const selected = e.target.files?.[0];
+          onChange={async (e) => {
+            const input = e.currentTarget;
+            const chosen = ++selection.current;
+            const selected = input.files?.[0];
+            setFile(null);
             setError('');
             setNotice('');
+            setReading(false);
+            if (!selected) return;
             if (
-              selected &&
-              (!['image/jpeg', 'image/png', 'image/webp'].includes(
+              !['image/jpeg', 'image/png', 'image/webp'].includes(
                 selected.type,
               ) ||
-                selected.size > 5 * 1024 * 1024)
+              selected.size > 5 * 1024 * 1024
             ) {
-              setFile(null);
               setError('Elegí JPG, PNG o WebP de hasta 5 MiB.');
-              e.target.value = '';
+              input.value = '';
               return;
             }
-            setFile(selected || null);
+            setReading(true);
+            try {
+              // Copy bytes immediately so the upload doesn't depend on a mobile
+              // file provider keeping a temporary file handle alive.
+              const bytes = await selected.arrayBuffer();
+              if (chosen !== selection.current) return;
+              if (!bytes.byteLength) throw new Error('Archivo vacío');
+              setFile(
+                new File([bytes], selected.name, { type: selected.type }),
+              );
+            } catch {
+              if (chosen === selection.current) {
+                input.value = '';
+                setError(
+                  'No pudimos leer esa foto. Descargala en tu teléfono y volvé a seleccionarla.',
+                );
+              }
+            } finally {
+              if (chosen === selection.current) setReading(false);
+            }
           }}
         />
       </label>
@@ -82,12 +112,18 @@ export function ProductPhoto({ product, onSaved }) {
         </p>
       )}
       {notice && <p role="status">{notice}</p>}
-      <button type="submit" className="outline" disabled={busy || !file}>
-        {busy
-          ? 'Subiendo foto…'
-          : product.image?.url
-            ? 'Reemplazar foto'
-            : 'Subir foto'}
+      <button
+        type="submit"
+        className="outline"
+        disabled={busy || reading || !file}
+      >
+        {reading
+          ? 'Preparando foto…'
+          : busy
+            ? 'Subiendo foto…'
+            : product.image?.url
+              ? 'Reemplazar foto'
+              : 'Subir foto'}
       </button>
     </form>
   );

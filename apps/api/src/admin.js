@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { randomUUID } from 'node:crypto';
 import { imageUpload, normalizeImage } from './images.js';
 import { rateLimit } from 'express-rate-limit';
 import { Product, Order } from './models.js';
@@ -126,6 +127,34 @@ export function createAdminRouter({ imageStorage } = {}) {
     '/products/:id/image',
     uploadLimit,
     (req, res, next) => {
+      const requestId = randomUUID();
+      req.photoPhase = 'received';
+      res.set('x-request-id', requestId);
+      console.info(
+        JSON.stringify({ event: 'photo_upload_started', requestId }),
+      );
+      res.on('finish', () =>
+        console.info(
+          JSON.stringify({
+            event: 'photo_upload_finished',
+            requestId,
+            phase: req.photoPhase,
+            status: res.statusCode,
+          }),
+        ),
+      );
+      req.on('aborted', () =>
+        console.warn(
+          JSON.stringify({
+            event: 'photo_upload_aborted',
+            requestId,
+            phase: req.photoPhase,
+          }),
+        ),
+      );
+      next();
+    },
+    (req, res, next) => {
       if (!imageStorage)
         return res.status(503).json({
           message:
@@ -142,16 +171,28 @@ export function createAdminRouter({ imageStorage } = {}) {
     async (req, res) => {
       if (!req.file)
         return res.status(400).json({ message: 'Seleccioná una foto' });
+      req.photoPhase = 'processing';
       const normalized = await normalizeImage(req.file.buffer);
       let image;
       try {
+        req.photoPhase = 'cloudinary';
         image = await imageStorage.upload(normalized.buffer);
-      } catch {
-        return res
-          .status(502)
-          .json({ message: 'No se pudo guardar la foto. Intentá nuevamente.' });
+      } catch (error) {
+        const providerStatus = Number(error?.http_code) || null;
+        console.warn(
+          JSON.stringify({
+            event: 'photo_storage_failed',
+            requestId: res.get('x-request-id'),
+            providerStatus,
+          }),
+        );
+        const message = [401, 403].includes(providerStatus)
+          ? 'Cloudinary rechazó las credenciales o los permisos. Revisá sus variables en Render.'
+          : 'No se pudo guardar la foto en Cloudinary. Intentá nuevamente.';
+        return res.status(502).json({ message });
       }
       let previous;
+      req.photoPhase = 'database';
       try {
         previous = await Product.findOneAndUpdate(
           { _id: req.params.id },
@@ -170,10 +211,12 @@ export function createAdminRouter({ imageStorage } = {}) {
         await imageStorage.remove(image.publicId).catch(() => {});
         return res.status(404).json({ message: 'Producto no encontrado' });
       }
+      req.photoPhase = 'cleanup';
       if (previous.image?.publicId)
         await imageStorage
           .remove(previous.image.publicId)
           .catch(() => console.warn('No se pudo limpiar una foto reemplazada'));
+      req.photoPhase = 'complete';
       res.json({ image });
     },
   );
