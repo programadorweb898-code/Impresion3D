@@ -24,7 +24,7 @@ export function createApp({
     helmet({
       contentSecurityPolicy: {
         directives: {
-          imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
+          imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
         },
       },
     }),
