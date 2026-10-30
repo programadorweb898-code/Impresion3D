@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { ProductPhoto } from './ProductPhoto.jsx';
+import { ProductModel } from './ProductModel.jsx';
 import {
   productSchema,
   statusLabels,
@@ -99,7 +100,7 @@ function OrderEditor({ order, onSave, busy }) {
     </article>
   );
 }
-export function Admin({ onCatalogChange }) {
+export function Admin({ onCatalogChange, onPreview }) {
   const [tab, setTab] = useState('orders'),
     [products, setProducts] = useState([]),
     [data, setData] = useState({ orders: [], page: 1, pages: 1, total: 0 }),
@@ -373,6 +374,14 @@ export function Admin({ onCatalogChange }) {
             {products.map((p) => (
               <article className="order" key={p._id}>
                 <h3>{p.name}</h3>
+                <ProductModel
+                  product={p}
+                  onPreview={onPreview}
+                  onSaved={async () => {
+                    setNotice('Modelo 3D guardado.');
+                    await Promise.all([load(data.page), onCatalogChange()]);
+                  }}
+                />
                 <ProductPhoto
                   product={p}
                   onSaved={async () => {

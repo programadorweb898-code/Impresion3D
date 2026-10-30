@@ -25,6 +25,7 @@ export function createApp({
       contentSecurityPolicy: {
         directives: {
           imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
+          connectSrc: ["'self'", 'blob:', 'https://res.cloudinary.com'],
         },
       },
     }),
@@ -245,7 +246,16 @@ export function createApp({
       res.sendFile(path.join(staticDirectory, 'index.html'));
     });
   }
-  app.use((err, _req, res, _next) => {
+  app.use((err, req, res, _next) => {
+    if (err.publicModelError)
+      return res.status(400).json({ message: err.message });
+    if (err.name === 'MulterError' && req.productModelUpload)
+      return res.status(400).json({
+        message:
+          err.code === 'LIMIT_FILE_SIZE'
+            ? 'El modelo supera el límite de 10 MiB.'
+            : 'Subí un solo modelo, sin campos adicionales.',
+      });
     if (err.name === 'MulterError')
       return res.status(400).json({
         message:

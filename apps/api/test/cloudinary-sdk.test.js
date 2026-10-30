@@ -69,3 +69,49 @@ test('SDK real envía API Key al cloud correcto y firma el multipart con el secr
   assert.equal(body.includes(secret), false);
   assert.equal(result.publicId, 'impresion3d/products/test');
 });
+
+test('modelos 3D usan recursos raw y conservan extensión, sin alterar la subida de fotos', async (t) => {
+  let target;
+  const chunks = [];
+  t.mock.method(https, 'request', (options, callback) => {
+    target = options;
+    const request = new Writable({
+      write(chunk, _encoding, done) {
+        chunks.push(Buffer.from(chunk));
+        done();
+      },
+      final(done) {
+        const response = Readable.from([
+          JSON.stringify({
+            secure_url:
+              'https://res.cloudinary.com/unit-test-cloud/raw/upload/test.stl',
+            public_id: 'impresion3d/models/test.stl',
+          }),
+        ]);
+        response.statusCode = 200;
+        response.headers = {};
+        callback(response);
+        done();
+      },
+    });
+    request.setTimeout = () => request;
+    return request;
+  });
+  const storage = createImageStorage({
+    cloudName: 'unit-test-cloud',
+    apiKey: '1234567890',
+    apiSecret: 'fixture-secret',
+  });
+  const result = await storage.uploadModel(Buffer.from('model-bytes'), 'stl');
+  assert.equal(target.path, '/v1_1/unit-test-cloud/raw/upload');
+  assert.equal(result.format, 'stl');
+  assert.equal(result.bytes, 11);
+  assert.match(
+    Buffer.concat(chunks).toString(),
+    /impresion3d\/models\/[^\r]+\.stl/,
+  );
+  assert.equal(
+    Buffer.concat(chunks).includes(Buffer.from('fixture-secret')),
+    false,
+  );
+});

@@ -81,6 +81,38 @@ export function createImageStorage({ cloudName, apiKey, apiSecret }) {
         height: result.height,
       };
     },
+    async uploadModel(buffer, format) {
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            ...credentials,
+            resource_type: 'raw',
+            public_id: 'impresion3d/models/' + randomUUID() + '.' + format,
+            overwrite: false,
+            timeout: 60000,
+          },
+          (error, result) => (error ? reject(error) : resolve(result)),
+        );
+        stream.end(buffer);
+      });
+      if (!result?.secure_url?.startsWith('https://res.cloudinary.com/'))
+        throw new Error('Respuesta de almacenamiento inválida');
+      return {
+        url: result.secure_url,
+        publicId: result.public_id,
+        format,
+        bytes: buffer.length,
+      };
+    },
+    async removeModel(publicId) {
+      if (!publicId?.startsWith('impresion3d/models/')) return;
+      await cloudinary.uploader.destroy(publicId, {
+        ...credentials,
+        resource_type: 'raw',
+        invalidate: true,
+        timeout: 30000,
+      });
+    },
     async remove(publicId) {
       if (!publicId?.startsWith('impresion3d/products/')) return;
       await cloudinary.uploader.destroy(publicId, {

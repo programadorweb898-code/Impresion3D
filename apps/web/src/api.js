@@ -6,7 +6,7 @@ async function send(url, options, stage) {
       stage === 'csrf'
         ? 'No se pudo conectar para verificar la sesión. Comprobá tu conexión, recargá la página e intentá nuevamente.'
         : options.body instanceof FormData
-          ? 'No se pudo enviar la foto al servidor. Comprobá tu conexión y volvé a seleccionar el archivo descargado en tu teléfono. Antes de reintentar, actualizá la lista para comprobar si se guardó.'
+          ? `No se pudo enviar ${options.body.has('model') ? 'el modelo 3D' : 'la foto'} al servidor. Comprobá tu conexión y volvé a seleccionar el archivo descargado en tu teléfono. Antes de reintentar, actualizá la lista para comprobar si se guardó.`
           : 'Se interrumpió la conexión con el servidor. Comprobá tu conexión y recargá la página.',
       { cause },
     );

@@ -26,6 +26,10 @@ const app = createApp({
 test('sirve frontend y rutas de React conservando errores JSON de la API', async () => {
   const home = await request(app).get('/').expect(200);
   assert.match(home.text, /Tienda/);
+  assert.match(
+    home.headers['content-security-policy'],
+    /connect-src[^;]*https:\/\/res\.cloudinary\.com/,
+  );
   assert.match(home.headers['content-security-policy'], /img-src[^;]*blob:/);
   assert.match(
     home.headers['content-security-policy'],

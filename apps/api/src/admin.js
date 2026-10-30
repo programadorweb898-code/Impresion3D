@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { addModelRoutes } from './model-routes.js';
 import { randomUUID } from 'node:crypto';
 import { cloudinaryFailure } from './cloudinary-errors.js';
 import { imageUpload, normalizeImage } from './images.js';
@@ -221,5 +222,6 @@ export function createAdminRouter({ imageStorage } = {}) {
       res.json({ image });
     },
   );
+  addModelRoutes(adminRouter, imageStorage);
   return adminRouter;
 }

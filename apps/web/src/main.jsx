@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSchema, loginSchema } from '@impresion3d/shared';
 import './styles.css';
 import { api } from './api.js';
 import { Admin } from './Admin.jsx';
+const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
 const money = (c, currency = 'ARS') =>
   new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency,
     maximumFractionDigits: 0,
   }).format(c / 100);
-function Modal({ children, onClose }) {
+function Modal({ children, onClose, wide = false }) {
   const ref = useRef(null);
   useEffect(() => {
     const node = ref.current;
@@ -26,7 +27,7 @@ function Modal({ children, onClose }) {
         onClose();
       }}
     >
-      <div className="modal">{children}</div>
+      <div className={wide ? 'modal model-modal' : 'modal'}>{children}</div>
     </dialog>
   );
 }
@@ -41,7 +42,8 @@ function App() {
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [category, setCategory] = useState('Todos'),
-    [selected, setSelected] = useState(null);
+    [selected, setSelected] = useState(null),
+    [viewing, setViewing] = useState(null);
   useEffect(() => {
     api('/products')
       .then(setProducts)
@@ -177,7 +179,10 @@ function App() {
           </p>
         )}
         {view === 'admin' && user?.role === 'admin' ? (
-          <Admin onCatalogChange={() => api('/products').then(setProducts)} />
+          <Admin
+            onCatalogChange={() => api('/products').then(setProducts)}
+            onPreview={setViewing}
+          />
         ) : view === 'catalog' ? (
           <>
             <section className="hero">
@@ -287,6 +292,14 @@ function App() {
                           {p.dimensions?.width} × {p.dimensions?.height} ×{' '}
                           {p.dimensions?.depth} mm
                         </p>
+                        {p.model?.url && (
+                          <button
+                            className="model-button"
+                            onClick={() => setViewing(p)}
+                          >
+                            Ver en 3D <span aria-hidden="true">◇</span>
+                          </button>
+                        )}
                         <button
                           className="product-button"
                           onClick={() => {
@@ -401,6 +414,21 @@ function App() {
         <p>Ideas que toman forma.</p>
         <span className="small">Diseño local. Posibilidades infinitas.</span>
       </footer>
+      {viewing && (
+        <Modal wide onClose={() => setViewing(null)}>
+          <button
+            className="close"
+            aria-label="Cerrar visor 3D"
+            onClick={() => setViewing(null)}
+          >
+            ×
+          </button>
+          <h2 id="modal-title">{viewing.name} · Vista 3D</h2>
+          <Suspense fallback={<p role="status">Preparando visor…</p>}>
+            <ProductViewer product={viewing} />
+          </Suspense>
+        </Modal>
+      )}
       {(auth || selected) && (
         <Modal
           onClose={() => {

@@ -23,6 +23,12 @@ export const Product = model(
       dimensions: { width: Number, height: Number, depth: Number },
       active: { type: Boolean, default: true },
       image: { url: String, publicId: String, width: Number, height: Number },
+      model: {
+        url: String,
+        publicId: String,
+        format: { type: String, enum: ['glb', 'stl'] },
+        bytes: Number,
+      },
     },
     { timestamps: true },
   ),
