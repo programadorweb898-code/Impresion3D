@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
+import { cloudinaryFailure } from './cloudinary-errors.js';
 import { imageUpload, normalizeImage } from './images.js';
 import { rateLimit } from 'express-rate-limit';
 import { Product, Order } from './models.js';
@@ -179,16 +180,16 @@ export function createAdminRouter({ imageStorage } = {}) {
         image = await imageStorage.upload(normalized.buffer);
       } catch (error) {
         const providerStatus = Number(error?.http_code) || null;
+        const failure = cloudinaryFailure(error);
         console.warn(
           JSON.stringify({
             event: 'photo_storage_failed',
             requestId: res.get('x-request-id'),
             providerStatus,
+            providerReason: failure.reason,
           }),
         );
-        const message = [401, 403].includes(providerStatus)
-          ? 'Cloudinary rechazó las credenciales o los permisos. Revisá sus variables en Render.'
-          : 'No se pudo guardar la foto en Cloudinary. Intentá nuevamente.';
+        const message = failure.message;
         return res.status(502).json({ message });
       }
       let previous;
