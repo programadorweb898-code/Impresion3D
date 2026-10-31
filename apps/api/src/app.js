@@ -9,6 +9,7 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { loginSchema, registerSchema, orderSchema } from '@impresion3d/shared';
 import { User, Product, Order } from './models.js';
 import { createAdminRouter } from './admin.js';
+import { submitCatalogOrder } from './checkout.js';
 export function createApp({
   sessionStore,
   sessionSecret,
@@ -199,32 +200,7 @@ export function createApp({
     '/api/orders',
     authenticated,
     validate(orderSchema),
-    async (req, res) => {
-      const product = await Product.findOne({
-        _id: req.body.productId,
-        active: true,
-      });
-      if (!product)
-        return res.status(404).json({ message: 'Producto no disponible' });
-      const { quantity, notes } = req.body;
-      const order = await Order.create({
-        userId: req.session.userId,
-        items: [
-          {
-            productId: product._id,
-            name: product.name,
-            unitPriceCents: product.priceCents,
-            quantity,
-            dimensions: product.dimensions,
-          },
-        ],
-        totalCents: product.priceCents * quantity,
-        currency: product.currency,
-        notes,
-        history: [{ status: 'recibido', at: new Date() }],
-      });
-      res.status(201).json(order);
-    },
+    submitCatalogOrder,
   );
   app.use('/api/admin', authenticated, createAdminRouter({ imageStorage }));
   app.use('/api', (_req, res) =>

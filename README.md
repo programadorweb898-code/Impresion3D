@@ -1,6 +1,6 @@
 # Impresión3D
 
-Tienda personal de productos impresos en 3D. Catálogo, registro, inicio/cierre de sesión, solicitudes de pedidos, historial privado y administración de productos y seguimiento. No procesa pagos online.
+Tienda personal de productos impresos en 3D. Catálogo, registro, inicio/cierre de sesión, carrito para usuarios registrados, pedidos con varios productos, historial privado y administración de productos y seguimiento. No procesa pagos online.
 
 ## Requisitos y ejecución
 
@@ -69,3 +69,7 @@ Próximas etapas: mejoras operativas; visor y modelos paramétricos propios con 
 Se verifican registro, hash Argon2id, login, regeneración y revocación de sesiones persistidas en MongoDB, aislamiento de pedidos, precios calculados en servidor, copia histórica, permisos administrativos, ocultación de productos, estados y conflictos de edición. Estas pruebas no sustituyen comprobar tu conexión y despliegue de Atlas.
 
 `npm run format` aplica formato al código; `npm run format:check` lo verifica.
+
+## Carrito
+
+El [carrito de compras](docs/cart.md) requiere sesión antes de agregar productos, permite cambiar cantidades y enviar un único pedido con varias piezas. Los importes se calculan en Express y los artículos se conservan como copia histórica en MongoDB. No incorpora pagos online.

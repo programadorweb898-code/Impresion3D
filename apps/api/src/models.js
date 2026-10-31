@@ -46,6 +46,8 @@ const orderModel = new Schema(
         dimensions: { width: Number, height: Number, depth: Number },
       },
     ],
+    requestId: { type: String, select: false },
+    requestHash: { type: String, select: false },
     totalCents: { type: Number, required: true },
     currency: { type: String, required: true },
     notes: String,
@@ -66,6 +68,10 @@ const orderModel = new Schema(
     history: [{ status: String, at: Date, estimatedReadyAt: Date }],
   },
   { timestamps: true },
+);
+orderModel.index(
+  { userId: 1, requestId: 1 },
+  { unique: true, partialFilterExpression: { requestId: { $type: 'string' } } },
 );
 orderModel.index({ userId: 1, createdAt: -1 });
 orderModel.index({ createdAt: -1 });

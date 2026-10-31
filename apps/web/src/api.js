@@ -47,10 +47,13 @@ export async function api(path, options = {}) {
   const data = await readJson(response);
   if (!response.ok) {
     const reference = response.headers.get('x-request-id');
-    throw new Error(
+    const error = new Error(
       (data.message || 'No se pudo conectar') +
         (reference ? ` Referencia: ${reference}.` : ''),
     );
+    error.status = response.status;
+    error.code = data.code;
+    throw error;
   }
   return data;
 }

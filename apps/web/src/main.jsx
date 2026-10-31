@@ -4,6 +4,8 @@ import { registerSchema, loginSchema } from '@impresion3d/shared';
 import './styles.css';
 import { api } from './api.js';
 import { Admin } from './Admin.jsx';
+import { Cart } from './Cart.jsx';
+import { useCart } from './useCart.js';
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
 const money = (c, currency = 'ARS') =>
   new Intl.NumberFormat('es-AR', {
@@ -42,8 +44,14 @@ function App() {
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [category, setCategory] = useState('Todos'),
-    [selected, setSelected] = useState(null),
+    [cartNotes, setCartNotes] = useState(''),
+    [refreshingCart, setRefreshingCart] = useState(false),
+    [cartCatalogError, setCartCatalogError] = useState(false),
     [viewing, setViewing] = useState(null);
+  const cart = useCart(user?.id);
+  const [authReady, setAuthReady] = useState(false);
+  const loginDestination = useRef(null);
+  const checkoutId = useRef(null);
   useEffect(() => {
     api('/products')
       .then(setProducts)
@@ -55,7 +63,8 @@ function App() {
       .finally(() => setLoading(false));
     api('/auth/me')
       .then(setUser)
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setAuthReady(true));
   }, []);
   async function history() {
     setView('orders');
@@ -86,34 +95,133 @@ function App() {
         }),
       );
       setAuth(null);
-      setNotice('Ya podés solicitar tus productos y consultar tus pedidos.');
+      setAuthReady(true);
+      if (loginDestination.current === 'cart') {
+        setView('cart');
+        await refreshCart();
+      }
+      loginDestination.current = null;
+      setNotice('Ya podés armar tu carrito y consultar tus pedidos.');
     } catch (e) {
       setError(e.message);
     } finally {
       setBusy(false);
     }
   }
+  async function refreshCart() {
+    setRefreshingCart(true);
+    setCartCatalogError(false);
+    try {
+      setProducts(await api('/products'));
+    } catch {
+      setCartCatalogError(true);
+    } finally {
+      setRefreshingCart(false);
+    }
+  }
+  async function openCart() {
+    if (!authReady) return;
+    if (!user) {
+      loginDestination.current = 'cart';
+      setError('');
+      setAuth('login');
+      setNotice('Ingresá para armar tu carrito.');
+      return;
+    }
+    setView('cart');
+    setError('');
+    await refreshCart();
+  }
+  function editCart(action) {
+    if (busy || !user) return;
+    try {
+      action();
+      checkoutId.current = null;
+      setError('');
+    } catch (e) {
+      setNotice(e.message);
+    }
+  }
+  function addToCart(product) {
+    if (!authReady) return;
+    if (!user) {
+      loginDestination.current = 'catalog';
+      setError('');
+      setAuth('login');
+      setNotice('Ingresá antes de agregar productos a tu carrito.');
+      return;
+    }
+    try {
+      cart.add(product._id);
+      checkoutId.current = null;
+      setNotice('Agregaste ' + product.name + ' al carrito.');
+    } catch (e) {
+      setNotice(e.message);
+    }
+  }
   async function submitOrder(event) {
     event.preventDefault();
-    setBusy(true);
     setError('');
-    const values = Object.fromEntries(new FormData(event.currentTarget));
+    if (!user) {
+      setAuth('login');
+      return;
+    }
+    if (busy || refreshingCart || cartCatalogError || !cart.items.length)
+      return;
+    const byId = new Map(products.map((p) => [p._id, p]));
+    if (cart.items.some((i) => !byId.has(i.productId))) {
+      setError('Quitá los productos no disponibles antes de enviar.');
+      return;
+    }
+    setBusy(true);
+    let order;
     try {
-      await api('/orders', {
+      checkoutId.current ||= crypto.randomUUID();
+      order = await api('/orders', {
         method: 'POST',
         body: JSON.stringify({
-          productId: selected._id,
-          quantity: Number(values.quantity),
-          notes: values.notes,
+          items: cart.items.map((i) => ({
+            ...i,
+            expectedUnitPriceCents: byId.get(i.productId).priceCents,
+          })),
+          notes: cartNotes,
+          requestId: checkoutId.current,
         }),
       });
-      setSelected(null);
-      setNotice(
-        'Solicitud recibida. Confirmaremos disponibilidad y fecha de entrega.',
-      );
-      await history();
     } catch (e) {
       setError(e.message);
+      if (e.status === 401) {
+        setUser(null);
+        setAuth('login');
+        setView('catalog');
+        loginDestination.current = 'cart';
+        setError(
+          'Tu sesión venció. Ingresá para recuperar tu carrito y enviar el pedido.',
+        );
+      }
+      if ([404, 409].includes(e.status)) await refreshCart();
+      setBusy(false);
+      return;
+    }
+    cart.clear();
+    setCartNotes('');
+    checkoutId.current = null;
+    setOrders((current) => [
+      order,
+      ...current.filter((o) => o._id !== order._id),
+    ]);
+    setNotice(
+      'Pedido #' +
+        order._id.slice(-6).toUpperCase() +
+        ' recibido. Coordinaremos disponibilidad, pago y entrega.',
+    );
+    setView('orders');
+    try {
+      setOrders(await api('/orders'));
+    } catch {
+      setError(
+        'Tu pedido se guardó, pero no pudimos actualizar el historial. Volvé a entrar en Mis pedidos para consultarlo.',
+      );
     } finally {
       setBusy(false);
     }
@@ -127,6 +235,13 @@ function App() {
         </a>
         <nav aria-label="Principal">
           <button onClick={() => setView('catalog')}>Catálogo</button>
+          <button
+            className="cart-link"
+            onClick={openCart}
+            disabled={!authReady}
+          >
+            Carrito ({cart.count})
+          </button>
           <a href="#proceso" onClick={() => setView('catalog')}>
             Cómo funciona
           </a>
@@ -141,6 +256,8 @@ function App() {
                   try {
                     await api('/auth/logout', { method: 'POST' });
                     setUser(null);
+                    setCartNotes('');
+                    checkoutId.current = null;
                     setOrders([]);
                     setView('catalog');
                   } catch (e) {
@@ -173,12 +290,32 @@ function App() {
             </button>
           </div>
         )}
-        {error && !auth && !selected && (
+        {error && !auth && (
           <p role="alert" className="error">
             {error}
           </p>
         )}
-        {view === 'admin' && user?.role === 'admin' ? (
+        {view === 'cart' && user ? (
+          <Cart
+            items={cart.items}
+            products={products}
+            user={user}
+            notes={cartNotes}
+            onNotes={(value) => {
+              setCartNotes(value);
+              checkoutId.current = null;
+            }}
+            onQuantity={(id, q) => editCart(() => cart.quantity(id, q))}
+            onRemove={(id) => editCart(() => cart.remove(id))}
+            onClear={() => editCart(() => cart.clear())}
+            onSubmit={submitOrder}
+            onRefresh={refreshCart}
+            onContinue={() => setView('catalog')}
+            busy={busy || !cart.ready}
+            refreshing={refreshingCart}
+            catalogError={cartCatalogError}
+          />
+        ) : view === 'admin' && user?.role === 'admin' ? (
           <Admin
             onCatalogChange={() => api('/products').then(setProducts)}
             onPreview={setViewing}
@@ -302,15 +439,10 @@ function App() {
                         )}
                         <button
                           className="product-button"
-                          onClick={() => {
-                            setError('');
-                            if (!user) {
-                              setAuth('login');
-                              setNotice('Ingresá para solicitar tu pedido.');
-                            } else setSelected(p);
-                          }}
+                          disabled={!authReady}
+                          onClick={() => addToCart(p)}
                         >
-                          Solicitar pieza <span>↗</span>
+                          Agregar al carrito <span aria-hidden="true">＋</span>
                         </button>
                       </article>
                     ))}
@@ -335,7 +467,7 @@ function App() {
                 [
                   '02',
                   'Envianos tu solicitud',
-                  'Registrate y contanos los detalles. Confirmamos disponibilidad y entrega.',
+                  'Agregá tus piezas al carrito, ingresá y envianos un único pedido.',
                 ],
                 [
                   '03',
@@ -429,127 +561,85 @@ function App() {
           </Suspense>
         </Modal>
       )}
-      {(auth || selected) && (
+      {auth && (
         <Modal
           onClose={() => {
-            setAuth(null);
-            setSelected(null);
-            setError('');
+            if (!busy) {
+              setAuth(null);
+              setError('');
+            }
           }}
         >
           <button
             className="close"
             aria-label="Cerrar"
+            disabled={busy}
             onClick={() => {
               setAuth(null);
-              setSelected(null);
               setError('');
             }}
           >
             ×
           </button>
           <h2 id="modal-title">
-            {selected
-              ? 'Solicitar ' + selected.name
-              : auth === 'register'
-                ? 'Creá tu cuenta'
-                : 'Qué bueno verte'}
+            {auth === 'register' ? 'Creá tu cuenta' : 'Qué bueno verte'}
           </h2>
           {error && (
             <p role="alert" className="error">
               {error}
             </p>
           )}
-          {selected ? (
-            <form onSubmit={submitOrder}>
-              <p>
-                Sin pago online. Revisaremos tu solicitud para confirmar la
-                entrega.
-              </p>
+          <form onSubmit={submitAuth}>
+            {auth === 'register' && (
               <label>
-                Cantidad
+                Nombre
                 <input
-                  name="quantity"
-                  type="number"
-                  min="1"
-                  max="20"
-                  defaultValue="1"
+                  name="name"
+                  autoComplete="name"
+                  minLength="2"
+                  maxLength="80"
                   required
                 />
               </label>
-              <label>
-                Detalles de tu solicitud
-                <textarea
-                  name="notes"
-                  maxLength="1000"
-                  placeholder="Color preferido u otras consultas"
-                />
-              </label>
-              <p>
-                Precio por unidad:{' '}
-                {money(selected.priceCents, selected.currency)}
-              </p>
-              <button className="primary" disabled={busy}>
-                {busy ? 'Enviando…' : 'Enviar solicitud'}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={submitAuth}>
-              {auth === 'register' && (
-                <label>
-                  Nombre
-                  <input
-                    name="name"
-                    autoComplete="name"
-                    minLength="2"
-                    maxLength="80"
-                    required
-                  />
-                </label>
-              )}
-              <label>
-                Correo electrónico
-                <input
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                />
-              </label>
-              <label>
-                Contraseña
-                <input
-                  name="password"
-                  type="password"
-                  minLength={auth === 'register' ? 12 : 1}
-                  maxLength="128"
-                  autoComplete={
-                    auth === 'register' ? 'new-password' : 'current-password'
-                  }
-                  required
-                />
-              </label>
-              {auth === 'register' && (
-                <p className="small">Usá al menos 12 caracteres.</p>
-              )}
-              <button className="primary" disabled={busy}>
-                {busy
-                  ? 'Procesando…'
-                  : auth === 'register'
-                    ? 'Crear cuenta'
-                    : 'Ingresar'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuth(auth === 'register' ? 'login' : 'register');
-                  setError('');
-                }}
-              >
-                {auth === 'register' ? 'Ya tengo cuenta' : 'Crear una cuenta'}
-              </button>
-            </form>
-          )}
+            )}
+            <label>
+              Correo electrónico
+              <input name="email" type="email" autoComplete="email" required />
+            </label>
+            <label>
+              Contraseña
+              <input
+                name="password"
+                type="password"
+                minLength={auth === 'register' ? 12 : 1}
+                maxLength="128"
+                autoComplete={
+                  auth === 'register' ? 'new-password' : 'current-password'
+                }
+                required
+              />
+            </label>
+            {auth === 'register' && (
+              <p className="small">Usá al menos 12 caracteres.</p>
+            )}
+            <button className="primary" disabled={busy}>
+              {busy
+                ? 'Procesando…'
+                : auth === 'register'
+                  ? 'Crear cuenta'
+                  : 'Ingresar'}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setAuth(auth === 'register' ? 'login' : 'register');
+                setError('');
+              }}
+            >
+              {auth === 'register' ? 'Ya tengo cuenta' : 'Crear una cuenta'}
+            </button>
+          </form>
         </Modal>
       )}
     </>

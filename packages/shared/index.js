@@ -7,11 +7,47 @@ export const registerSchema = loginSchema.extend({
   name: z.string().trim().min(2).max(80),
   password: z.string().min(12, 'Usá al menos 12 caracteres').max(128),
 });
-export const orderSchema = z.object({
-  productId: z.string().regex(/^[a-f0-9]{24}$/i),
-  quantity: z.number().int().min(1).max(20),
-  notes: z.string().trim().max(1000).default(''),
-});
+const productIdSchema = z
+  .string()
+  .regex(/^[a-f0-9]{24}$/i)
+  .toLowerCase();
+const quantitySchema = z.number().int().min(1).max(20);
+const notesSchema = z.string().trim().max(1000).default('');
+const distinctItems = (items) =>
+  new Set(items.map((item) => item.productId)).size === items.length;
+export const cartItemsSchema = z
+  .array(z.object({ productId: productIdSchema, quantity: quantitySchema }))
+  .max(20)
+  .refine(distinctItems, 'No repitas el mismo producto en el carrito.');
+const checkoutItemsSchema = z
+  .array(
+    z.object({
+      productId: productIdSchema,
+      quantity: quantitySchema,
+      expectedUnitPriceCents: z.number().int().nonnegative().optional(),
+    }),
+  )
+  .min(1, 'El carrito está vacío.')
+  .max(20)
+  .refine(distinctItems, 'No repitas el mismo producto en el carrito.');
+export const orderSchema = z.union([
+  z.object({
+    items: checkoutItemsSchema,
+    notes: notesSchema,
+    requestId: z.uuid().optional(),
+  }),
+  // Compatibility with pages opened before the cart release.
+  z
+    .object({
+      productId: productIdSchema,
+      quantity: quantitySchema,
+      notes: notesSchema,
+    })
+    .transform(({ productId, quantity, notes }) => ({
+      items: [{ productId, quantity }],
+      notes,
+    })),
+]);
 
 export const productSchema = z.strictObject({
   name: z.string().trim().min(2).max(120),
