@@ -52,6 +52,9 @@ function App() {
     ),
     [loginPage, setLoginPage] = useState(() => location.pathname === '/login'),
     [loginPrompt, setLoginPrompt] = useState(false),
+    [logoutPrompt, setLogoutPrompt] = useState(false),
+    [loggingOut, setLoggingOut] = useState(false),
+    [logoutError, setLogoutError] = useState(''),
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [busy, setBusy] = useState(false),
@@ -138,6 +141,9 @@ function App() {
     window.scrollTo(0, 0);
   }
   async function logout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError('');
     try {
       await api('/auth/logout', { method: 'POST' });
       setUser(null);
@@ -149,8 +155,11 @@ function App() {
       setView('catalog');
       setNotice('Cerraste sesión.');
       setError('');
+      setLogoutPrompt(false);
     } catch (e) {
-      setError(e.message);
+      setLogoutError(e.message);
+    } finally {
+      setLoggingOut(false);
     }
   }
   async function history() {
@@ -397,7 +406,10 @@ function App() {
               <Profile
                 user={user}
                 onUser={setUser}
-                onLogout={logout}
+                onLogout={() => {
+                  setLogoutError('');
+                  setLogoutPrompt(true);
+                }}
                 onLogin={() => {
                   loginDestination.current = 'profile';
                   openLogin();
@@ -697,6 +709,54 @@ function App() {
           <Suspense fallback={<p role="status">Preparando visor…</p>}>
             <ProductViewer product={viewing} />
           </Suspense>
+        </Modal>
+      )}
+      {logoutPrompt && (
+        <Modal
+          onClose={() => {
+            if (!loggingOut) setLogoutPrompt(false);
+          }}
+        >
+          <div className="login-prompt">
+            <span className="login-prompt-icon" aria-hidden="true">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 5H5v14h4M14 8l4 4-4 4M9 12h9" />
+              </svg>
+            </span>
+            <h2 id="modal-title">¿Querés cerrar sesión?</h2>
+            <p>Podés cancelar para seguir navegando con tu cuenta.</p>
+            {logoutError && (
+              <p className="error" role="alert">
+                {logoutError}
+              </p>
+            )}
+            <div className="login-prompt-actions">
+              <button
+                className="primary"
+                disabled={loggingOut}
+                onClick={logout}
+              >
+                {loggingOut ? 'Saliendo…' : 'Salir'}
+              </button>
+              <button
+                className="prompt-secondary"
+                autoFocus
+                disabled={loggingOut}
+                onClick={() => setLogoutPrompt(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
       {loginPrompt && (
