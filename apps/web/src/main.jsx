@@ -7,6 +7,7 @@ import { Admin } from './Admin.jsx';
 import { Cart } from './Cart.jsx';
 import { useCart } from './useCart.js';
 import { AuthPage } from './AuthPage.jsx';
+import { WhatsAppButton } from './WhatsAppButton.jsx';
 import { Profile } from './Profile.jsx';
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
 const money = (c, currency = 'ARS') =>
@@ -696,6 +697,7 @@ function App() {
           <span className="small">Diseño local. Posibilidades infinitas.</span>
         </footer>
       )}
+      {!loginPage && <WhatsAppButton phone="5491155606321" />}
       {viewing && (
         <Modal wide onClose={() => setViewing(null)}>
           <button

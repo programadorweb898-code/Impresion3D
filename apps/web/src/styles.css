@@ -1156,3 +1156,37 @@ header > nav {
     margin-left: auto;
   }
 }
+.whatsapp-float {
+  position: fixed;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  background: #168b48;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 5px 20px #123d3333;
+  z-index: 5;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+.whatsapp-float:hover {
+  background: #106e38;
+  transform: translateY(-2px);
+}
+.whatsapp-float:focus-visible {
+  outline: 3px solid #303d30;
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .whatsapp-float {
+    transition: none;
+  }
+  .whatsapp-float:hover {
+    transform: none;
+  }
+}
