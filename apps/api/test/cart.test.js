@@ -178,7 +178,11 @@ test('persistencia del carrito ignora datos corruptos y nunca guarda precios o c
       setItem: (key, value) => values.set(key, value),
     };
   let state = addCartItem([], String(products[0]._id));
-  state = addCartItem(state, String(products[0]._id));
+  assert.throws(
+    () => addCartItem(state, String(products[0]._id)),
+    /ya está en tu carrito/,
+  );
+  assert.equal(state[0].quantity, 1);
   state = changeCartQuantity(state, String(products[0]._id), 3);
   saveCart(state, storage, userId);
   assert.deepEqual(loadCart(storage, userId), state);

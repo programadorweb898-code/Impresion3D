@@ -32,15 +32,13 @@ export function saveCart(items, storage, userId) {
 }
 export function addCartItem(items, productId) {
   const current = items.find((i) => i.productId === productId);
-  if (current?.quantity >= 20)
-    throw new Error('Podés pedir hasta 20 unidades por producto.');
-  if (!current && items.length >= 20)
+  if (current)
+    throw new Error(
+      'Ese producto ya está en tu carrito. Cambiá la cantidad desde Carrito.',
+    );
+  if (items.length >= 20)
     throw new Error('El carrito admite hasta 20 productos distintos.');
-  return current
-    ? items.map((i) =>
-        i.productId === productId ? { ...i, quantity: i.quantity + 1 } : i,
-      )
-    : [...items, { productId, quantity: 1 }];
+  return [...items, { productId, quantity: 1 }];
 }
 export function changeCartQuantity(items, productId, quantity) {
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20)

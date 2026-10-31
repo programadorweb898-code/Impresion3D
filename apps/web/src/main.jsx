@@ -52,6 +52,7 @@ function App() {
   const [authReady, setAuthReady] = useState(false);
   const loginDestination = useRef(null);
   const checkoutId = useRef(null);
+  const cartProductIds = new Set(cart.items.map((item) => item.productId));
   useEffect(() => {
     api('/products')
       .then(setProducts)
@@ -392,7 +393,11 @@ function App() {
                       (p) => category === 'Todos' || p.category === category,
                     )
                     .map((p, i) => (
-                      <article key={p._id}>
+                      <article
+                        className="product-card"
+                        key={p._id}
+                        aria-labelledby={'product-' + p._id}
+                      >
                         <div className={'product-art color-' + p.color}>
                           {p.image?.url ? (
                             <img
@@ -420,7 +425,7 @@ function App() {
                         <div className="flex justify-between items-start gap-4 mt-5">
                           <div>
                             <p className="small uppercase">{p.category}</p>
-                            <h3>{p.name}</h3>
+                            <h3 id={'product-' + p._id}>{p.name}</h3>
                           </div>
                           <strong>{money(p.priceCents, p.currency)}</strong>
                         </div>
@@ -429,21 +434,34 @@ function App() {
                           {p.dimensions?.width} × {p.dimensions?.height} ×{' '}
                           {p.dimensions?.depth} mm
                         </p>
-                        {p.model?.url && (
+                        <div className="card-actions">
                           <button
                             className="model-button"
+                            disabled={!p.model?.url}
                             onClick={() => setViewing(p)}
                           >
                             Ver en 3D <span aria-hidden="true">◇</span>
                           </button>
-                        )}
-                        <button
-                          className="product-button"
-                          disabled={!authReady}
-                          onClick={() => addToCart(p)}
-                        >
-                          Agregar al carrito <span aria-hidden="true">＋</span>
-                        </button>
+                          <button
+                            className="product-button"
+                            disabled={!authReady || cartProductIds.has(p._id)}
+                            onClick={() => addToCart(p)}
+                          >
+                            {cartProductIds.has(p._id)
+                              ? 'En el carrito'
+                              : 'Agregar al carrito'}{' '}
+                            <span aria-hidden="true">
+                              {cartProductIds.has(p._id) ? '✓' : '＋'}
+                            </span>
+                          </button>
+                        </div>
+                        <p className="card-help">
+                          {!p.model?.url
+                            ? 'Vista 3D todavía no disponible.'
+                            : cartProductIds.has(p._id)
+                              ? 'Cambiá la cantidad desde tu carrito.'
+                              : 'Giralo y acercalo en el visor.'}
+                        </p>
                       </article>
                     ))}
                 </div>

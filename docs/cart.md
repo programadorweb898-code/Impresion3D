@@ -4,8 +4,8 @@ El cliente debe ingresar o registrarse **antes de agregar productos**. Si toca A
 
 ## Uso
 
-1. Ingresar y agregar productos desde el catálogo.
-2. Abrir **Carrito**, cambiar cantidades, quitar productos y revisar subtotales y total.
+1. Ingresar y agregar productos desde el catálogo. Cada producto se agrega una sola vez: su botón pasa a «En el carrito» y se deshabilita.
+2. Abrir **Carrito**, cambiar cantidades, quitar productos y revisar subtotales y total. Para pedir más unidades, cambiá la cantidad allí; no se vuelve a agregar la tarjeta.
 3. Agregar comentarios y pulsar **Enviar pedido**.
 4. Consultar el pedido completo en **Mis pedidos**. Administración recibe un único pedido con todos sus artículos.
 
