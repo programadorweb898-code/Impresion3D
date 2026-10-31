@@ -10,6 +10,7 @@ import { loginSchema, registerSchema, orderSchema } from '@impresion3d/shared';
 import { User, Product, Order } from './models.js';
 import { createAdminRouter } from './admin.js';
 import { submitCatalogOrder } from './checkout.js';
+import { createAccountAccess } from './account-access.js';
 export function createApp({
   sessionStore,
   sessionSecret,
@@ -18,6 +19,7 @@ export function createApp({
   trustProxy = false,
   staticDirectory,
   imageStorage,
+  accountServices,
 }) {
   const app = express();
   if (trustProxy) app.set('trust proxy', 1);
@@ -116,8 +118,9 @@ export function createApp({
   const authenticated = async (req, res, next) => {
     if (!req.session.userId)
       return res.status(401).json({ message: 'Iniciá sesión para continuar' });
-    const user = await User.findById(req.session.userId);
-    if (!user) return res.status(401).json({ message: 'Sesión inválida' });
+    const user = await User.findById(req.session.userId).select('+authVersion');
+    if (!user || (req.session.authVersion || 0) !== (user.authVersion || 0))
+      return res.status(401).json({ message: 'Sesión inválida' });
     req.user = user;
     next();
   };
@@ -140,6 +143,7 @@ export function createApp({
       const user = await User.create({ name, email, passwordHash });
       await regenerate(req);
       req.session.userId = String(user._id);
+      req.session.authVersion = user.authVersion || 0;
       await save(req);
       res.status(201).json(account(user));
     },
@@ -157,21 +161,32 @@ export function createApp({
     validate(loginSchema),
     async (req, res) => {
       const user = await User.findOne({ email: req.body.email }).select(
-        '+passwordHash',
+        '+passwordHash +authVersion',
       );
       const valid = await argon2.verify(
         user?.passwordHash || (await dummyHash),
         req.body.password,
       );
-      if (!user || !valid)
+      if (!user || !user.passwordHash || !valid)
         return res
           .status(401)
           .json({ message: 'Correo o contraseña incorrectos' });
       await regenerate(req);
       req.session.userId = String(user._id);
+      req.session.authVersion = user.authVersion || 0;
       await save(req);
       res.json(account(user));
     },
+  );
+  app.use(
+    '/api/auth',
+    createAccountAccess({
+      webOrigin,
+      services: accountServices,
+      authLimit,
+      regenerate,
+      save,
+    }),
   );
   app.get('/api/auth/me', authenticated, async (req, res) => {
     const u = await User.findById(req.session.userId);

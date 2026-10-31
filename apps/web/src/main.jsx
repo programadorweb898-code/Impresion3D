@@ -6,6 +6,7 @@ import { api } from './api.js';
 import { Admin } from './Admin.jsx';
 import { Cart } from './Cart.jsx';
 import { useCart } from './useCart.js';
+import { AuthPage } from './AuthPage.jsx';
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
 const money = (c, currency = 'ARS') =>
   new Intl.NumberFormat('es-AR', {
@@ -266,59 +267,63 @@ function App() {
   }
   return (
     <>
-      <header>
-        <a className="brand" href="#" onClick={showCatalog}>
-          <span className="brand-icon">✳</span> impresión
-          <span className="text-orange-600">3D</span>
-        </a>
-        <nav aria-label="Principal">
-          <button onClick={showCatalog}>Catálogo</button>
-          <button
-            className="cart-link"
-            onClick={openCart}
-            disabled={!authReady}
-          >
-            Carrito ({cart.count})
-          </button>
-          <a href="#proceso" onClick={showCatalog}>
-            Cómo funciona
+      {!loginPage && (
+        <header>
+          <a className="brand" href="#" onClick={showCatalog}>
+            <span className="brand-icon">✳</span> impresión
+            <span className="text-orange-600">3D</span>
           </a>
-          {user ? (
-            <>
-              <button onClick={history}>Mis pedidos</button>
-              {user.role === 'admin' && (
-                <button onClick={() => setView('admin')}>Administración</button>
-              )}
+          <nav aria-label="Principal">
+            <button onClick={showCatalog}>Catálogo</button>
+            <button
+              className="cart-link"
+              onClick={openCart}
+              disabled={!authReady}
+            >
+              Carrito ({cart.count})
+            </button>
+            <a href="#proceso" onClick={showCatalog}>
+              Cómo funciona
+            </a>
+            {user ? (
+              <>
+                <button onClick={history}>Mis pedidos</button>
+                {user.role === 'admin' && (
+                  <button onClick={() => setView('admin')}>
+                    Administración
+                  </button>
+                )}
+                <button
+                  onClick={async () => {
+                    try {
+                      await api('/auth/logout', { method: 'POST' });
+                      setUser(null);
+                      setCartNotes('');
+                      checkoutId.current = null;
+                      setOrders([]);
+                      setView('catalog');
+                    } catch (e) {
+                      setError(e.message);
+                    }
+                  }}
+                >
+                  Salir
+                </button>
+              </>
+            ) : (
               <button
-                onClick={async () => {
-                  try {
-                    await api('/auth/logout', { method: 'POST' });
-                    setUser(null);
-                    setCartNotes('');
-                    checkoutId.current = null;
-                    setOrders([]);
-                    setView('catalog');
-                  } catch (e) {
-                    setError(e.message);
-                  }
+                className="outline"
+                onClick={() => {
+                  setError('');
+                  openLogin();
                 }}
               >
-                Salir
+                Ingresar ↗
               </button>
-            </>
-          ) : (
-            <button
-              className="outline"
-              onClick={() => {
-                setError('');
-                openLogin();
-              }}
-            >
-              Ingresar ↗
-            </button>
-          )}
-        </nav>
-      </header>
+            )}
+          </nav>
+        </header>
+      )}
       {!loginPage && (
         <main>
           {notice && (
@@ -650,81 +655,15 @@ function App() {
         </Modal>
       )}
       {auth && loginPage && (
-        <main className="login-page">
-          <section className="modal login-panel" aria-labelledby="login-title">
-            <button
-              className="login-back"
-              disabled={busy}
-              onClick={showCatalog}
-            >
-              ← Volver al catálogo
-            </button>
-            <h2 id="login-title">
-              {auth === 'register' ? 'Creá tu cuenta' : 'Qué bueno verte'}
-            </h2>
-            {error && (
-              <p role="alert" className="error">
-                {error}
-              </p>
-            )}
-            <form onSubmit={submitAuth}>
-              {auth === 'register' && (
-                <label>
-                  Nombre
-                  <input
-                    name="name"
-                    autoComplete="name"
-                    minLength="2"
-                    maxLength="80"
-                    required
-                  />
-                </label>
-              )}
-              <label>
-                Correo electrónico
-                <input
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                />
-              </label>
-              <label>
-                Contraseña
-                <input
-                  name="password"
-                  type="password"
-                  minLength={auth === 'register' ? 12 : 1}
-                  maxLength="128"
-                  autoComplete={
-                    auth === 'register' ? 'new-password' : 'current-password'
-                  }
-                  required
-                />
-              </label>
-              {auth === 'register' && (
-                <p className="small">Usá al menos 12 caracteres.</p>
-              )}
-              <button className="primary" disabled={busy}>
-                {busy
-                  ? 'Procesando…'
-                  : auth === 'register'
-                    ? 'Crear cuenta'
-                    : 'Ingresar'}
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => {
-                  setAuth(auth === 'register' ? 'login' : 'register');
-                  setError('');
-                }}
-              >
-                {auth === 'register' ? 'Ya tengo cuenta' : 'Crear una cuenta'}
-              </button>
-            </form>
-          </section>
-        </main>
+        <AuthPage
+          auth={auth}
+          setAuth={setAuth}
+          submitAuth={submitAuth}
+          error={error}
+          clearError={() => setError('')}
+          busy={busy}
+          onBack={showCatalog}
+        />
       )}
     </>
   );

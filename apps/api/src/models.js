@@ -4,12 +4,27 @@ const userSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    passwordHash: { type: String, required: true, select: false },
+    passwordHash: { type: String, select: false },
+    authVersion: { type: Number, default: 0, select: false },
+    resetTokenHash: { type: String, select: false },
+    resetExpiresAt: { type: Date, select: false },
+    resetRequestedAt: { type: Date, select: false },
     role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
   },
   { timestamps: true },
 );
+userSchema.index({ resetTokenHash: 1 }, { sparse: true });
 export const User = model('User', userSchema);
+const socialSchema = new Schema(
+  {
+    provider: { type: String, enum: ['google', 'facebook'], required: true },
+    subject: { type: String, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  },
+  { timestamps: true },
+);
+socialSchema.index({ provider: 1, subject: 1 }, { unique: true });
+export const SocialIdentity = model('SocialIdentity', socialSchema);
 export const Product = model(
   'Product',
   new Schema(

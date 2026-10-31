@@ -5,6 +5,7 @@ import MongoStore from 'connect-mongo';
 import { z } from 'zod';
 import { createApp } from './app.js';
 import { createImageStorage } from './images.js';
+import { createAccountServices } from './account-access.js';
 const env = z
   .object({
     MONGODB_URI: z.string().min(1),
@@ -49,6 +50,7 @@ const app = createApp({
   webOrigin,
   staticDirectory,
   imageStorage,
+  accountServices: createAccountServices(process.env),
   production: env.NODE_ENV === 'production',
   trustProxy: env.TRUST_PROXY === '1',
 });
