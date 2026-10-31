@@ -25,7 +25,28 @@ export function createAccountServices(env = {}, transport = fetch) {
         clientSecret: env[prefix + '_CLIENT_SECRET'],
       };
   }
+  const sendEmailChange =
+    env.RESEND_API_KEY && env.EMAIL_FROM
+      ? async ({ email, url }) => {
+          const response = await transport('https://api.resend.com/emails', {
+            method: 'POST',
+            signal: AbortSignal.timeout(10000),
+            headers: {
+              Authorization: 'Bearer ' + env.RESEND_API_KEY,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: env.EMAIL_FROM,
+              to: [email],
+              subject: 'Confirmá tu nuevo email de impresión3D',
+              text: `Confirmá el nuevo correo de tu cuenta abriendo este enlace dentro de 30 minutos: ${url}\n\nSi no solicitaste este cambio, ignorá el mensaje.`,
+            }),
+          });
+          if (!response.ok) throw new Error('Email delivery failed');
+        }
+      : null;
   return {
+    sendEmailChange,
     providers,
     fetch: transport,
     sendReset:
@@ -136,7 +157,13 @@ export function createAccountAccess({
       },
       {
         $set: { passwordHash },
-        $unset: { resetTokenHash: 1, resetExpiresAt: 1 },
+        $unset: {
+          resetTokenHash: 1,
+          resetExpiresAt: 1,
+          pendingEmail: 1,
+          emailChangeTokenHash: 1,
+          emailChangeExpiresAt: 1,
+        },
         $inc: { authVersion: 1 },
       },
     );
@@ -164,6 +191,9 @@ export function createAccountAccess({
       state,
       verifier,
       expires: Date.now() + 10 * 60000,
+      returnToProfile: req.query.returnTo === 'profile',
+      expectedUserId:
+        req.query.reauthenticate === '1' ? req.session.userId : undefined,
     };
     await save(req);
     const redirectUri = webOrigin + '/api/auth/' + provider + '/callback';
@@ -255,6 +285,8 @@ export function createAccountAccess({
         identity &&
         (await User.findById(identity.userId).select('+authVersion'));
       if (!user) {
+        if (pending.expectedUserId)
+          return res.redirect('/login?authError=existing');
         const parsed = emailSchema.safeParse({ email: profile.email });
         if (
           !parsed.success ||
@@ -279,11 +311,14 @@ export function createAccountAccess({
           throw error;
         }
       }
+      if (pending.expectedUserId && pending.expectedUserId !== String(user._id))
+        return res.redirect('/login?authError=existing');
       await regenerate(req);
+      req.session.reauthenticatedAt = Date.now();
       req.session.userId = String(user._id);
       req.session.authVersion = user.authVersion || 0;
       await save(req);
-      res.redirect('/');
+      res.redirect(pending.returnToProfile ? '/perfil' : '/');
     } catch {
       res.redirect('/login?authError=provider');
     }

@@ -48,3 +48,11 @@ El acceso continúa usando las sesiones HttpOnly del sitio. Las mutaciones de re
 ## Validación
 
 Pruebas con MongoDB aislado real: tokens de recuperación, vencimiento, uso único, concurrencia, invalidación de sesiones, OAuth state/PKCE, Google con email no verificado, protección contra vinculación por email, Facebook y firma appsecret_proof. Las llamadas de OAuth y correo se sustituyen en estas pruebas para no usar cuentas reales ni enviar mensajes. La activación en producción debe comprobarse con las credenciales y cuentas de prueba propias de los proveedores.
+
+## Mi perfil
+
+`/perfil` muestra nombre y email, edición del nombre, cambio o creación de contraseña, solicitud de cambio de email y cierre de sesión. El enlace «Mi perfil» aparece a la derecha del menú para cuentas autenticadas. La cabecera y el footer se mantienen en catálogo, perfil, carrito, pedidos y administración; `/login` permanece independiente.
+
+Las rutas `/api/profile` requieren sesión válida y las mutaciones mantienen CSRF y Origin. Sólo se admite modificar los campos explícitos: no se permite cambiar rol ni seleccionar otro usuario. Cambiar contraseña exige la actual, conserva la sesión que realiza el cambio y revoca las demás. Las cuentas sociales deben confirmar su identidad con su proveedor dentro de los últimos cinco minutos para crear una contraseña o solicitar un cambio de correo; la identidad debe coincidir con la cuenta ya autenticada.
+
+El nuevo correo debe confirmarse usando un enlace enviado a esa dirección. Se usan las mismas variables `RESEND_API_KEY` y `EMAIL_FROM`; mientras falten, el sitio informa que el envío no está disponible y mantiene el email actual. El enlace vence en 30 minutos, se guarda sólo su hash, requiere iniciar sesión en la cuenta correcta y se consume una vez. El formulario de confirmación usa POST con CSRF. La dirección anterior no cambia al solicitar el enlace, y una dirección ocupada se rechaza. La confirmación mantiene el ID, los pedidos y el rol de la cuenta, cierra otras sesiones e invalida enlaces de recuperación anteriores. No cambia el email de la cuenta de Google o Facebook: sólo el correo usado en este sitio.

@@ -7,6 +7,7 @@ import { Admin } from './Admin.jsx';
 import { Cart } from './Cart.jsx';
 import { useCart } from './useCart.js';
 import { AuthPage } from './AuthPage.jsx';
+import { Profile } from './Profile.jsx';
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
 const money = (c, currency = 'ARS') =>
   new Intl.NumberFormat('es-AR', {
@@ -38,7 +39,14 @@ function App() {
   const [user, setUser] = useState(null),
     [products, setProducts] = useState([]),
     [orders, setOrders] = useState([]),
-    [view, setView] = useState('catalog'),
+    [view, setView] = useState(() =>
+      location.pathname === '/perfil' ? 'profile' : 'catalog',
+    ),
+    [profileToken, setProfileToken] = useState(() =>
+      location.pathname === '/perfil'
+        ? new URLSearchParams(location.hash.slice(1)).get('email') || ''
+        : '',
+    ),
     [auth, setAuth] = useState(() =>
       location.pathname === '/login' ? 'login' : null,
     ),
@@ -78,10 +86,19 @@ function App() {
       setLoginPage(isLogin);
       setAuth(isLogin ? 'login' : null);
       setLoginPrompt(false);
+      setView(location.pathname === '/perfil' ? 'profile' : 'catalog');
+      const emailToken =
+        location.pathname === '/perfil' &&
+        new URLSearchParams(location.hash.slice(1)).get('email');
+      if (emailToken) setProfileToken(emailToken);
       setError('');
     };
     window.addEventListener('popstate', onNavigate);
-    return () => window.removeEventListener('popstate', onNavigate);
+    window.addEventListener('hashchange', onNavigate);
+    return () => {
+      window.removeEventListener('popstate', onNavigate);
+      window.removeEventListener('hashchange', onNavigate);
+    };
   }, []);
   function openLogin() {
     setLoginPrompt(false);
@@ -104,8 +121,41 @@ function App() {
     closeAuth();
     loginDestination.current = null;
     setView('catalog');
+    if (location.pathname === '/perfil')
+      window.history.pushState(null, '', '/');
+  }
+  useEffect(() => {
+    if (location.pathname === '/perfil' && location.hash.startsWith('#email='))
+      window.history.replaceState(null, '', '/perfil');
+  }, [profileToken]);
+  function openProfile() {
+    closeAuth();
+    if (location.pathname !== '/perfil')
+      window.history.pushState(null, '', '/perfil');
+    setView('profile');
+    setError('');
+    setNotice('');
+    window.scrollTo(0, 0);
+  }
+  async function logout() {
+    try {
+      await api('/auth/logout', { method: 'POST' });
+      setUser(null);
+      setCartNotes('');
+      setOrders([]);
+      setProfileToken('');
+      checkoutId.current = null;
+      window.history.replaceState(null, '', '/');
+      setView('catalog');
+      setNotice('Cerraste sesión.');
+      setError('');
+    } catch (e) {
+      setError(e.message);
+    }
   }
   async function history() {
+    if (location.pathname === '/perfil')
+      window.history.pushState(null, '', '/');
     setView('orders');
     setError('');
     try {
@@ -139,6 +189,7 @@ function App() {
         setView('cart');
         await refreshCart();
       }
+      if (loginDestination.current === 'profile') openProfile();
       loginDestination.current = null;
       setNotice('Ya podés armar tu carrito y consultar tus pedidos.');
     } catch (e) {
@@ -167,6 +218,8 @@ function App() {
       setNotice('Ingresá para armar tu carrito.');
       return;
     }
+    if (location.pathname === '/perfil')
+      window.history.pushState(null, '', '/');
     setView('cart');
     setError('');
     await refreshCart();
@@ -289,26 +342,26 @@ function App() {
               <>
                 <button onClick={history}>Mis pedidos</button>
                 {user.role === 'admin' && (
-                  <button onClick={() => setView('admin')}>
+                  <button
+                    onClick={() => {
+                      showCatalog();
+                      setView('admin');
+                    }}
+                  >
                     Administración
                   </button>
                 )}
-                <button
-                  onClick={async () => {
-                    try {
-                      await api('/auth/logout', { method: 'POST' });
-                      setUser(null);
-                      setCartNotes('');
-                      checkoutId.current = null;
-                      setOrders([]);
-                      setView('catalog');
-                    } catch (e) {
-                      setError(e.message);
-                    }
+                <a
+                  className="profile-link"
+                  href="/perfil"
+                  aria-current={view === 'profile' ? 'page' : undefined}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    openProfile();
                   }}
                 >
-                  Salir
-                </button>
+                  <span aria-hidden="true">◉</span> Mi perfil
+                </a>
               </>
             ) : (
               <button
@@ -339,7 +392,25 @@ function App() {
               {error}
             </p>
           )}
-          {view === 'cart' && user ? (
+          {view === 'profile' ? (
+            authReady ? (
+              <Profile
+                user={user}
+                onUser={setUser}
+                onLogout={logout}
+                onLogin={() => {
+                  loginDestination.current = 'profile';
+                  openLogin();
+                }}
+                confirmationToken={profileToken}
+                onConfirmed={() => setProfileToken('')}
+              />
+            ) : (
+              <p role="status" className="profile-page">
+                Comprobando tu sesión…
+              </p>
+            )
+          ) : view === 'cart' && user ? (
             <Cart
               items={cart.items}
               products={products}
@@ -606,7 +677,7 @@ function App() {
       )}
       {!loginPage && (
         <footer>
-          <a className="brand" href="#">
+          <a className="brand" href="#" onClick={showCatalog}>
             ✳ impresión3D
           </a>
           <p>Ideas que toman forma.</p>

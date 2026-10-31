@@ -11,6 +11,7 @@ import { User, Product, Order } from './models.js';
 import { createAdminRouter } from './admin.js';
 import { submitCatalogOrder } from './checkout.js';
 import { createAccountAccess } from './account-access.js';
+import { createProfileRouter } from './profile.js';
 export function createApp({
   sessionStore,
   sessionSecret,
@@ -186,6 +187,17 @@ export function createApp({
       authLimit,
       regenerate,
       save,
+    }),
+  );
+  app.use(
+    '/api/profile',
+    authenticated,
+    createProfileRouter({
+      services: accountServices,
+      webOrigin,
+      authLimit,
+      save,
+      regenerate,
     }),
   );
   app.get('/api/auth/me', authenticated, async (req, res) => {
