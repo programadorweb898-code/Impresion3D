@@ -30,3 +30,5 @@ Los envíos del nuevo carrito incluyen un UUID `requestId`. Un índice único po
 ## Verificación
 
 `npm test` prueba el pedido multiproducto con MongoDB temporal real: precios, disponibilidad, privacidad, copia histórica, cantidades, reintentos y concurrencia. También valida la lectura del carrito por usuario y el descarte de datos corruptos. La comprobación de navegador usa Express y MongoDB reales, sin crear pedidos en producción.
+
+Si un visitante intenta agregar una pieza, aparece un cuadro con «Crear cuenta o iniciar sesión» y «Continuar explorando». La primera opción abre `/login`, donde también puede crear una cuenta; la segunda cierra el cuadro sin cambiar la página ni el carrito. Escape también permite cerrarlo. `/login` admite acceso directo, recarga y navegación atrás del navegador. No se agrega una pieza antes de autenticar al cliente.

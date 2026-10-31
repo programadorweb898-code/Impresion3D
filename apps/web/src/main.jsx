@@ -38,7 +38,11 @@ function App() {
     [products, setProducts] = useState([]),
     [orders, setOrders] = useState([]),
     [view, setView] = useState('catalog'),
-    [auth, setAuth] = useState(null),
+    [auth, setAuth] = useState(() =>
+      location.pathname === '/login' ? 'login' : null,
+    ),
+    [loginPage, setLoginPage] = useState(() => location.pathname === '/login'),
+    [loginPrompt, setLoginPrompt] = useState(false),
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [busy, setBusy] = useState(false),
@@ -67,6 +71,39 @@ function App() {
       .catch(() => {})
       .finally(() => setAuthReady(true));
   }, []);
+  useEffect(() => {
+    const onNavigate = () => {
+      const isLogin = location.pathname === '/login';
+      setLoginPage(isLogin);
+      setAuth(isLogin ? 'login' : null);
+      setLoginPrompt(false);
+      setError('');
+    };
+    window.addEventListener('popstate', onNavigate);
+    return () => window.removeEventListener('popstate', onNavigate);
+  }, []);
+  function openLogin() {
+    setLoginPrompt(false);
+    setError('');
+    setNotice('');
+    if (location.pathname !== '/login')
+      window.history.pushState(null, '', '/login');
+    setLoginPage(true);
+    setAuth('login');
+    window.scrollTo(0, 0);
+  }
+  function closeAuth() {
+    if (location.pathname === '/login')
+      window.history.replaceState(null, '', '/');
+    setLoginPage(false);
+    setAuth(null);
+    setError('');
+  }
+  function showCatalog() {
+    closeAuth();
+    loginDestination.current = null;
+    setView('catalog');
+  }
   async function history() {
     setView('orders');
     setError('');
@@ -95,7 +132,7 @@ function App() {
           body: JSON.stringify(parsed.data),
         }),
       );
-      setAuth(null);
+      closeAuth();
       setAuthReady(true);
       if (loginDestination.current === 'cart') {
         setView('cart');
@@ -125,7 +162,7 @@ function App() {
     if (!user) {
       loginDestination.current = 'cart';
       setError('');
-      setAuth('login');
+      openLogin();
       setNotice('Ingresá para armar tu carrito.');
       return;
     }
@@ -148,8 +185,8 @@ function App() {
     if (!user) {
       loginDestination.current = 'catalog';
       setError('');
-      setAuth('login');
-      setNotice('Ingresá antes de agregar productos a tu carrito.');
+      setNotice('');
+      setLoginPrompt(true);
       return;
     }
     try {
@@ -164,7 +201,7 @@ function App() {
     event.preventDefault();
     setError('');
     if (!user) {
-      setAuth('login');
+      openLogin();
       return;
     }
     if (busy || refreshingCart || cartCatalogError || !cart.items.length)
@@ -193,7 +230,7 @@ function App() {
       setError(e.message);
       if (e.status === 401) {
         setUser(null);
-        setAuth('login');
+        openLogin();
         setView('catalog');
         loginDestination.current = 'cart';
         setError(
@@ -230,12 +267,12 @@ function App() {
   return (
     <>
       <header>
-        <a className="brand" href="#" onClick={() => setView('catalog')}>
+        <a className="brand" href="#" onClick={showCatalog}>
           <span className="brand-icon">✳</span> impresión
           <span className="text-orange-600">3D</span>
         </a>
         <nav aria-label="Principal">
-          <button onClick={() => setView('catalog')}>Catálogo</button>
+          <button onClick={showCatalog}>Catálogo</button>
           <button
             className="cart-link"
             onClick={openCart}
@@ -243,7 +280,7 @@ function App() {
           >
             Carrito ({cart.count})
           </button>
-          <a href="#proceso" onClick={() => setView('catalog')}>
+          <a href="#proceso" onClick={showCatalog}>
             Cómo funciona
           </a>
           {user ? (
@@ -274,7 +311,7 @@ function App() {
               className="outline"
               onClick={() => {
                 setError('');
-                setAuth('login');
+                openLogin();
               }}
             >
               Ingresar ↗
@@ -282,288 +319,295 @@ function App() {
           )}
         </nav>
       </header>
-      <main>
-        {notice && (
-          <div role="status" className="notice">
-            {notice}
-            <button aria-label="Cerrar aviso" onClick={() => setNotice('')}>
-              ×
-            </button>
-          </div>
-        )}
-        {error && !auth && (
-          <p role="alert" className="error">
-            {error}
-          </p>
-        )}
-        {view === 'cart' && user ? (
-          <Cart
-            items={cart.items}
-            products={products}
-            user={user}
-            notes={cartNotes}
-            onNotes={(value) => {
-              setCartNotes(value);
-              checkoutId.current = null;
-            }}
-            onQuantity={(id, q) => editCart(() => cart.quantity(id, q))}
-            onRemove={(id) => editCart(() => cart.remove(id))}
-            onClear={() => editCart(() => cart.clear())}
-            onSubmit={submitOrder}
-            onRefresh={refreshCart}
-            onContinue={() => setView('catalog')}
-            busy={busy || !cart.ready}
-            refreshing={refreshingCart}
-            catalogError={cartCatalogError}
-          />
-        ) : view === 'admin' && user?.role === 'admin' ? (
-          <Admin
-            onCatalogChange={() => api('/products').then(setProducts)}
-            onPreview={setViewing}
-          />
-        ) : view === 'catalog' ? (
-          <>
-            <section className="hero">
-              <div>
-                <p className="eyebrow">
-                  DISEÑADO CON INTENCIÓN · IMPRESO EN 3D
-                </p>
-                <h1>
-                  De una idea,
-                  <br />a tu <em>mundo.</em>
-                </h1>
-                <p className="hero-copy">
-                  Objetos que hacen tu día un poco más tuyo. Descubrí diseños
-                  únicos y contanos cómo los imaginás.
-                </p>
-                <a className="primary" href="#catalogo">
-                  Explorar diseños <span>↗</span>
-                </a>
-                <p className="small mt-6">
-                  Hecho por encargo · Atención personal · Sin pagos online
-                </p>
-              </div>
-              <div
-                className="hero-art"
-                aria-label="Ilustración de una maceta geométrica"
-              >
-                <div className="orb" />
-                <div className="vase">
-                  <div />
-                </div>
-                <span className="art-label">DE LA PANTALLA A TUS MANOS</span>
-                <span className="art-number">
-                  01 / OBJETOS CON PERSONALIDAD
-                </span>
-              </div>
-            </section>
-            <section id="catalogo" className="catalog">
-              <div className="section-top">
+      {!loginPage && (
+        <main>
+          {notice && (
+            <div role="status" className="notice">
+              {notice}
+              <button aria-label="Cerrar aviso" onClick={() => setNotice('')}>
+                ×
+              </button>
+            </div>
+          )}
+          {error && !auth && (
+            <p role="alert" className="error">
+              {error}
+            </p>
+          )}
+          {view === 'cart' && user ? (
+            <Cart
+              items={cart.items}
+              products={products}
+              user={user}
+              notes={cartNotes}
+              onNotes={(value) => {
+                setCartNotes(value);
+                checkoutId.current = null;
+              }}
+              onQuantity={(id, q) => editCart(() => cart.quantity(id, q))}
+              onRemove={(id) => editCart(() => cart.remove(id))}
+              onClear={() => editCart(() => cart.clear())}
+              onSubmit={submitOrder}
+              onRefresh={refreshCart}
+              onContinue={() => setView('catalog')}
+              busy={busy || !cart.ready}
+              refreshing={refreshingCart}
+              catalogError={cartCatalogError}
+            />
+          ) : view === 'admin' && user?.role === 'admin' ? (
+            <Admin
+              onCatalogChange={() => api('/products').then(setProducts)}
+              onPreview={setViewing}
+            />
+          ) : view === 'catalog' ? (
+            <>
+              <section className="hero">
                 <div>
-                  <p className="eyebrow">PEQUEÑOS DETALLES, GRANDES IDEAS</p>
-                  <h2>Encontrá tu próxima pieza.</h2>
+                  <p className="eyebrow">
+                    DISEÑADO CON INTENCIÓN · IMPRESO EN 3D
+                  </p>
+                  <h1>
+                    De una idea,
+                    <br />a tu <em>mundo.</em>
+                  </h1>
+                  <p className="hero-copy">
+                    Objetos que hacen tu día un poco más tuyo. Descubrí diseños
+                    únicos y contanos cómo los imaginás.
+                  </p>
+                  <a className="primary" href="#catalogo">
+                    Explorar diseños <span>↗</span>
+                  </a>
+                  <p className="small mt-6">
+                    Hecho por encargo · Atención personal · Sin pagos online
+                  </p>
                 </div>
-                <span className="small">Hechas a pedido, para vos.</span>
-              </div>
-              <div className="filters" aria-label="Filtrar productos">
-                {[
-                  'Todos',
-                  ...new Set(products.map((p) => p.category).filter(Boolean)),
-                ].map((c) => (
-                  <button
-                    key={c}
-                    aria-pressed={category === c}
-                    className={category === c ? 'active' : ''}
-                    onClick={() => setCategory(c)}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-              {loading ? (
-                <p role="status">Cargando diseños…</p>
-              ) : !products.length ? (
-                <div className="empty">
-                  Estamos preparando nuestros primeros diseños. Volvé pronto.
+                <div
+                  className="hero-art"
+                  aria-label="Ilustración de una maceta geométrica"
+                >
+                  <div className="orb" />
+                  <div className="vase">
+                    <div />
+                  </div>
+                  <span className="art-label">DE LA PANTALLA A TUS MANOS</span>
+                  <span className="art-number">
+                    01 / OBJETOS CON PERSONALIDAD
+                  </span>
                 </div>
-              ) : (
-                <div className="grid-products">
-                  {products
-                    .filter(
-                      (p) => category === 'Todos' || p.category === category,
-                    )
-                    .map((p, i) => (
-                      <article
-                        className="product-card"
-                        key={p._id}
-                        aria-labelledby={'product-' + p._id}
-                      >
-                        <div className={'product-art color-' + p.color}>
-                          {p.image?.url ? (
-                            <img
-                              className="product-photo"
-                              src={p.image.url}
-                              alt={p.name}
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          ) : (
-                            <>
-                              <span className="piece-number">
-                                PIEZA / {String(i + 1).padStart(2, '0')}
-                              </span>
-                              <div
-                                className={'object object-' + (i % 3)}
-                                aria-hidden="true"
+              </section>
+              <section id="catalogo" className="catalog">
+                <div className="section-top">
+                  <div>
+                    <p className="eyebrow">PEQUEÑOS DETALLES, GRANDES IDEAS</p>
+                    <h2>Encontrá tu próxima pieza.</h2>
+                  </div>
+                  <span className="small">Hechas a pedido, para vos.</span>
+                </div>
+                <div className="filters" aria-label="Filtrar productos">
+                  {[
+                    'Todos',
+                    ...new Set(products.map((p) => p.category).filter(Boolean)),
+                  ].map((c) => (
+                    <button
+                      key={c}
+                      aria-pressed={category === c}
+                      className={category === c ? 'active' : ''}
+                      onClick={() => setCategory(c)}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+                {loading ? (
+                  <p role="status">Cargando diseños…</p>
+                ) : !products.length ? (
+                  <div className="empty">
+                    Estamos preparando nuestros primeros diseños. Volvé pronto.
+                  </div>
+                ) : (
+                  <div className="grid-products">
+                    {products
+                      .filter(
+                        (p) => category === 'Todos' || p.category === category,
+                      )
+                      .map((p, i) => (
+                        <article
+                          className="product-card"
+                          key={p._id}
+                          aria-labelledby={'product-' + p._id}
+                        >
+                          <div className={'product-art color-' + p.color}>
+                            {p.image?.url ? (
+                              <img
+                                className="product-photo"
+                                src={p.image.url}
+                                alt={p.name}
+                                loading="lazy"
+                                decoding="async"
                               />
-                              <span className="small">
-                                Ilustración conceptual
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        <div className="flex justify-between items-start gap-4 mt-5">
-                          <div>
-                            <p className="small uppercase">{p.category}</p>
-                            <h3 id={'product-' + p._id}>{p.name}</h3>
+                            ) : (
+                              <>
+                                <span className="piece-number">
+                                  PIEZA / {String(i + 1).padStart(2, '0')}
+                                </span>
+                                <div
+                                  className={'object object-' + (i % 3)}
+                                  aria-hidden="true"
+                                />
+                                <span className="small">
+                                  Ilustración conceptual
+                                </span>
+                              </>
+                            )}
                           </div>
-                          <strong>{money(p.priceCents, p.currency)}</strong>
-                        </div>
-                        <p className="description">{p.description}</p>
-                        <p className="small">
-                          {p.dimensions?.width} × {p.dimensions?.height} ×{' '}
-                          {p.dimensions?.depth} mm
-                        </p>
-                        <div className="card-actions">
-                          <button
-                            className="model-button"
-                            disabled={!p.model?.url}
-                            onClick={() => setViewing(p)}
-                          >
-                            Ver en 3D <span aria-hidden="true">◇</span>
-                          </button>
-                          <button
-                            className="product-button"
-                            disabled={!authReady || cartProductIds.has(p._id)}
-                            onClick={() => addToCart(p)}
-                          >
-                            {cartProductIds.has(p._id)
-                              ? 'En el carrito'
-                              : 'Agregar al carrito'}{' '}
-                            <span aria-hidden="true">
-                              {cartProductIds.has(p._id) ? '✓' : '＋'}
-                            </span>
-                          </button>
-                        </div>
-                        <p className="card-help">
-                          {!p.model?.url
-                            ? 'Vista 3D todavía no disponible.'
-                            : cartProductIds.has(p._id)
-                              ? 'Cambiá la cantidad desde tu carrito.'
-                              : 'Giralo y acercalo en el visor.'}
-                        </p>
-                      </article>
-                    ))}
+                          <div className="flex justify-between items-start gap-4 mt-5">
+                            <div>
+                              <p className="small uppercase">{p.category}</p>
+                              <h3 id={'product-' + p._id}>{p.name}</h3>
+                            </div>
+                            <strong>{money(p.priceCents, p.currency)}</strong>
+                          </div>
+                          <p className="description">{p.description}</p>
+                          <p className="small">
+                            {p.dimensions?.width} × {p.dimensions?.height} ×{' '}
+                            {p.dimensions?.depth} mm
+                          </p>
+                          <div className="card-actions">
+                            <button
+                              className="model-button"
+                              disabled={!p.model?.url}
+                              onClick={() => setViewing(p)}
+                            >
+                              Ver en 3D <span aria-hidden="true">◇</span>
+                            </button>
+                            <button
+                              className="product-button"
+                              disabled={!authReady || cartProductIds.has(p._id)}
+                              onClick={() => addToCart(p)}
+                            >
+                              {cartProductIds.has(p._id)
+                                ? 'En el carrito'
+                                : 'Agregar al carrito'}{' '}
+                              <span aria-hidden="true">
+                                {cartProductIds.has(p._id) ? '✓' : '＋'}
+                              </span>
+                            </button>
+                          </div>
+                          <p className="card-help">
+                            {!p.model?.url
+                              ? 'Vista 3D todavía no disponible.'
+                              : cartProductIds.has(p._id)
+                                ? 'Cambiá la cantidad desde tu carrito.'
+                                : 'Giralo y acercalo en el visor.'}
+                          </p>
+                        </article>
+                      ))}
+                  </div>
+                )}
+              </section>
+              <section id="proceso" className="process">
+                <div>
+                  <p className="eyebrow">ASÍ DE SIMPLE</p>
+                  <h2>
+                    Tu próxima idea
+                    <br />
+                    empieza acá.
+                  </h2>
                 </div>
+                {[
+                  [
+                    '01',
+                    'Elegí tu diseño',
+                    'Explorá las piezas del catálogo y elegí tu favorita.',
+                  ],
+                  [
+                    '02',
+                    'Envianos tu solicitud',
+                    'Agregá tus piezas al carrito, ingresá y envianos un único pedido.',
+                  ],
+                  [
+                    '03',
+                    'Seguí tu pedido',
+                    'Consultá su estado desde tu cuenta. Coordinamos el pago y la entrega personalmente.',
+                  ],
+                ].map(([n, t, d]) => (
+                  <div key={n}>
+                    <span className="step">{n}</span>
+                    <h3>{t}</h3>
+                    <p>{d}</p>
+                  </div>
+                ))}
+              </section>
+              <section className="coming">
+                <span>PRÓXIMAMENTE</span>
+                <h2>Más espacio para tu imaginación.</h2>
+                <p>
+                  Estamos preparando la personalización de medidas y, más
+                  adelante, la generación de modelos desde imágenes.
+                </p>
+              </section>
+            </>
+          ) : (
+            <section className="orders">
+              <p className="eyebrow">TU CUENTA · {user?.name}</p>
+              <h1>Mis pedidos</h1>
+              <p>
+                La fecha de entrega se confirma después de revisar cada
+                solicitud.
+              </p>
+              {orders.length ? (
+                orders.map((o) => (
+                  <article className="order" key={o._id}>
+                    <div className="flex justify-between flex-wrap gap-3">
+                      <strong>Pedido #{o._id.slice(-6).toUpperCase()}</strong>
+                      <span>{o.status.replaceAll('_', ' ')}</span>
+                    </div>
+                    <p>{new Date(o.createdAt).toLocaleDateString('es-AR')}</p>
+                    {o.items.map((item, i) => (
+                      <p key={i}>
+                        {item.quantity} × {item.name}
+                      </p>
+                    ))}
+                    <strong>{money(o.totalCents, o.currency)}</strong>
+                    <p>
+                      {o.estimatedReadyAt
+                        ? 'Entrega estimada: ' +
+                          new Date(o.estimatedReadyAt).toLocaleDateString(
+                            'es-AR',
+                          )
+                        : 'Entrega pendiente de confirmación'}
+                    </p>
+                    <ol>
+                      {o.history.map((h, i) => (
+                        <li key={i}>
+                          {h.status.replaceAll('_', ' ')} ·{' '}
+                          {new Date(h.at).toLocaleString('es-AR')}
+                          {h.estimatedReadyAt &&
+                            ' · Entrega estimada: ' +
+                              new Date(h.estimatedReadyAt).toLocaleDateString(
+                                'es-AR',
+                              )}
+                        </li>
+                      ))}
+                    </ol>
+                  </article>
+                ))
+              ) : (
+                <p className="empty">Todavía no tenés pedidos.</p>
               )}
             </section>
-            <section id="proceso" className="process">
-              <div>
-                <p className="eyebrow">ASÍ DE SIMPLE</p>
-                <h2>
-                  Tu próxima idea
-                  <br />
-                  empieza acá.
-                </h2>
-              </div>
-              {[
-                [
-                  '01',
-                  'Elegí tu diseño',
-                  'Explorá las piezas del catálogo y elegí tu favorita.',
-                ],
-                [
-                  '02',
-                  'Envianos tu solicitud',
-                  'Agregá tus piezas al carrito, ingresá y envianos un único pedido.',
-                ],
-                [
-                  '03',
-                  'Seguí tu pedido',
-                  'Consultá su estado desde tu cuenta. Coordinamos el pago y la entrega personalmente.',
-                ],
-              ].map(([n, t, d]) => (
-                <div key={n}>
-                  <span className="step">{n}</span>
-                  <h3>{t}</h3>
-                  <p>{d}</p>
-                </div>
-              ))}
-            </section>
-            <section className="coming">
-              <span>PRÓXIMAMENTE</span>
-              <h2>Más espacio para tu imaginación.</h2>
-              <p>
-                Estamos preparando la personalización de medidas y, más
-                adelante, la generación de modelos desde imágenes.
-              </p>
-            </section>
-          </>
-        ) : (
-          <section className="orders">
-            <p className="eyebrow">TU CUENTA · {user?.name}</p>
-            <h1>Mis pedidos</h1>
-            <p>
-              La fecha de entrega se confirma después de revisar cada solicitud.
-            </p>
-            {orders.length ? (
-              orders.map((o) => (
-                <article className="order" key={o._id}>
-                  <div className="flex justify-between flex-wrap gap-3">
-                    <strong>Pedido #{o._id.slice(-6).toUpperCase()}</strong>
-                    <span>{o.status.replaceAll('_', ' ')}</span>
-                  </div>
-                  <p>{new Date(o.createdAt).toLocaleDateString('es-AR')}</p>
-                  {o.items.map((item, i) => (
-                    <p key={i}>
-                      {item.quantity} × {item.name}
-                    </p>
-                  ))}
-                  <strong>{money(o.totalCents, o.currency)}</strong>
-                  <p>
-                    {o.estimatedReadyAt
-                      ? 'Entrega estimada: ' +
-                        new Date(o.estimatedReadyAt).toLocaleDateString('es-AR')
-                      : 'Entrega pendiente de confirmación'}
-                  </p>
-                  <ol>
-                    {o.history.map((h, i) => (
-                      <li key={i}>
-                        {h.status.replaceAll('_', ' ')} ·{' '}
-                        {new Date(h.at).toLocaleString('es-AR')}
-                        {h.estimatedReadyAt &&
-                          ' · Entrega estimada: ' +
-                            new Date(h.estimatedReadyAt).toLocaleDateString(
-                              'es-AR',
-                            )}
-                      </li>
-                    ))}
-                  </ol>
-                </article>
-              ))
-            ) : (
-              <p className="empty">Todavía no tenés pedidos.</p>
-            )}
-          </section>
-        )}
-      </main>
-      <footer>
-        <a className="brand" href="#">
-          ✳ impresión3D
-        </a>
-        <p>Ideas que toman forma.</p>
-        <span className="small">Diseño local. Posibilidades infinitas.</span>
-      </footer>
+          )}
+        </main>
+      )}
+      {!loginPage && (
+        <footer>
+          <a className="brand" href="#">
+            ✳ impresión3D
+          </a>
+          <p>Ideas que toman forma.</p>
+          <span className="small">Diseño local. Posibilidades infinitas.</span>
+        </footer>
+      )}
       {viewing && (
         <Modal wide onClose={() => setViewing(null)}>
           <button
@@ -579,86 +623,108 @@ function App() {
           </Suspense>
         </Modal>
       )}
-      {auth && (
-        <Modal
-          onClose={() => {
-            if (!busy) {
-              setAuth(null);
-              setError('');
-            }
-          }}
-        >
-          <button
-            className="close"
-            aria-label="Cerrar"
-            disabled={busy}
-            onClick={() => {
-              setAuth(null);
-              setError('');
-            }}
-          >
-            ×
-          </button>
-          <h2 id="modal-title">
-            {auth === 'register' ? 'Creá tu cuenta' : 'Qué bueno verte'}
-          </h2>
-          {error && (
-            <p role="alert" className="error">
-              {error}
+      {loginPrompt && (
+        <Modal onClose={() => setLoginPrompt(false)}>
+          <div className="login-prompt">
+            <span className="login-prompt-icon" aria-hidden="true">
+              ✳
+            </span>
+            <p className="eyebrow">TU PRÓXIMA IDEA EMPIEZA ACÁ</p>
+            <h2 id="modal-title">Guardá tus favoritos en el carrito</h2>
+            <p>
+              Para agregar productos al carrito, iniciá sesión o creá una
+              cuenta.
             </p>
-          )}
-          <form onSubmit={submitAuth}>
-            {auth === 'register' && (
+            <div className="login-prompt-actions">
+              <button className="primary" onClick={openLogin}>
+                Crear cuenta o iniciar sesión
+              </button>
+              <button
+                className="prompt-secondary"
+                onClick={() => setLoginPrompt(false)}
+              >
+                Continuar explorando
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {auth && loginPage && (
+        <main className="login-page">
+          <section className="modal login-panel" aria-labelledby="login-title">
+            <button
+              className="login-back"
+              disabled={busy}
+              onClick={showCatalog}
+            >
+              ← Volver al catálogo
+            </button>
+            <h2 id="login-title">
+              {auth === 'register' ? 'Creá tu cuenta' : 'Qué bueno verte'}
+            </h2>
+            {error && (
+              <p role="alert" className="error">
+                {error}
+              </p>
+            )}
+            <form onSubmit={submitAuth}>
+              {auth === 'register' && (
+                <label>
+                  Nombre
+                  <input
+                    name="name"
+                    autoComplete="name"
+                    minLength="2"
+                    maxLength="80"
+                    required
+                  />
+                </label>
+              )}
               <label>
-                Nombre
+                Correo electrónico
                 <input
-                  name="name"
-                  autoComplete="name"
-                  minLength="2"
-                  maxLength="80"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
                   required
                 />
               </label>
-            )}
-            <label>
-              Correo electrónico
-              <input name="email" type="email" autoComplete="email" required />
-            </label>
-            <label>
-              Contraseña
-              <input
-                name="password"
-                type="password"
-                minLength={auth === 'register' ? 12 : 1}
-                maxLength="128"
-                autoComplete={
-                  auth === 'register' ? 'new-password' : 'current-password'
-                }
-                required
-              />
-            </label>
-            {auth === 'register' && (
-              <p className="small">Usá al menos 12 caracteres.</p>
-            )}
-            <button className="primary" disabled={busy}>
-              {busy
-                ? 'Procesando…'
-                : auth === 'register'
-                  ? 'Crear cuenta'
-                  : 'Ingresar'}
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                setAuth(auth === 'register' ? 'login' : 'register');
-                setError('');
-              }}
-            >
-              {auth === 'register' ? 'Ya tengo cuenta' : 'Crear una cuenta'}
-            </button>
-          </form>
-        </Modal>
+              <label>
+                Contraseña
+                <input
+                  name="password"
+                  type="password"
+                  minLength={auth === 'register' ? 12 : 1}
+                  maxLength="128"
+                  autoComplete={
+                    auth === 'register' ? 'new-password' : 'current-password'
+                  }
+                  required
+                />
+              </label>
+              {auth === 'register' && (
+                <p className="small">Usá al menos 12 caracteres.</p>
+              )}
+              <button className="primary" disabled={busy}>
+                {busy
+                  ? 'Procesando…'
+                  : auth === 'register'
+                    ? 'Crear cuenta'
+                    : 'Ingresar'}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setAuth(auth === 'register' ? 'login' : 'register');
+                  setError('');
+                }}
+              >
+                {auth === 'register' ? 'Ya tengo cuenta' : 'Crear una cuenta'}
+              </button>
+            </form>
+          </section>
+        </main>
       )}
     </>
   );
