@@ -7,6 +7,7 @@ import { validateProductModel } from '../src/product-models.js';
 import { createApp } from '../src/app.js';
 import { User, Product } from '../src/models.js';
 import { tetraStl, tetraGlb } from './helpers/model-fixtures.js';
+import { coloredThreeMf } from './helpers/three-mf-fixtures.js';
 let mongo, app, product;
 let uploads = 0;
 const removed = [];
@@ -178,4 +179,15 @@ test('publica y reemplaza un modelo; conserva la foto y rechaza archivos inváli
       .status,
     400,
   );
+});
+
+test('la carga administrativa de 3MF guarda GLB y conserva origen y foto', async () => {
+  const admin = await account('mf-admin@example.com', true);
+  const response = await upload(admin, coloredThreeMf(), 'keychains.3mf');
+  assert.equal(response.status, 200, JSON.stringify(response.body));
+  assert.equal(response.body.model.format, 'glb');
+  assert.equal(response.body.model.sourceFormat, '3mf');
+  const current = await Product.findById(product._id);
+  assert.equal(current.model.sourceFormat, '3mf');
+  assert.equal(current.image.url, 'https://res.cloudinary.com/test/photo.webp');
 });

@@ -27,6 +27,7 @@ export const Product = model(
         url: String,
         publicId: String,
         format: { type: String, enum: ['glb', 'stl'] },
+        sourceFormat: { type: String, enum: ['3mf'] },
         bytes: Number,
       },
     },

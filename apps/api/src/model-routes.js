@@ -31,6 +31,7 @@ export function addModelRoutes(router, storage) {
       let model;
       try {
         model = await storage.uploadModel(validated.buffer, validated.format);
+        if (validated.sourceFormat) model.sourceFormat = validated.sourceFormat;
       } catch (error) {
         const reference = randomUUID(),
           failure = cloudinaryFailure(error);

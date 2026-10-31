@@ -58,7 +58,7 @@ Volvé a iniciar sesión para ver Administración. No existe una contraseña adm
 
 Las fotos reales se cargan desde Administración con Cloudinary: seguí [la guía de fotos](docs/product-photos.md) para habilitar las tres variables del servidor. Falta recuperación de contraseña, verificación de correo y revisión operativa antes de abrir al público. No se inventan plazos ni cuenta regresiva.
 
-El [visor 3D del catálogo](docs/catalog-3d.md) permite asociar un GLB o STL a cada producto desde Administración, sin usar Meshy. Requiere archivos reales; no convierte las fotos en modelos.
+El [visor 3D del catálogo](docs/catalog-3d.md) permite asociar un GLB, STL o 3MF a cada producto desde Administración, sin usar Meshy. Requiere archivos reales; no convierte las fotos en modelos.
 
 Próximas etapas: mejoras operativas; visor y modelos paramétricos propios con límites por producto; estimación mediante slicer y cola de fabricación; por último generación desde imágenes (por ejemplo Meshy), moderación y revisión de imprimibilidad. Esta versión no acepta archivos ni genera modelos 3D.
 

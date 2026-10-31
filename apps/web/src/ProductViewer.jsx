@@ -80,6 +80,12 @@ export default function ProductViewer({ product }) {
         controls.update();
       };
       actions.current = {
+        top: () => {
+          const distance = camera.position.length();
+          camera.position.set(0, distance, 0.0001 * radius);
+          controls.update();
+          render();
+        },
         reset: () => {
           fit();
           render();
@@ -236,6 +242,9 @@ export default function ProductViewer({ product }) {
               onClick={() => actions.current.reset?.()}
             >
               Restablecer vista
+            </button>
+            <button className="outline" onClick={() => actions.current.top?.()}>
+              Vista superior
             </button>
           </div>
         </>

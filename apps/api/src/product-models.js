@@ -1,5 +1,6 @@
 import multer from 'multer';
 import { validateBytes } from 'gltf-validator';
+import { threeMfToGlb } from './three-mf.js';
 const invalid = (message) =>
   Object.assign(new Error(message), { status: 400, publicModelError: true });
 export const maxModelBytes = 10 * 1024 * 1024;
@@ -153,11 +154,17 @@ async function glb(buffer) {
   return buffer;
 }
 export async function validateProductModel(file) {
-  if (!file?.buffer?.length) throw invalid('Seleccioná un archivo GLB o STL.');
+  if (!file?.buffer?.length)
+    throw invalid('Seleccioná un archivo GLB, STL o 3MF.');
   if (file.buffer.length > maxModelBytes)
     throw invalid('El modelo supera el límite de 10 MiB.');
   const format = file.originalname?.split('.').pop().toLowerCase();
+  if (format === '3mf') {
+    const converted = await threeMfToGlb(file.buffer);
+    await glb(converted.buffer);
+    return converted;
+  }
   if (format === 'stl') return { buffer: stl(file.buffer), format };
   if (format === 'glb') return { buffer: await glb(file.buffer), format };
-  throw invalid('Usá un archivo GLB o STL.');
+  throw invalid('Usá un archivo GLB, STL o 3MF.');
 }

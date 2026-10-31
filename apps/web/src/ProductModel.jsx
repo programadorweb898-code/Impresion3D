@@ -38,7 +38,11 @@ export function ProductModel({ product, onSaved, onPreview }) {
       {product.model?.url ? (
         <>
           <p className="small">
-            Modelo {product.model.format.toUpperCase()} disponible.
+            Modelo{' '}
+            {product.model.sourceFormat === '3mf'
+              ? '3MF convertido a GLB'
+              : product.model.format.toUpperCase()}{' '}
+            disponible.
           </p>
           <button
             className="outline"
@@ -58,7 +62,7 @@ export function ProductModel({ product, onSaved, onPreview }) {
           Archivo 3D de {product.name}
           <input
             type="file"
-            accept=".glb,.stl"
+            accept=".glb,.stl,.3mf"
             disabled={busy || reading}
             onChange={async (e) => {
               const input = e.currentTarget,
@@ -68,11 +72,11 @@ export function ProductModel({ product, onSaved, onPreview }) {
               setError('');
               if (!selected) return;
               if (
-                !/\.(glb|stl)$/i.test(selected.name) ||
+                !/\.(glb|stl|3mf)$/i.test(selected.name) ||
                 selected.size > 10 * 1024 * 1024
               ) {
                 input.value = '';
-                setError('Usá un archivo GLB o STL de hasta 10 MiB.');
+                setError('Usá un archivo GLB, STL o 3MF de hasta 10 MiB.');
                 return;
               }
               setReading(true);
@@ -96,8 +100,8 @@ export function ProductModel({ product, onSaved, onPreview }) {
           />
         </label>
         <p className="small">
-          GLB con recursos incluidos o STL. Hasta 10 MiB. No se genera un modelo
-          a partir de la foto.
+          GLB, STL o 3MF. El 3MF se convierte conservando los colores
+          compatibles. Hasta 10 MiB. No se genera un modelo a partir de la foto.
         </p>
         {error && (
           <p className="error" role="alert">
