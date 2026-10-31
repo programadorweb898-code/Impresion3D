@@ -31,8 +31,7 @@ export function Cart({
   );
   return (
     <section className="cart-page">
-      <p className="eyebrow">TUS PRÓXIMAS PIEZAS</p>
-      <h1>Tu carrito</h1>
+      <h1 id="cart-title">Tu carrito</h1>
       <p>
         Reuní tus productos y envianos una sola solicitud. El pago y la entrega
         se coordinan personalmente.

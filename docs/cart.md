@@ -1,11 +1,11 @@
 # Carrito y pedido con varios productos
 
-El cliente debe ingresar o registrarse **antes de agregar productos**. Si toca Agregar al carrito o Carrito sin sesión, se abre el formulario de acceso y no se modifica ningún carrito. El catálogo y el visor 3D siguen siendo públicos.
+El cliente debe ingresar o registrarse **antes de agregar productos**. Si toca Agregar al carrito sin sesión, aparece el aviso con opciones para ingresar o seguir explorando. Si toca el ícono del carrito sin sesión, se abre el formulario de acceso y no se modifica ningún carrito. El catálogo y el visor 3D siguen siendo públicos.
 
 ## Uso
 
 1. Ingresar y agregar productos desde el catálogo. Cada producto se agrega una sola vez: su botón pasa a «En el carrito» y se deshabilita.
-2. Abrir **Carrito**, cambiar cantidades, quitar productos y revisar subtotales y total. Para pedir más unidades, cambiá la cantidad allí; no se vuelve a agregar la tarjeta.
+2. Abrir el **ícono del carrito** para mostrar el panel lateral, cambiar cantidades, quitar productos y revisar subtotales y total. Para pedir más unidades, cambiá la cantidad allí; no se vuelve a agregar la tarjeta.
 3. Agregar comentarios y pulsar **Enviar pedido**.
 4. Consultar el pedido completo en **Mis pedidos**. Administración recibe un único pedido con todos sus artículos.
 
@@ -32,3 +32,9 @@ Los envíos del nuevo carrito incluyen un UUID `requestId`. Un índice único po
 `npm test` prueba el pedido multiproducto con MongoDB temporal real: precios, disponibilidad, privacidad, copia histórica, cantidades, reintentos y concurrencia. También valida la lectura del carrito por usuario y el descarte de datos corruptos. La comprobación de navegador usa Express y MongoDB reales, sin crear pedidos en producción.
 
 Si un visitante intenta agregar una pieza, aparece un cuadro con «Crear cuenta o iniciar sesión» y «Continuar explorando». La primera opción abre `/login`, donde también puede crear una cuenta; la segunda cierra el cuadro sin cambiar la página ni el carrito. Escape también permite cerrarlo. `/login` admite acceso directo, recarga y navegación atrás del navegador. No se agrega una pieza antes de autenticar al cliente.
+
+## Navegación adaptable
+
+Debajo de 576 px, el menú hamburguesa muestra las mismas opciones según la sesión y el rol. Se despliega en el flujo de la página y empuja el contenido y el footer hacia abajo. El ícono del carrito y su contador quedan fuera del menú, a la derecha, junto al botón de hamburguesa. Al seleccionar una opción, el menú se cierra. Desde 576 px, la navegación aparece en una fila con `overflow-x: auto` y el carrito permanece visible fuera de esa fila. El sitio no necesita Bootstrap para este comportamiento.
+
+El carrito se abre como un diálogo lateral desde la derecha, conserva cantidades y comentarios y permite enviar el pedido. Atrapa el foco, bloquea el desplazamiento de fondo y se cierra con el botón, Escape o el fondo; al cerrar, devuelve el foco al ícono. Mientras se envía un pedido, el cierre queda deshabilitado. El cuerpo del carrito tiene desplazamiento vertical independiente. Los errores de envío se muestran dentro del panel; un pedido confirmado lo cierra y muestra Mis pedidos. El enlace de acceso sigue abriendo `/login` sin cabecera ni footer; al ingresar desde el carrito vuelve a abrirse el panel.

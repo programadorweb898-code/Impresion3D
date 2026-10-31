@@ -1190,3 +1190,234 @@ header > nav {
     transform: none;
   }
 }
+.site-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 5%;
+  box-sizing: border-box;
+}
+.site-header .brand {
+  white-space: nowrap;
+}
+.site-header .site-nav {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+  width: auto;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  padding: 6px 3px;
+  font-size: 14px;
+}
+.site-nav > * {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.site-header .profile-link {
+  margin-left: auto;
+}
+.header-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+.cart-icon-button,
+.menu-toggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 8px;
+  border: 1px solid #cbd2c2;
+  border-radius: 12px;
+  background: transparent;
+  color: #303d30;
+  flex: none;
+}
+.cart-icon-button:hover,
+.menu-toggle:hover {
+  background: #eef1e7;
+}
+.cart-icon-button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 20px;
+  background: #303d30;
+  color: white;
+  font-size: 11px;
+  line-height: 20px;
+  text-align: center;
+  box-sizing: border-box;
+}
+.site-header .menu-toggle {
+  display: none;
+}
+.cart-drawer[open] {
+  position: fixed;
+  inset: 0 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  margin: 0;
+  width: min(100%, 560px);
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #faf9f6;
+  box-sizing: border-box;
+  box-shadow: -10px 0 40px #13201624;
+  overflow: hidden;
+  animation: cart-slide-in 0.2s ease-out;
+}
+.cart-drawer::backdrop {
+  background: #10190e77;
+}
+.cart-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e2d9;
+  flex-shrink: 0;
+}
+.drawer-close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #d6dbce;
+}
+.drawer-close:hover {
+  background: #e9ede1;
+}
+.drawer-close:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.cart-drawer-content {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+.cart-drawer-content > .error {
+  margin-bottom: 16px;
+}
+.cart-drawer .cart-page {
+  padding: 0;
+  min-height: 0;
+}
+.cart-drawer .cart-page h1 {
+  font-size: 34px;
+  letter-spacing: -1px;
+  margin: 0 0 14px;
+}
+.cart-drawer .cart-item {
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.cart-drawer .cart-item-info {
+  min-width: 0;
+  flex: 1 1 180px;
+}
+.cart-drawer .cart-photo {
+  width: 70px;
+  height: 70px;
+}
+.cart-drawer .cart-subtotal {
+  margin-left: auto;
+}
+.cart-drawer .cart-summary {
+  padding: 20px;
+}
+.cart-drawer .cart-summary h2 {
+  font-size: 20px;
+}
+@keyframes cart-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (max-width: 575.98px) {
+  .site-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0 12px;
+    padding: 16px 5%;
+  }
+  .site-header .brand {
+    font-size: 21px;
+    letter-spacing: -0.8px;
+  }
+  .site-header .brand-icon {
+    margin-right: 3px;
+  }
+  .site-header .header-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .site-header .menu-toggle {
+    display: grid;
+  }
+  .site-header .site-nav {
+    display: none;
+    grid-column: 1/-1;
+    grid-row: 2;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    width: 100%;
+    padding: 14px 0 0;
+    overflow: visible;
+  }
+  .site-header .site-nav.is-expanded {
+    display: flex;
+  }
+  .site-header .site-nav > * {
+    text-align: left;
+    justify-content: flex-start;
+    padding: 12px 14px;
+  }
+  .site-header .profile-link {
+    margin-left: 0;
+  }
+  .site-nav > .outline {
+    border-radius: 10px;
+  }
+  .cart-drawer-header {
+    padding: 16px 20px;
+  }
+  .cart-drawer-content {
+    padding: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cart-drawer[open] {
+    animation: none;
+  }
+}

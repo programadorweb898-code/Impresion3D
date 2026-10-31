@@ -8,6 +8,8 @@ import { Cart } from './Cart.jsx';
 import { useCart } from './useCart.js';
 import { AuthPage } from './AuthPage.jsx';
 import { WhatsAppButton } from './WhatsAppButton.jsx';
+import { Navbar } from './Navbar.jsx';
+import { CartDrawer } from './CartDrawer.jsx';
 import { Profile } from './Profile.jsx';
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
 const money = (c, currency = 'ARS') =>
@@ -53,6 +55,7 @@ function App() {
     ),
     [loginPage, setLoginPage] = useState(() => location.pathname === '/login'),
     [loginPrompt, setLoginPrompt] = useState(false),
+    [cartOpen, setCartOpen] = useState(false),
     [logoutPrompt, setLogoutPrompt] = useState(false),
     [loggingOut, setLoggingOut] = useState(false),
     [logoutError, setLogoutError] = useState(''),
@@ -69,6 +72,7 @@ function App() {
   const [authReady, setAuthReady] = useState(false);
   const loginDestination = useRef(null);
   const checkoutId = useRef(null);
+  const cartButtonRef = useRef(null);
   const cartProductIds = new Set(cart.items.map((item) => item.productId));
   useEffect(() => {
     api('/products')
@@ -90,6 +94,7 @@ function App() {
       setLoginPage(isLogin);
       setAuth(isLogin ? 'login' : null);
       setLoginPrompt(false);
+      setCartOpen(false);
       setView(location.pathname === '/perfil' ? 'profile' : 'catalog');
       const emailToken =
         location.pathname === '/perfil' &&
@@ -105,6 +110,7 @@ function App() {
     };
   }, []);
   function openLogin() {
+    setCartOpen(false);
     setLoginPrompt(false);
     setError('');
     setNotice('');
@@ -196,7 +202,7 @@ function App() {
       closeAuth();
       setAuthReady(true);
       if (loginDestination.current === 'cart') {
-        setView('cart');
+        setCartOpen(true);
         await refreshCart();
       }
       if (loginDestination.current === 'profile') openProfile();
@@ -228,9 +234,7 @@ function App() {
       setNotice('Ingresá para armar tu carrito.');
       return;
     }
-    if (location.pathname === '/perfil')
-      window.history.pushState(null, '', '/');
-    setView('cart');
+    setCartOpen(true);
     setError('');
     await refreshCart();
   }
@@ -317,6 +321,7 @@ function App() {
         order._id.slice(-6).toUpperCase() +
         ' recibido. Coordinaremos disponibilidad, pago y entrega.',
     );
+    setCartOpen(false);
     setView('orders');
     try {
       setOrders(await api('/orders'));
@@ -331,61 +336,22 @@ function App() {
   return (
     <>
       {!loginPage && (
-        <header>
-          <a className="brand" href="#" onClick={showCatalog}>
-            <span className="brand-icon">✳</span> impresión
-            <span className="text-orange-600">3D</span>
-          </a>
-          <nav aria-label="Principal">
-            <button onClick={showCatalog}>Catálogo</button>
-            <button
-              className="cart-link"
-              onClick={openCart}
-              disabled={!authReady}
-            >
-              Carrito ({cart.count})
-            </button>
-            <a href="#proceso" onClick={showCatalog}>
-              Cómo funciona
-            </a>
-            {user ? (
-              <>
-                <button onClick={history}>Mis pedidos</button>
-                {user.role === 'admin' && (
-                  <button
-                    onClick={() => {
-                      showCatalog();
-                      setView('admin');
-                    }}
-                  >
-                    Administración
-                  </button>
-                )}
-                <a
-                  className="profile-link"
-                  href="/perfil"
-                  aria-current={view === 'profile' ? 'page' : undefined}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    openProfile();
-                  }}
-                >
-                  <span aria-hidden="true">◉</span> Mi perfil
-                </a>
-              </>
-            ) : (
-              <button
-                className="outline"
-                onClick={() => {
-                  setError('');
-                  openLogin();
-                }}
-              >
-                Ingresar ↗
-              </button>
-            )}
-          </nav>
-        </header>
+        <Navbar
+          cartButtonRef={cartButtonRef}
+          user={user}
+          cartCount={cart.count}
+          authReady={authReady}
+          view={view}
+          onCatalog={showCatalog}
+          onCart={openCart}
+          onOrders={history}
+          onAdmin={() => {
+            showCatalog();
+            setView('admin');
+          }}
+          onProfile={openProfile}
+          onLogin={openLogin}
+        />
       )}
       {!loginPage && (
         <main>
@@ -423,26 +389,6 @@ function App() {
                 Comprobando tu sesión…
               </p>
             )
-          ) : view === 'cart' && user ? (
-            <Cart
-              items={cart.items}
-              products={products}
-              user={user}
-              notes={cartNotes}
-              onNotes={(value) => {
-                setCartNotes(value);
-                checkoutId.current = null;
-              }}
-              onQuantity={(id, q) => editCart(() => cart.quantity(id, q))}
-              onRemove={(id) => editCart(() => cart.remove(id))}
-              onClear={() => editCart(() => cart.clear())}
-              onSubmit={submitOrder}
-              onRefresh={refreshCart}
-              onContinue={() => setView('catalog')}
-              busy={busy || !cart.ready}
-              refreshing={refreshingCart}
-              catalogError={cartCatalogError}
-            />
           ) : view === 'admin' && user?.role === 'admin' ? (
             <Admin
               onCatalogChange={() => api('/products').then(setProducts)}
@@ -696,6 +642,37 @@ function App() {
           <p>Ideas que toman forma.</p>
           <span className="small">Diseño local. Posibilidades infinitas.</span>
         </footer>
+      )}
+      {cartOpen && user && !loginPage && (
+        <CartDrawer
+          returnFocusRef={cartButtonRef}
+          busy={busy}
+          error={error}
+          onClose={() => setCartOpen(false)}
+        >
+          <Cart
+            items={cart.items}
+            products={products}
+            user={user}
+            notes={cartNotes}
+            onNotes={(value) => {
+              setCartNotes(value);
+              checkoutId.current = null;
+            }}
+            onQuantity={(id, q) => editCart(() => cart.quantity(id, q))}
+            onRemove={(id) => editCart(() => cart.remove(id))}
+            onClear={() => editCart(() => cart.clear())}
+            onSubmit={submitOrder}
+            onRefresh={refreshCart}
+            onContinue={() => {
+              setCartOpen(false);
+              showCatalog();
+            }}
+            busy={busy || !cart.ready}
+            refreshing={refreshingCart}
+            catalogError={cartCatalogError}
+          />
+        </CartDrawer>
       )}
       {!loginPage && <WhatsAppButton phone="5491155606321" />}
       {viewing && (
