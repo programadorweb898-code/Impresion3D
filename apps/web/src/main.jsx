@@ -416,19 +416,22 @@ function App() {
                     Hecho por encargo · Atención personal · Sin pagos online
                   </p>
                 </div>
-                <div
-                  className="hero-art"
-                  aria-label="Ilustración de una maceta geométrica"
-                >
-                  <div className="orb" />
-                  <div className="vase">
-                    <div />
-                  </div>
-                  <span className="art-label">DE LA PANTALLA A TUS MANOS</span>
-                  <span className="art-number">
+                <figure className="hero-art">
+                  <p className="hero-art-heading">
                     01 / OBJETOS CON PERSONALIDAD
-                  </span>
-                </div>
+                  </p>
+                  <img
+                    className="hero-photo"
+                    src="/images/hero-3d-studio.svg"
+                    width="1000"
+                    height="1000"
+                    fetchPriority="high"
+                    alt="Visualización realista de una maceta geométrica terracota con textura de impresión 3D"
+                  />
+                  <figcaption className="hero-art-caption">
+                    De la pantalla a tus manos.
+                  </figcaption>
+                </figure>
               </section>
               <section id="catalogo" className="catalog">
                 <div className="section-top">
