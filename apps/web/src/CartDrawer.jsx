@@ -1,11 +1,59 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-export function CartDrawer({ onClose, busy, error, children, returnFocusRef }) {
+export function CartDrawer({
+  open,
+  onClose,
+  busy,
+  error,
+  children,
+  returnFocusRef,
+}) {
   const ref = useRef(null);
+  const [present, setPresent] = useState(open);
   useEffect(() => {
-    const dialog = ref.current,
-      previousOverflow = document.body.style.overflow;
-    dialog.showModal();
+    if (open && !present) {
+      setPresent(true);
+      return;
+    }
+    if (!present) return;
+    const dialog = ref.current;
+    if (!dialog.open) {
+      dialog.showModal();
+      dialog.style.transform = 'translateX(100%)';
+    }
+    const end = open ? 'translateX(0)' : 'translateX(100%)';
+    const animation = dialog.animate(
+      [{ transform: getComputedStyle(dialog).transform }, { transform: end }],
+      {
+        duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 0
+          : 220,
+        easing: 'ease-in-out',
+        fill: 'forwards',
+      },
+    );
+    let active = true;
+    animation.finished
+      .then(() => {
+        if (!active) return;
+        dialog.style.transform = end;
+        animation.cancel();
+        if (!open) {
+          dialog.close();
+          setPresent(false);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+      dialog.style.transform = getComputedStyle(dialog).transform;
+      animation.cancel();
+    };
+  }, [open, present]);
+  useEffect(() => {
+    if (!present) return;
+    const dialog = ref.current;
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       dialog.close();
@@ -14,18 +62,22 @@ export function CartDrawer({ onClose, busy, error, children, returnFocusRef }) {
         returnFocusRef?.current?.focus({ preventScroll: true }),
       );
     };
-  }, []);
+  }, [present, returnFocusRef]);
+  if (!present) return null;
+  const close = () => {
+    if (!busy && open) onClose();
+  };
   return createPortal(
     <dialog
-      className="cart-drawer"
+      className={'cart-drawer' + (!open ? ' is-closing' : '')}
       ref={ref}
       aria-labelledby="cart-title"
       onCancel={(e) => {
         e.preventDefault();
-        if (!busy) onClose();
+        close();
       }}
       onClick={(e) => {
-        if (e.target !== e.currentTarget || busy) return;
+        if (e.target !== e.currentTarget) return;
         const box = e.currentTarget.getBoundingClientRect();
         if (
           e.clientX < box.left ||
@@ -33,7 +85,7 @@ export function CartDrawer({ onClose, busy, error, children, returnFocusRef }) {
           e.clientY < box.top ||
           e.clientY > box.bottom
         )
-          onClose();
+          close();
       }}
     >
       <div className="cart-drawer-header">
@@ -43,8 +95,8 @@ export function CartDrawer({ onClose, busy, error, children, returnFocusRef }) {
           className="drawer-close"
           aria-label="Cerrar carrito"
           autoFocus
-          disabled={busy}
-          onClick={onClose}
+          disabled={busy || !open}
+          onClick={close}
         >
           <svg
             width="24"
@@ -60,7 +112,7 @@ export function CartDrawer({ onClose, busy, error, children, returnFocusRef }) {
           </svg>
         </button>
       </div>
-      <div className="cart-drawer-content">
+      <div className="cart-drawer-content" inert={!open}>
         {error && (
           <p role="alert" className="error">
             {error}

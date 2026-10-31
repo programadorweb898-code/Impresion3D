@@ -90,6 +90,9 @@ export function Cart({
                 )}
                 <div className="cart-item-info">
                   <h2>{product?.name || 'Producto no disponible'}</h2>
+                  <p className="cart-quantity">
+                    Cantidad: <strong>{quantity}</strong>
+                  </p>
                   {product && (
                     <p>
                       Por unidad: {money(product.priceCents, product.currency)}

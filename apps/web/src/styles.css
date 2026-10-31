@@ -1421,3 +1421,55 @@ header > nav {
     animation: none;
   }
 }
+.nav-collapse {
+  min-width: 0;
+}
+.cart-drawer[open] {
+  animation: none;
+}
+.cart-drawer::backdrop {
+  transition: background-color 0.22s ease-in-out;
+}
+.cart-drawer.is-closing::backdrop {
+  background-color: transparent;
+}
+.cart-item .cart-quantity {
+  margin: 6px 0 10px;
+  color: #303d30;
+  font-size: 14px;
+}
+@media (max-width: 575.98px) {
+  .site-header .nav-collapse {
+    display: grid;
+    grid-column: 1/-1;
+    grid-row: 2;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    padding-top: 0;
+    transition:
+      grid-template-rows 0.22s ease-in-out,
+      padding-top 0.22s ease-in-out,
+      visibility 0s 0.22s;
+  }
+  .site-header .nav-collapse.is-expanded {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    padding-top: 14px;
+    transition-delay: 0s;
+  }
+  .site-header .site-nav,
+  .site-header .site-nav.is-expanded {
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0;
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-header .nav-collapse,
+  .cart-drawer::backdrop {
+    transition: none;
+  }
+}

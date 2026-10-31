@@ -339,7 +339,7 @@ function App() {
         <Navbar
           cartButtonRef={cartButtonRef}
           user={user}
-          cartCount={cart.count}
+          cartCount={cart.items.length}
           authReady={authReady}
           view={view}
           onCatalog={showCatalog}
@@ -643,8 +643,9 @@ function App() {
           <span className="small">Diseño local. Posibilidades infinitas.</span>
         </footer>
       )}
-      {cartOpen && user && !loginPage && (
+      {user && !loginPage && (
         <CartDrawer
+          open={cartOpen}
           returnFocusRef={cartButtonRef}
           busy={busy}
           error={error}

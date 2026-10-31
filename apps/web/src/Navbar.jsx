@@ -14,9 +14,13 @@ export function Navbar({
 }) {
   const [expanded, setExpanded] = useState(false);
   const toggle = useRef(null);
+  const [mobile, setMobile] = useState(
+    () => window.matchMedia('(max-width: 575.98px)').matches,
+  );
   useEffect(() => {
     const media = window.matchMedia('(min-width: 576px)');
     const resize = () => {
+      setMobile(!media.matches);
       if (media.matches) setExpanded(false);
     };
     media.addEventListener('change', resize);
@@ -39,45 +43,48 @@ export function Navbar({
         <span className="brand-icon">✳</span> impresión
         <span className="text-orange-600">3D</span>
       </a>
-      <nav
-        id="site-navigation"
-        className={'site-nav' + (expanded ? ' is-expanded' : '')}
-        aria-label="Principal"
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' && expanded) {
-            setExpanded(false);
-            toggle.current?.focus();
-          }
-        }}
-      >
-        <button onClick={() => choose(onCatalog)}>Catálogo</button>
-        <a href="#proceso" onClick={() => choose(onCatalog)}>
-          Cómo funciona
-        </a>
-        {user ? (
-          <>
-            <button onClick={() => choose(onOrders)}>Mis pedidos</button>
-            {user.role === 'admin' && (
-              <button onClick={() => choose(onAdmin)}>Administración</button>
-            )}
-            <a
-              className="profile-link"
-              href="/perfil"
-              aria-current={view === 'profile' ? 'page' : undefined}
-              onClick={(e) => {
-                e.preventDefault();
-                choose(onProfile);
-              }}
-            >
-              <span aria-hidden="true">◉</span> Mi perfil
-            </a>
-          </>
-        ) : (
-          <button className="outline" onClick={() => choose(onLogin)}>
-            Ingresar
-          </button>
-        )}
-      </nav>
+      <div className={'nav-collapse' + (expanded ? ' is-expanded' : '')}>
+        <nav
+          inert={mobile && !expanded}
+          id="site-navigation"
+          className={'site-nav' + (expanded ? ' is-expanded' : '')}
+          aria-label="Principal"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && expanded) {
+              setExpanded(false);
+              toggle.current?.focus();
+            }
+          }}
+        >
+          <button onClick={() => choose(onCatalog)}>Catálogo</button>
+          <a href="#proceso" onClick={() => choose(onCatalog)}>
+            Cómo funciona
+          </a>
+          {user ? (
+            <>
+              <button onClick={() => choose(onOrders)}>Mis pedidos</button>
+              {user.role === 'admin' && (
+                <button onClick={() => choose(onAdmin)}>Administración</button>
+              )}
+              <a
+                className="profile-link"
+                href="/perfil"
+                aria-current={view === 'profile' ? 'page' : undefined}
+                onClick={(e) => {
+                  e.preventDefault();
+                  choose(onProfile);
+                }}
+              >
+                <span aria-hidden="true">◉</span> Mi perfil
+              </a>
+            </>
+          ) : (
+            <button className="outline" onClick={() => choose(onLogin)}>
+              Ingresar
+            </button>
+          )}
+        </nav>
+      </div>
       <div className="header-actions">
         <button
           ref={cartButtonRef}
