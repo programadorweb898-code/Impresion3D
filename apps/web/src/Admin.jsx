@@ -170,7 +170,9 @@ export function Admin({ onCatalogChange, onPreview }) {
     try {
       await api('/admin/products' + (editing._id ? '/' + editing._id : ''), {
         method: editing._id ? 'PUT' : 'POST',
-        body: JSON.stringify(parsed.data),
+        body: JSON.stringify(
+          editing._id ? { ...parsed.data, version: editing.__v } : parsed.data,
+        ),
       });
       setEditing(null);
       await Promise.all([load(data.page), onCatalogChange()]);

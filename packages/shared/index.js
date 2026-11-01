@@ -63,6 +63,9 @@ export const productSchema = z.strictObject({
   }),
   active: z.boolean(),
 });
+export const productUpdateSchema = productSchema.extend({
+  version: z.number().int().nonnegative(),
+});
 export const statusLabels = {
   recibido: 'Recibido',
   en_revision: 'En revisión',

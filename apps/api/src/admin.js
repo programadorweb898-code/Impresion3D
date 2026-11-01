@@ -7,6 +7,7 @@ import { rateLimit } from 'express-rate-limit';
 import { Product, Order } from './models.js';
 import {
   productSchema,
+  productUpdateSchema,
   orderUpdateSchema,
   statusTransitions,
 } from '@impresion3d/shared';
@@ -39,15 +40,21 @@ export function createAdminRouter({ imageStorage } = {}) {
   );
   adminRouter.put(
     '/products/:id',
-    validate(productSchema),
+    validate(productUpdateSchema),
     async (req, res) => {
-      const product = await Product.findByIdAndUpdate(
-        req.params.id,
-        { $set: req.body },
+      const { version, ...fields } = req.body;
+      const product = await Product.findOneAndUpdate(
+        { _id: req.params.id, __v: version },
+        { $set: fields, $inc: { __v: 1 } },
         { new: true, runValidators: true },
       );
-      if (!product)
-        return res.status(404).json({ message: 'Producto no encontrado' });
+      if (!product) {
+        if (!(await Product.exists({ _id: req.params.id })))
+          return res.status(404).json({ message: 'Producto no encontrado' });
+        return res.status(409).json({
+          message: 'El producto cambió. Actualizá la lista y volvé a editarlo.',
+        });
+      }
       res.json(product);
     },
   );
