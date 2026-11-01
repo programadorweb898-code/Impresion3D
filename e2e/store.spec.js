@@ -359,3 +359,153 @@ test('administración pagina productos y muestra integraciones sólo al administ
     page.getByText('Avisos que agotaron sus reintentos: 0'),
   ).toBeVisible();
 });
+
+test('carrito espera disponibilidad sin alertas falsas al abrirlo y al agregar otra pieza', async ({
+  page,
+}) => {
+  await login(page);
+  let release;
+  let pending = new Promise((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/products?ids=*', async (route) => {
+    await pending;
+    await route.continue();
+  });
+  await page.evaluate(() => {
+    window.cartAvailabilityWarnings = [];
+    new MutationObserver(() => {
+      for (const alert of document.querySelectorAll(
+        '.cart-drawer [role="alert"]',
+      )) {
+        if (alert.textContent.includes('Quitá los productos'))
+          window.cartAvailabilityWarnings.push(alert.textContent);
+      }
+    }).observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+  });
+  for (let i = 0; i < 2; i++) {
+    if (i)
+      pending = new Promise((resolve) => {
+        release = resolve;
+      });
+    await page
+      .locator('.product-card')
+      .nth(i)
+      .getByRole('button', { name: 'Agregar al carrito' })
+      .click();
+    await page
+      .getByRole('button', { name: `Abrir carrito, ${i + 1} productos` })
+      .click();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer.getByRole('status')).toContainText(
+      'Actualizando precios y disponibilidad',
+    );
+    await expect(drawer.getByRole('alert')).toHaveCount(0);
+    await expect(
+      drawer.getByRole('heading', {
+        name: 'Producto no disponible',
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    await expect(
+      drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
+    ).toBeDisabled();
+    release();
+    await expect(
+      drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
+    ).toBeEnabled();
+    await expect(drawer.locator('.cart-item')).toHaveCount(i + 1);
+    expect(await page.evaluate(() => window.cartAvailabilityWarnings)).toEqual(
+      [],
+    );
+    await drawer.getByRole('button', { name: 'Cerrar carrito' }).click();
+    await expect(drawer).toBeHidden();
+  }
+});
+
+test('fallo de catálogo informa conexión sin marcar piezas como no disponibles y permite reintentar', async ({
+  page,
+}) => {
+  await login(page);
+  await page.route('**/api/products?ids=*', (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: 'Servicio temporalmente no disponible' }),
+    }),
+  );
+  await page
+    .locator('.product-card')
+    .first()
+    .getByRole('button', { name: 'Agregar al carrito' })
+    .click();
+  await page
+    .getByRole('button', { name: 'Abrir carrito, 1 productos' })
+    .click();
+  const drawer = page.getByRole('dialog');
+  await expect(drawer.getByRole('alert')).toContainText(
+    'No pudimos actualizar el catálogo',
+  );
+  await expect(
+    drawer.getByText(
+      'Quitá los productos que ya no están disponibles para continuar.',
+    ),
+  ).toHaveCount(0);
+  await expect(
+    drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
+  ).toBeDisabled();
+  await page.unroute('**/api/products?ids=*');
+  let release;
+  const pending = new Promise((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/products?ids=*', async (route) => {
+    await pending;
+    await route.continue();
+  });
+  await drawer
+    .getByRole('button', { name: 'Actualizar catálogo', exact: true })
+    .click();
+  await expect(drawer.getByRole('status')).toContainText(
+    'Actualizando precios y disponibilidad',
+  );
+  await expect(drawer.getByRole('alert')).toHaveCount(0);
+  release();
+  await expect(
+    drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
+  ).toBeEnabled();
+});
+
+test('la advertencia de disponibilidad se mantiene cuando el servidor confirma que falta una pieza', async ({
+  page,
+}) => {
+  await login(page);
+  await page.route('**/api/products?ids=*', (route) =>
+    route.fulfill({ contentType: 'application/json', body: '[]' }),
+  );
+  await page
+    .locator('.product-card')
+    .first()
+    .getByRole('button', { name: 'Agregar al carrito' })
+    .click();
+  await page
+    .getByRole('button', { name: 'Abrir carrito, 1 productos' })
+    .click();
+  const drawer = page.getByRole('dialog');
+  await expect(drawer.getByRole('alert')).toContainText(
+    'Quitá los productos que ya no están disponibles',
+  );
+  await expect(
+    drawer.getByRole('heading', {
+      name: 'Producto no disponible',
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
+  ).toBeDisabled();
+});
