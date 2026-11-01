@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
-import { registerSchema, loginSchema } from '@impresion3d/shared';
+import {
+  registerSchema,
+  loginSchema,
+  formatMoney as money,
+} from '@impresion3d/shared';
 import './styles.css';
 import { api } from './api.js';
-import { Admin } from './Admin.jsx';
 import { Cart } from './Cart.jsx';
 import { useCart } from './useCart.js';
 import {
@@ -18,14 +21,10 @@ import { Navbar } from './Navbar.jsx';
 import { CartDrawer } from './CartDrawer.jsx';
 import { Pagination } from './Pagination.jsx';
 import { Profile } from './Profile.jsx';
+const Admin = lazy(() =>
+  import('./Admin.jsx').then((module) => ({ default: module.Admin })),
+);
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
-const money = (c, currency = 'ARS') =>
-  new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(c / 100);
 function Modal({ children, onClose, wide = false }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -76,6 +75,7 @@ function App() {
     [loggingOut, setLoggingOut] = useState(false),
     [logoutError, setLogoutError] = useState(''),
     [error, setError] = useState(''),
+    [authMessage, setAuthMessage] = useState(''),
     [notice, setNotice] = useState(''),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
@@ -273,12 +273,17 @@ function App() {
     }
     setBusy(true);
     try {
-      setUser(
-        await api('/auth/' + auth, {
-          method: 'POST',
-          body: JSON.stringify(parsed.data),
-        }),
-      );
+      const result = await api('/auth/' + auth, {
+        method: 'POST',
+        body: JSON.stringify(parsed.data),
+      });
+      if (result.verificationRequired) {
+        setAuth('login');
+        setAuthMessage(result.message);
+        return;
+      }
+      setUser(result);
+      setAuthMessage('');
       closeAuth();
       setAuthReady(true);
       if (loginDestination.current === 'cart') {
@@ -488,7 +493,9 @@ function App() {
               </p>
             )
           ) : view === 'admin' && user?.role === 'admin' ? (
-            <Admin onCatalogChange={reloadCatalog} onPreview={setViewing} />
+            <Suspense fallback={<p role="status">Cargando administración…</p>}>
+              <Admin onCatalogChange={reloadCatalog} onPreview={setViewing} />
+            </Suspense>
           ) : view === 'catalog' ? (
             <>
               <section className="hero">
@@ -880,7 +887,11 @@ function App() {
           setAuth={setAuth}
           submitAuth={submitAuth}
           error={error}
-          clearError={() => setError('')}
+          accountMessage={authMessage}
+          clearError={() => {
+            setError('');
+            setAuthMessage('');
+          }}
           busy={busy}
           onBack={showCatalog}
         />

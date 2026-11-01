@@ -142,6 +142,7 @@ test('administración: permisos, productos, estados y concurrencia', async () =>
   const ordinary = await User.findOne({ email: 'customer@example.com' });
   assert.equal(ordinary.role, 'customer');
   await customer.get('/api/admin/products').expect(403);
+  await customer.get('/api/admin/operations').expect(403);
   await request(app).get('/api/admin/orders').expect(401);
   await User.updateOne(
     { email: 'admin@example.com' },
@@ -217,6 +218,10 @@ test('administración: permisos, productos, estados y concurrencia', async () =>
     catalog.body.some((p) => p._id === id),
     false,
   );
+  const state = await admin.get('/api/admin/operations').expect(200);
+  assert.equal(state.body.integrations.recovery, false);
+  assert.equal(state.body.failedNotifications, 0);
+  assert.equal(state.body.sessionSecret, undefined);
   await User.updateOne(
     { email: 'admin@example.com' },
     { $set: { role: 'customer' } },
@@ -270,4 +275,22 @@ test('catálogo e historial paginan sin mezclar usuarios; el carrito recupera pi
   await agent
     .get('/api/products?ids=' + products.map((p) => p._id).join(','))
     .expect(400);
+  await User.updateOne(
+    { _id: registration.body.id },
+    { $set: { role: 'admin' } },
+  );
+  const adminFirst = await agent.get('/api/admin/products?page=1').expect(200);
+  const adminSecond = await agent.get('/api/admin/products?page=2').expect(200);
+  assert.equal(adminFirst.body.products.length, 20);
+  assert.ok(adminSecond.body.products.length > 0);
+  assert.equal(
+    new Set(
+      [...adminFirst.body.products, ...adminSecond.body.products].map(
+        (p) => p._id,
+      ),
+    ).size,
+    adminFirst.body.total,
+  );
+  assert.equal((await agent.get('/api/admin/products')).body.length, 20);
+  await agent.get('/api/admin/products?page=0').expect(400);
 });

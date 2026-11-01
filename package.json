@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "start": "npm run start -w @impresion3d/api",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check:production": "node scripts/check-production.mjs"
   },
   "engines": {
     "node": ">=24 <25"

@@ -42,6 +42,7 @@ test('sin credenciales no habilita proveedores ni finge enviar correos', async (
   const instance = app(disabled),
     agent = request.agent(instance);
   assert.deepEqual((await agent.get('/api/auth/options')).body, {
+    verification: false,
     google: false,
     facebook: false,
     recovery: false,

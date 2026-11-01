@@ -4,6 +4,7 @@ function publicOrder(doc) {
   const value = doc.toObject();
   delete value.requestHash;
   delete value.requestId;
+  delete value.notification;
   return value;
 }
 export async function submitCatalogOrder(req, res) {

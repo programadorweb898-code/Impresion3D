@@ -34,7 +34,10 @@ export default function ProductViewer({ product }) {
     setError('');
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      const mobile = window.matchMedia('(pointer: coarse)').matches;
+      renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2),
+      );
       renderer.setClearColor('#f0eee8');
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       node.appendChild(renderer.domElement);

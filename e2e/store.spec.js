@@ -7,11 +7,9 @@ async function menu(page, name) {
     .getByRole('button', { name, exact: true })
     .click();
 }
-async function login(page, count = 0) {
+async function login(page, count = 0, email = 'browser@example.com') {
   await page.goto('/login');
-  await page
-    .getByLabel('Correo electrónico', { exact: true })
-    .fill('browser@example.com');
+  await page.getByLabel('Correo electrónico', { exact: true }).fill(email);
   await page
     .getByLabel('Contraseña', { exact: true })
     .fill('browser-password-12345');
@@ -138,7 +136,18 @@ test('visor WebGL carga geometría y permite cerrarlo y volver a abrirlo', async
       body: tetraGlb(),
     }),
   );
+  const downloaded = [];
+  page.on('request', (r) => downloaded.push(r.url()));
   await page.goto('/');
+  await expect(page.locator('.product-card')).toHaveCount(20);
+  expect(
+    downloaded.some(
+      (url) =>
+        url.includes('ProductViewer') ||
+        url.includes('/Admin-') ||
+        url.endsWith('model.glb'),
+    ),
+  ).toBe(false);
   const open = () =>
     page
       .locator('.product-card')
@@ -156,5 +165,70 @@ test('visor WebGL carga geometría y permite cerrarlo y volver a abrirlo', async
   await open();
   await expect(
     page.getByRole('button', { name: 'Restablecer vista' }),
+  ).toBeVisible();
+});
+
+test('registro por correo confirma un enlace y elige una contraseña antes de iniciar sesión', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/login');
+  await page
+    .getByRole('button', { name: 'Crear una cuenta', exact: true })
+    .click();
+  await page.getByLabel('Nombre', { exact: true }).fill('Nuevo cliente');
+  await page
+    .getByLabel('Correo electrónico', { exact: true })
+    .fill('new-browser@example.com');
+  await page
+    .getByLabel('Contraseña', { exact: true })
+    .fill('initial-browser-password');
+  await page.getByRole('button', { name: 'Crear cuenta con email' }).click();
+  await expect(page.getByRole('status')).toContainText('Revisá tu correo');
+  const response = await request.get('/__test/mailbox/new-browser@example.com');
+  const mail = await response.json();
+  await page.goto(mail.url);
+  await expect(
+    page.getByRole('heading', { name: 'Confirmá tu correo' }),
+  ).toBeVisible();
+  await expect(page).toHaveURL('/login');
+  await page
+    .getByLabel('Nueva contraseña', { exact: true })
+    .fill('final-browser-password');
+  await page
+    .getByLabel('Confirmar contraseña', { exact: true })
+    .fill('final-browser-password');
+  await page
+    .getByRole('button', { name: 'Confirmar correo y contraseña' })
+    .click();
+  await expect(page.getByRole('status')).toContainText('Correo confirmado');
+  await page
+    .getByLabel('Correo electrónico', { exact: true })
+    .fill('new-browser@example.com');
+  await page
+    .getByLabel('Contraseña', { exact: true })
+    .fill('final-browser-password');
+  await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
+  ).toBeEnabled();
+});
+test('administración pagina productos y muestra integraciones sólo al administrador', async ({
+  page,
+}) => {
+  await login(page, 0, 'admin-browser@example.com');
+  await menu(page, 'Administración');
+  await page.getByRole('button', { name: 'Productos', exact: true }).click();
+  await expect(page.locator('.admin-products > article')).toHaveCount(20);
+  await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
+  await expect(page.locator('.admin-products > article')).toHaveCount(5);
+  await page
+    .getByRole('button', { name: 'Estado del servicio', exact: true })
+    .click();
+  await expect(
+    page.getByText('Confirmación de correo: Habilitado'),
+  ).toBeVisible();
+  await expect(
+    page.getByText('Avisos que agotaron sus reintentos: 0'),
   ).toBeVisible();
 });

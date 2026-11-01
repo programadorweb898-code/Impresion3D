@@ -1,13 +1,5 @@
 import { Product, Order } from './models.js';
-const limit = 20;
-function pageNumber(req, res) {
-  const raw = req.query.page ?? '1';
-  if (typeof raw !== 'string' || !/^[1-9][0-9]{0,5}$/.test(raw)) {
-    res.status(400).json({ message: 'Página inválida' });
-    return null;
-  }
-  return Number(raw);
-}
+import { pageNumber, pageMetadata, pageSize as limit } from './pagination.js';
 export async function listProducts(req, res) {
   const page = pageNumber(req, res);
   if (!page) return;
@@ -47,9 +39,7 @@ export async function listProducts(req, res) {
   ]);
   res.json({
     products,
-    page,
-    total,
-    pages: Math.max(1, Math.ceil(total / limit)),
+    ...pageMetadata(page, total),
     categories: categories.filter(Boolean).sort(),
   });
 }
@@ -66,8 +56,6 @@ export async function listOrders(req, res) {
   const total = await Order.countDocuments(filter);
   res.json({
     orders,
-    page,
-    total,
-    pages: Math.max(1, Math.ceil(total / limit)),
+    ...pageMetadata(page, total),
   });
 }
