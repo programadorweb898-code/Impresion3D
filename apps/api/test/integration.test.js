@@ -201,8 +201,17 @@ test('administración: permisos, productos, estados y concurrencia', async () =>
   const hidden = await mutate(admin, 'put', '/api/admin/products/' + id, {
     ...productData,
     active: false,
+    version: created.body.__v,
   });
   assert.equal(hidden.status, 200);
+  assert.equal(hidden.body.__v, 1);
+  const stale = await mutate(admin, 'put', '/api/admin/products/' + id, {
+    ...productData,
+    name: 'Edición desactualizada',
+    version: 0,
+  });
+  assert.equal(stale.status, 409);
+  assert.equal((await Product.findById(id)).active, false);
   const catalog = await customer.get('/api/products');
   assert.equal(
     catalog.body.some((p) => p._id === id),
@@ -213,4 +222,52 @@ test('administración: permisos, productos, estados y concurrencia', async () =>
     { $set: { role: 'customer' } },
   );
   await admin.get('/api/admin/products').expect(403);
+});
+test('catálogo e historial paginan sin mezclar usuarios; el carrito recupera piezas fuera de página', async () => {
+  const agent = request.agent(app);
+  const registration = await register(agent, 'pagination@example.com');
+  const products = await Product.create(
+    Array.from({ length: 25 }, (_, i) => ({
+      ...productData,
+      name: 'Pieza ' + i,
+      category: 'Paginación',
+    })),
+  );
+  const first = await agent
+    .get('/api/products?page=1&category=Paginaci%C3%B3n')
+    .expect(200);
+  const second = await agent
+    .get('/api/products?page=2&category=Paginaci%C3%B3n')
+    .expect(200);
+  assert.equal(first.body.products.length, 20);
+  assert.equal(second.body.products.length, 5);
+  assert.equal(first.body.total, 25);
+  assert.equal(
+    new Set([...first.body.products, ...second.body.products].map((p) => p._id))
+      .size,
+    25,
+  );
+  const id = second.body.products[0]._id;
+  const lookup = await agent.get('/api/products?ids=' + id).expect(200);
+  assert.equal(lookup.body[0]._id, id);
+  await Order.create(
+    Array.from({ length: 21 }, () => ({
+      userId: registration.body.id,
+      items: [],
+      totalCents: 0,
+      currency: 'ARS',
+    })),
+  );
+  const history = await agent.get('/api/orders?page=2').expect(200);
+  assert.equal(history.body.total, 21);
+  assert.equal(history.body.orders.length, 1);
+  assert.equal(history.body.orders[0].userId, registration.body.id);
+  assert.equal((await agent.get('/api/orders')).body.length, 20);
+  for (const page of ['0', '-1', 'abc', '1000000']) {
+    await agent.get('/api/products?page=' + page).expect(400);
+    await agent.get('/api/orders?page=' + page).expect(400);
+  }
+  await agent
+    .get('/api/products?ids=' + products.map((p) => p._id).join(','))
+    .expect(400);
 });

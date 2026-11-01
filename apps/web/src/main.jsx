@@ -6,17 +6,25 @@ import { api } from './api.js';
 import { Admin } from './Admin.jsx';
 import { Cart } from './Cart.jsx';
 import { useCart } from './useCart.js';
+import {
+  pendingCheckout,
+  prepareCheckout,
+  clearCheckout,
+  completeCheckout,
+} from './checkout-state.js';
 import { AuthPage } from './AuthPage.jsx';
 import { WhatsAppButton } from './WhatsAppButton.jsx';
 import { Navbar } from './Navbar.jsx';
 import { CartDrawer } from './CartDrawer.jsx';
+import { Pagination } from './Pagination.jsx';
 import { Profile } from './Profile.jsx';
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
 const money = (c, currency = 'ARS') =>
   new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(c / 100);
 function Modal({ children, onClose, wide = false }) {
   const ref = useRef(null);
@@ -42,6 +50,14 @@ function App() {
   const [user, setUser] = useState(null),
     [products, setProducts] = useState([]),
     [orders, setOrders] = useState([]),
+    [catalogPage, setCatalogPage] = useState({
+      page: 1,
+      pages: 1,
+      categories: [],
+    }),
+    [orderPage, setOrderPage] = useState({ page: 1, pages: 1 }),
+    [ordersLoading, setOrdersLoading] = useState(false),
+    [cartProducts, setCartProducts] = useState([]),
     [view, setView] = useState(() =>
       location.pathname === '/perfil' ? 'profile' : 'catalog',
     ),
@@ -71,23 +87,83 @@ function App() {
   const cart = useCart(user?.id);
   const [authReady, setAuthReady] = useState(false);
   const loginDestination = useRef(null);
-  const checkoutId = useRef(null);
+  useEffect(() => {
+    if (!user?.id) return;
+    try {
+      setCartNotes(pendingCheckout(user.id)?.notes || '');
+    } catch {
+      setError(
+        'No pudimos recuperar el envío pendiente. Revisá Mis pedidos antes de enviar.',
+      );
+    }
+  }, [user?.id]);
   const cartButtonRef = useRef(null);
   const cartProductIds = new Set(cart.items.map((item) => item.productId));
+  const cartIds = cart.items.map((item) => item.productId).join(',');
   useEffect(() => {
-    api('/products')
-      .then(setProducts)
-      .catch(() =>
-        setError(
-          'No pudimos cargar el catálogo. Comprobá que la API esté disponible.',
-        ),
-      )
-      .finally(() => setLoading(false));
+    if (!cartOpen || !cart.ready || !user?.id) return;
+    let active = true;
+    setRefreshingCart(true);
+    setCartCatalogError(false);
+    const request = cartIds
+      ? api('/products?ids=' + cartIds)
+      : Promise.resolve([]);
+    request
+      .then((data) => {
+        if (active) setCartProducts(data);
+      })
+      .catch(() => {
+        if (active) setCartCatalogError(true);
+      })
+      .finally(() => {
+        if (active) setRefreshingCart(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [cartOpen, cart.ready, user?.id, cartIds]);
+  useEffect(() => {
     api('/auth/me')
       .then(setUser)
       .catch(() => {})
       .finally(() => setAuthReady(true));
   }, []);
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    const query = new URLSearchParams({ page: String(catalogPage.page) });
+    if (category !== 'Todos') query.set('category', category);
+    api('/products?' + query)
+      .then((data) => {
+        if (!active) return;
+        setProducts(data.products);
+        setCatalogPage((current) => ({
+          ...current,
+          pages: data.pages,
+          categories: data.categories,
+        }));
+      })
+      .catch((e) => {
+        if (active) setError(e.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [catalogPage.page, category]);
+  async function reloadCatalog() {
+    const query = new URLSearchParams({ page: String(catalogPage.page) });
+    if (category !== 'Todos') query.set('category', category);
+    const data = await api('/products?' + query);
+    setProducts(data.products);
+    setCatalogPage({
+      page: data.page,
+      pages: data.pages,
+      categories: data.categories,
+    });
+  }
   useEffect(() => {
     const onNavigate = () => {
       const isLogin = location.pathname === '/login';
@@ -157,7 +233,6 @@ function App() {
       setCartNotes('');
       setOrders([]);
       setProfileToken('');
-      checkoutId.current = null;
       window.history.replaceState(null, '', '/');
       setView('catalog');
       setNotice('Cerraste sesión.');
@@ -169,15 +244,20 @@ function App() {
       setLoggingOut(false);
     }
   }
-  async function history() {
+  async function history(page = 1) {
     if (location.pathname === '/perfil')
       window.history.pushState(null, '', '/');
     setView('orders');
     setError('');
+    setOrdersLoading(true);
     try {
-      setOrders(await api('/orders'));
+      const data = await api('/orders?page=' + page);
+      setOrders(data.orders);
+      setOrderPage(data);
     } catch (e) {
       setError(e.message);
+    } finally {
+      setOrdersLoading(false);
     }
   }
   async function submitAuth(event) {
@@ -203,7 +283,6 @@ function App() {
       setAuthReady(true);
       if (loginDestination.current === 'cart') {
         setCartOpen(true);
-        await refreshCart();
       }
       if (loginDestination.current === 'profile') openProfile();
       loginDestination.current = null;
@@ -218,7 +297,13 @@ function App() {
     setRefreshingCart(true);
     setCartCatalogError(false);
     try {
-      setProducts(await api('/products'));
+      setCartProducts(
+        cart.items.length
+          ? await api(
+              '/products?ids=' + cart.items.map((i) => i.productId).join(','),
+            )
+          : [],
+      );
     } catch {
       setCartCatalogError(true);
     } finally {
@@ -236,13 +321,11 @@ function App() {
     }
     setCartOpen(true);
     setError('');
-    await refreshCart();
   }
   function editCart(action) {
     if (busy || !user) return;
     try {
       action();
-      checkoutId.current = null;
       setError('');
     } catch (e) {
       setNotice(e.message);
@@ -259,7 +342,6 @@ function App() {
     }
     try {
       cart.add(product._id);
-      checkoutId.current = null;
       setNotice('Agregaste ' + product.name + ' al carrito.');
     } catch (e) {
       setNotice(e.message);
@@ -274,7 +356,7 @@ function App() {
     }
     if (busy || refreshingCart || cartCatalogError || !cart.items.length)
       return;
-    const byId = new Map(products.map((p) => [p._id, p]));
+    const byId = new Map(cartProducts.map((p) => [p._id, p]));
     if (cart.items.some((i) => !byId.has(i.productId))) {
       setError('Quitá los productos no disponibles antes de enviar.');
       return;
@@ -282,17 +364,17 @@ function App() {
     setBusy(true);
     let order;
     try {
-      checkoutId.current ||= crypto.randomUUID();
       order = await api('/orders', {
         method: 'POST',
-        body: JSON.stringify({
-          items: cart.items.map((i) => ({
-            ...i,
-            expectedUnitPriceCents: byId.get(i.productId).priceCents,
-          })),
-          notes: cartNotes,
-          requestId: checkoutId.current,
-        }),
+        body: JSON.stringify(
+          prepareCheckout(user.id, {
+            items: cart.items.map((i) => ({
+              ...i,
+              expectedUnitPriceCents: byId.get(i.productId).priceCents,
+            })),
+            notes: cartNotes,
+          }),
+        ),
       });
     } catch (e) {
       setError(e.message);
@@ -305,13 +387,27 @@ function App() {
           'Tu sesión venció. Ingresá para recuperar tu carrito y enviar el pedido.',
         );
       }
+      if (['PRICE_CHANGED', 'PRODUCT_UNAVAILABLE'].includes(e.code)) {
+        try {
+          clearCheckout(user.id);
+        } catch {
+          setError(
+            'No pudimos actualizar el intento de envío. Revisá el almacenamiento del sitio en tu navegador.',
+          );
+        }
+      }
       if ([404, 409].includes(e.status)) await refreshCart();
       setBusy(false);
       return;
     }
+    // Persist the empty cart before releasing the key of a confirmed order.
+    try {
+      completeCheckout(user.id);
+    } catch {
+      /* Replaying the saved key remains safe. */
+    }
     cart.clear();
     setCartNotes('');
-    checkoutId.current = null;
     setOrders((current) => [
       order,
       ...current.filter((o) => o._id !== order._id),
@@ -324,7 +420,9 @@ function App() {
     setCartOpen(false);
     setView('orders');
     try {
-      setOrders(await api('/orders'));
+      const data = await api('/orders?page=1');
+      setOrders(data.orders);
+      setOrderPage(data);
     } catch {
       setError(
         'Tu pedido se guardó, pero no pudimos actualizar el historial. Volvé a entrar en Mis pedidos para consultarlo.',
@@ -344,7 +442,7 @@ function App() {
           view={view}
           onCatalog={showCatalog}
           onCart={openCart}
-          onOrders={history}
+          onOrders={() => history()}
           onAdmin={() => {
             showCatalog();
             setView('admin');
@@ -390,10 +488,7 @@ function App() {
               </p>
             )
           ) : view === 'admin' && user?.role === 'admin' ? (
-            <Admin
-              onCatalogChange={() => api('/products').then(setProducts)}
-              onPreview={setViewing}
-            />
+            <Admin onCatalogChange={reloadCatalog} onPreview={setViewing} />
           ) : view === 'catalog' ? (
             <>
               <section className="hero">
@@ -442,15 +537,15 @@ function App() {
                   <span className="small">Hechas a pedido, para vos.</span>
                 </div>
                 <div className="filters" aria-label="Filtrar productos">
-                  {[
-                    'Todos',
-                    ...new Set(products.map((p) => p.category).filter(Boolean)),
-                  ].map((c) => (
+                  {['Todos', ...catalogPage.categories].map((c) => (
                     <button
                       key={c}
                       aria-pressed={category === c}
                       className={category === c ? 'active' : ''}
-                      onClick={() => setCategory(c)}
+                      onClick={() => {
+                        setCategory(c);
+                        setCatalogPage((current) => ({ ...current, page: 1 }));
+                      }}
                     >
                       {c}
                     </button>
@@ -464,84 +559,88 @@ function App() {
                   </div>
                 ) : (
                   <div className="grid-products">
-                    {products
-                      .filter(
-                        (p) => category === 'Todos' || p.category === category,
-                      )
-                      .map((p, i) => (
-                        <article
-                          className="product-card"
-                          key={p._id}
-                          aria-labelledby={'product-' + p._id}
-                        >
-                          <div className={'product-art color-' + p.color}>
-                            {p.image?.url ? (
-                              <img
-                                className="product-photo"
-                                src={p.image.url}
-                                alt={p.name}
-                                loading="lazy"
-                                decoding="async"
-                              />
-                            ) : (
-                              <>
-                                <span className="piece-number">
-                                  PIEZA / {String(i + 1).padStart(2, '0')}
-                                </span>
-                                <div
-                                  className={'object object-' + (i % 3)}
-                                  aria-hidden="true"
-                                />
-                                <span className="small">
-                                  Ilustración conceptual
-                                </span>
-                              </>
-                            )}
-                          </div>
-                          <div className="flex justify-between items-start gap-4 mt-5">
-                            <div>
-                              <p className="small uppercase">{p.category}</p>
-                              <h3 id={'product-' + p._id}>{p.name}</h3>
-                            </div>
-                            <strong>{money(p.priceCents, p.currency)}</strong>
-                          </div>
-                          <p className="description">{p.description}</p>
-                          <p className="small">
-                            {p.dimensions?.width} × {p.dimensions?.height} ×{' '}
-                            {p.dimensions?.depth} mm
-                          </p>
-                          <div className="card-actions">
-                            <button
-                              className="model-button"
-                              disabled={!p.model?.url}
-                              onClick={() => setViewing(p)}
-                            >
-                              Ver en 3D <span aria-hidden="true">◇</span>
-                            </button>
-                            <button
-                              className="product-button"
-                              disabled={!authReady || cartProductIds.has(p._id)}
-                              onClick={() => addToCart(p)}
-                            >
-                              {cartProductIds.has(p._id)
-                                ? 'En el carrito'
-                                : 'Agregar al carrito'}{' '}
-                              <span aria-hidden="true">
-                                {cartProductIds.has(p._id) ? '✓' : '＋'}
+                    {products.map((p, i) => (
+                      <article
+                        className="product-card"
+                        key={p._id}
+                        aria-labelledby={'product-' + p._id}
+                      >
+                        <div className={'product-art color-' + p.color}>
+                          {p.image?.url ? (
+                            <img
+                              className="product-photo"
+                              src={p.image.url}
+                              alt={p.name}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ) : (
+                            <>
+                              <span className="piece-number">
+                                PIEZA / {String(i + 1).padStart(2, '0')}
                               </span>
-                            </button>
+                              <div
+                                className={'object object-' + (i % 3)}
+                                aria-hidden="true"
+                              />
+                              <span className="small">
+                                Ilustración conceptual
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <div className="flex justify-between items-start gap-4 mt-5">
+                          <div>
+                            <p className="small uppercase">{p.category}</p>
+                            <h3 id={'product-' + p._id}>{p.name}</h3>
                           </div>
-                          <p className="card-help">
-                            {!p.model?.url
-                              ? 'Vista 3D todavía no disponible.'
-                              : cartProductIds.has(p._id)
-                                ? 'Cambiá la cantidad desde tu carrito.'
-                                : 'Giralo y acercalo en el visor.'}
-                          </p>
-                        </article>
-                      ))}
+                          <strong>{money(p.priceCents, p.currency)}</strong>
+                        </div>
+                        <p className="description">{p.description}</p>
+                        <p className="small">
+                          {p.dimensions?.width} × {p.dimensions?.height} ×{' '}
+                          {p.dimensions?.depth} mm
+                        </p>
+                        <div className="card-actions">
+                          <button
+                            className="model-button"
+                            disabled={!p.model?.url}
+                            onClick={() => setViewing(p)}
+                          >
+                            Ver en 3D <span aria-hidden="true">◇</span>
+                          </button>
+                          <button
+                            className="product-button"
+                            disabled={!authReady || cartProductIds.has(p._id)}
+                            onClick={() => addToCart(p)}
+                          >
+                            {cartProductIds.has(p._id)
+                              ? 'En el carrito'
+                              : 'Agregar al carrito'}{' '}
+                            <span aria-hidden="true">
+                              {cartProductIds.has(p._id) ? '✓' : '＋'}
+                            </span>
+                          </button>
+                        </div>
+                        <p className="card-help">
+                          {!p.model?.url
+                            ? 'Vista 3D todavía no disponible.'
+                            : cartProductIds.has(p._id)
+                              ? 'Cambiá la cantidad desde tu carrito.'
+                              : 'Giralo y acercalo en el visor.'}
+                        </p>
+                      </article>
+                    ))}
                   </div>
                 )}
+                <Pagination
+                  page={catalogPage.page}
+                  pages={catalogPage.pages}
+                  busy={loading}
+                  onPage={(page) =>
+                    setCatalogPage((current) => ({ ...current, page }))
+                  }
+                />
               </section>
               <section id="proceso" className="process">
                 <div>
@@ -593,7 +692,9 @@ function App() {
                 La fecha de entrega se confirma después de revisar cada
                 solicitud.
               </p>
-              {orders.length ? (
+              {ordersLoading ? (
+                <p role="status">Cargando pedidos…</p>
+              ) : orders.length ? (
                 orders.map((o) => (
                   <article className="order" key={o._id}>
                     <div className="flex justify-between flex-wrap gap-3">
@@ -633,6 +734,12 @@ function App() {
               ) : (
                 <p className="empty">Todavía no tenés pedidos.</p>
               )}
+              <Pagination
+                page={orderPage.page}
+                pages={orderPage.pages}
+                busy={ordersLoading}
+                onPage={history}
+              />
             </section>
           )}
         </main>
@@ -656,12 +763,11 @@ function App() {
         >
           <Cart
             items={cart.items}
-            products={products}
+            products={cartProducts}
             user={user}
             notes={cartNotes}
             onNotes={(value) => {
               setCartNotes(value);
-              checkoutId.current = null;
             }}
             onQuantity={(id, q) => editCart(() => cart.quantity(id, q))}
             onRemove={(id) => editCart(() => cart.remove(id))}

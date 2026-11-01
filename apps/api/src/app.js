@@ -7,7 +7,8 @@ import { rateLimit } from 'express-rate-limit';
 import argon2 from 'argon2';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { loginSchema, registerSchema, orderSchema } from '@impresion3d/shared';
-import { User, Product, Order } from './models.js';
+import { User } from './models.js';
+import { listProducts, listOrders } from './list-routes.js';
 import { createAdminRouter } from './admin.js';
 import { submitCatalogOrder } from './checkout.js';
 import { createAccountAccess } from './account-access.js';
@@ -126,9 +127,7 @@ export function createApp({
     next();
   };
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
-  app.get('/api/products', async (_req, res) =>
-    res.json(await Product.find({ active: true }).select('-__v').lean()),
-  );
+  app.get('/api/products', listProducts);
   app.post(
     '/api/auth/register',
     authLimit,
@@ -216,13 +215,7 @@ export function createApp({
       res.sendStatus(204);
     }),
   );
-  app.get('/api/orders', authenticated, async (req, res) =>
-    res.json(
-      await Order.find({ userId: req.session.userId })
-        .sort({ createdAt: -1 })
-        .lean(),
-    ),
-  );
+  app.get('/api/orders', authenticated, listOrders);
   app.post(
     '/api/orders',
     authenticated,
