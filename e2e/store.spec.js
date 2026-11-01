@@ -18,6 +18,77 @@ async function login(page, count = 0, email = 'browser@example.com') {
     page.getByRole('button', { name: `Abrir carrito, ${count} productos` }),
   ).toBeEnabled();
 }
+test('barra fija conserva carrito y menú al scrollear sin tapar contenido ni enlaces internos', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('.product-card')).toHaveCount(20);
+  for (const width of [390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+    const header = page.locator('.site-header');
+    await expect
+      .poll(async () => {
+        const headerBox = await header.boundingBox();
+        const mainBox = await page.locator('main').boundingBox();
+        return (
+          mainBox.y + (await page.evaluate(() => scrollY)) - headerBox.height
+        );
+      })
+      .toBeGreaterThanOrEqual(-1);
+    await page.evaluate(() => scrollTo({ top: 1800, behavior: 'instant' }));
+    expect((await header.boundingBox()).y).toBe(0);
+    await expect(
+      page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
+    ).toBeInViewport();
+    if (width === 390) {
+      const position = await page.evaluate(() => scrollY);
+      await page
+        .getByRole('button', { name: 'Abrir menú', exact: true })
+        .click();
+      await expect(
+        page.getByRole('navigation', { name: 'Principal' }),
+      ).toBeVisible();
+      expect(await page.evaluate(() => scrollY)).toBe(position);
+      await page.screenshot({
+        path: '/tmp/impresion3d-fixed-navbar.png',
+        animations: 'disabled',
+      });
+      await page
+        .getByRole('link', { name: 'Cómo funciona', exact: true })
+        .click();
+      await expect(
+        page.getByRole('button', { name: 'Abrir menú', exact: true }),
+      ).toBeVisible();
+      await expect
+        .poll(async () => {
+          const target = await page.locator('#proceso').boundingBox();
+          const bar = await header.boundingBox();
+          return target.y - bar.height;
+        })
+        .toBeGreaterThanOrEqual(0);
+    }
+  }
+  await page.goto('/login');
+  await expect(page.locator('.site-header')).toHaveCount(0);
+  await expect(page.locator('.site-header-spacer')).toHaveCount(0);
+  await login(page, 0, 'admin-browser@example.com');
+  await page.setViewportSize({ width: 390, height: 320 });
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  const profileLink = page.getByRole('link', {
+    name: 'Mi perfil',
+    exact: true,
+  });
+  await profileLink.scrollIntoViewIfNeeded();
+  await expect(profileLink).toBeInViewport();
+  await expect(
+    page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
+  ).toBeInViewport();
+  await profileLink.click();
+  await expect(
+    page.getByRole('heading', { name: 'Mi perfil', exact: true }),
+  ).toBeVisible();
+});
 test('aviso del carrito sigue visible al scrollear, reemplaza mensajes y desaparece suavemente', async ({
   page,
 }) => {
@@ -31,6 +102,7 @@ test('aviso del carrito sigue visible al scrollear, reemplaza mensajes y desapar
   const toast = page.locator('.toast');
   await expect(toast).toContainText('Agregaste');
   await expect(toast).toHaveCSS('animation-name', 'toast-enter');
+  await expect(toast).toHaveCSS('opacity', '1');
   expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
   const before = await toast.boundingBox();
   expect(before.y).toBeGreaterThan(0);
