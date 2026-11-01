@@ -26,7 +26,7 @@ La instalación incluye dependencias de desarrollo para compilar Vite. No ejecut
 
 La app usa `RENDER_EXTERNAL_URL` como origen cuando no definís `WEB_ORIGIN`. Si configurás un dominio propio, definí `WEB_ORIGIN` con su origen HTTPS exacto (sin rutas) y usá esa dirección para ingresar. Cookies Secure, HttpOnly y SameSite=Lax; CSRF valida ese origen y el token de sesión. `TRUST_PROXY=1` asume el proxy de Render delante de Express.
 
-Los despliegues automáticos quedan desactivados. Los cambios posteriores requieren un deploy manual para entrar en producción.
+El Blueprint deja los despliegues automáticos desactivados para instalaciones nuevas. El servicio existente `Impresion_3D` tiene auto-deploy habilitado y publica los cambios de main automáticamente. Comprobá la configuración y el deploy live en el Dashboard antes de forzar otro deploy.
 
 ## 3. Verificación
 
@@ -51,4 +51,6 @@ Volvé a ingresar al sitio para ver Administración. El plan gratuito de Render 
 
 El servicio gratuito se suspende después de 15 minutos sin actividad y puede tardar aproximadamente un minuto en reactivarse. Las sesiones y los pedidos permanecen en Atlas. Para una tienda con tráfico real y respuesta constante, evaluá un plan sin suspensión.
 
-Para habilitar fotos reales, seguí [la configuración de Cloudinary](product-photos.md). Todavía faltan verificación de correo y recuperación de contraseña. Los plazos se confirman manualmente; no hay generación de modelos ni pagos online. Configurá las copias de seguridad que correspondan a tu plan de Atlas antes de guardar pedidos reales.
+Para habilitar fotos reales, seguí [la configuración de Cloudinary](product-photos.md). La verificación de correo, la recuperación de contraseña y los avisos de pedidos están implementados y requieren configurar el envío con Resend. Los plazos se confirman manualmente; no hay generación de modelos ni pagos online. Configurá las copias de seguridad que correspondan a tu plan de Atlas antes de guardar pedidos reales.
+
+Ver [operación y preparación para el público](operations.md) para comprobar el servicio existente, sus integraciones y la política de backups.

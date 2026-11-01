@@ -5,6 +5,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:3100',
     viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    deviceScaleFactor: 2,
     launchOptions: {
       executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
       args: ['--no-sandbox', '--enable-unsafe-swiftshader'],

@@ -4,6 +4,11 @@ const userSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    emailVerifiedAt: Date,
+    verificationRequired: { type: Boolean, default: false },
+    verificationTokenHash: { type: String, select: false },
+    verificationExpiresAt: { type: Date, select: false },
+    verificationRequestedAt: { type: Date, select: false },
     passwordHash: { type: String, select: false },
     authVersion: { type: Number, default: 0, select: false },
     resetTokenHash: { type: String, select: false },
@@ -18,6 +23,7 @@ const userSchema = new Schema(
   { timestamps: true },
 );
 userSchema.index({ resetTokenHash: 1 }, { sparse: true });
+userSchema.index({ verificationTokenHash: 1 }, { sparse: true });
 export const User = model('User', userSchema);
 const socialSchema = new Schema(
   {
@@ -70,6 +76,18 @@ const orderModel = new Schema(
     totalCents: { type: Number, required: true },
     currency: { type: String, required: true },
     notes: String,
+    notification: {
+      state: {
+        type: String,
+        enum: ['pending', 'processing', 'sent', 'failed'],
+        default: 'pending',
+        select: false,
+      },
+      attempts: { type: Number, default: 0, select: false },
+      dueAt: { type: Date, default: Date.now, select: false },
+      leaseUntil: { type: Date, select: false },
+      sentAt: { type: Date, select: false },
+    },
     status: {
       type: String,
       enum: [
@@ -94,4 +112,6 @@ orderModel.index(
 );
 orderModel.index({ userId: 1, createdAt: -1 });
 orderModel.index({ createdAt: -1 });
+orderModel.index({ 'notification.state': 1, 'notification.dueAt': 1 });
+orderModel.index({ 'notification.state': 1, 'notification.leaseUntil': 1 });
 export const Order = model('Order', orderModel);

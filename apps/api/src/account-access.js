@@ -8,6 +8,7 @@ import {
   timingSafeEqual,
 } from 'node:crypto';
 import { User, SocialIdentity } from './models.js';
+import { createVerificationRouter } from './email-verification.js';
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 export const passwordOptions = {
   type: argon2.argon2id,
@@ -47,6 +48,28 @@ export function createAccountServices(env = {}, transport = fetch) {
       : null;
   return {
     sendEmailChange,
+    requireEmailVerification:
+      env.REQUIRE_EMAIL_VERIFICATION === '1' ||
+      (env.REQUIRE_EMAIL_VERIFICATION !== '0' && !!sendEmailChange),
+    sendVerification: sendEmailChange
+      ? async ({ email, url }) => {
+          const response = await transport('https://api.resend.com/emails', {
+            method: 'POST',
+            signal: AbortSignal.timeout(10000),
+            headers: {
+              Authorization: 'Bearer ' + env.RESEND_API_KEY,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: env.EMAIL_FROM,
+              to: [email],
+              subject: 'Confirmá tu cuenta de impresión3D',
+              text: `Confirmá tu correo y elegí tu contraseña abriendo este enlace dentro de 30 minutos: ${url}\n\nSi no solicitaste una cuenta, ignorá este mensaje.`,
+            }),
+          });
+          if (!response.ok) throw new Error('Email delivery failed');
+        }
+      : null,
     providers,
     fetch: transport,
     sendReset:
@@ -80,6 +103,15 @@ export function createAccountAccess({
   save,
 }) {
   const router = Router();
+  router.use(
+    createVerificationRouter({
+      services,
+      webOrigin,
+      authLimit,
+      regenerate,
+      save,
+    }),
+  );
   const emailSchema = z.object({
     email: z.string().trim().toLowerCase().pipe(z.email()),
   });
@@ -89,6 +121,7 @@ export function createAccountAccess({
   });
   router.get('/options', (_req, res) =>
     res.json({
+      verification: !!services.sendVerification,
       google: !!services.providers.google,
       facebook: !!services.providers.facebook,
       recovery: !!services.sendReset,
@@ -156,10 +189,16 @@ export function createAccountAccess({
         resetExpiresAt: { $gt: new Date() },
       },
       {
-        $set: { passwordHash },
+        $set: {
+          passwordHash,
+          emailVerifiedAt: new Date(),
+          verificationRequired: false,
+        },
         $unset: {
           resetTokenHash: 1,
           resetExpiresAt: 1,
+          verificationTokenHash: 1,
+          verificationExpiresAt: 1,
           pendingEmail: 1,
           emailChangeTokenHash: 1,
           emailChangeExpiresAt: 1,
@@ -303,6 +342,7 @@ export function createAccountAccess({
               : 'Cliente',
           email: parsed.data.email,
           role: 'customer',
+          ...(provider === 'google' ? { emailVerifiedAt: new Date() } : {}),
         });
         try {
           await SocialIdentity.create({ provider, subject, userId: user._id });

@@ -6,6 +6,10 @@ import { z } from 'zod';
 import { createApp } from './app.js';
 import { createImageStorage } from './images.js';
 import { createAccountServices } from './account-access.js';
+import {
+  createOrderNotifier,
+  startOrderNotifications,
+} from './order-notifications.js';
 const env = z
   .object({
     MONGODB_URI: z.string().min(1),
@@ -27,6 +31,8 @@ const imageStorage = createImageStorage({
   apiKey: env.CLOUDINARY_API_KEY,
   apiSecret: env.CLOUDINARY_API_SECRET,
 });
+const accountServices = createAccountServices(process.env);
+const notifyOrder = createOrderNotifier(process.env);
 const originValue = env.WEB_ORIGIN || env.RENDER_EXTERNAL_URL;
 if (!originValue) throw new Error('Configurá WEB_ORIGIN');
 const webOrigin = new URL(originValue).origin;
@@ -50,16 +56,20 @@ const app = createApp({
   webOrigin,
   staticDirectory,
   imageStorage,
-  accountServices: createAccountServices(process.env),
+  accountServices,
+  notifyOrder,
+  buildCommit: process.env.RENDER_GIT_COMMIT,
   production: env.NODE_ENV === 'production',
   trustProxy: env.TRUST_PROXY === '1',
 });
 const server = app.listen(env.PORT, '0.0.0.0', () =>
   console.log(`API disponible en puerto ${env.PORT}`),
 );
+const stopNotifications = startOrderNotifications(notifyOrder);
 for (const signal of ['SIGINT', 'SIGTERM'])
   process.on(signal, () =>
     server.close(async () => {
+      stopNotifications();
       await mongoose.disconnect();
       process.exit(0);
     }),

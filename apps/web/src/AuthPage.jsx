@@ -46,15 +46,23 @@ export function AuthPage({
   setAuth,
   submitAuth,
   error,
+  accountMessage,
   clearError,
   busy,
   onBack,
 }) {
   const [token, setToken] = useState(
-    () => new URLSearchParams(location.hash.slice(1)).get('reset') || '',
+    () =>
+      new URLSearchParams(location.hash.slice(1)).get('reset') ||
+      new URLSearchParams(location.hash.slice(1)).get('verify') ||
+      '',
   );
   const [mode, setMode] = useState(() =>
-    location.hash.startsWith('#reset=') ? 'reset' : 'account',
+    location.hash.startsWith('#verify=')
+      ? 'verify'
+      : location.hash.startsWith('#reset=')
+        ? 'reset'
+        : 'account',
   );
   const [options, setOptions] = useState(null);
   const [message, setMessage] = useState('');
@@ -76,12 +84,11 @@ export function AuthPage({
   }, []);
   useEffect(() => {
     const readResetLink = () => {
-      const nextToken = new URLSearchParams(location.hash.slice(1)).get(
-        'reset',
-      );
+      const params = new URLSearchParams(location.hash.slice(1));
+      const nextToken = params.get('reset') || params.get('verify');
       if (nextToken) {
         setToken(nextToken);
-        setMode('reset');
+        setMode(params.has('verify') ? 'verify' : 'reset');
         setLocalError('');
         setMessage('');
         window.history.replaceState(null, '', '/login');
@@ -99,7 +106,10 @@ export function AuthPage({
   async function recover(event) {
     event.preventDefault();
     const form = Object.fromEntries(new FormData(event.currentTarget));
-    if (mode === 'reset' && form.password !== form.confirmPassword) {
+    if (
+      ['reset', 'verify'].includes(mode) &&
+      form.password !== form.confirmPassword
+    ) {
       setLocalError('Las contraseñas no coinciden.');
       return;
     }
@@ -108,18 +118,24 @@ export function AuthPage({
     setMessage('');
     try {
       const response = await api(
-        '/auth/' + (mode === 'forgot' ? 'forgot-password' : 'reset-password'),
+        '/auth/' +
+          {
+            forgot: 'forgot-password',
+            reset: 'reset-password',
+            verify: 'verify-email',
+            resend: 'resend-verification',
+          }[mode],
         {
           method: 'POST',
           body: JSON.stringify(
-            mode === 'forgot'
+            ['forgot', 'resend'].includes(mode)
               ? { email: form.email }
               : { token, password: form.password },
           ),
         },
       );
       setMessage(response.message);
-      if (mode === 'reset') {
+      if (['reset', 'verify'].includes(mode)) {
         setMode('account');
         setAuth('login');
       }
@@ -140,22 +156,26 @@ export function AuthPage({
           <span aria-hidden="true">✳</span> impresión<span>3D</span>
         </p>
         <h1 id="login-title">
-          {mode === 'forgot'
-            ? 'Recuperá tu cuenta'
-            : mode === 'reset'
-              ? 'Tu nueva contraseña'
-              : auth === 'register'
-                ? 'Creá tu cuenta'
-                : 'Qué bueno verte'}
+          {mode === 'verify'
+            ? 'Confirmá tu correo'
+            : mode === 'resend'
+              ? 'Reenviar confirmación'
+              : mode === 'forgot'
+                ? 'Recuperá tu cuenta'
+                : mode === 'reset'
+                  ? 'Tu nueva contraseña'
+                  : auth === 'register'
+                    ? 'Creá tu cuenta'
+                    : 'Qué bueno verte'}
         </h1>
         {(localError || error) && (
           <p role="alert" className="error">
             {localError || error}
           </p>
         )}
-        {message && (
+        {(message || accountMessage) && (
           <p role="status" className="auth-message">
-            {message}
+            {message || accountMessage}
           </p>
         )}
         {mode === 'account' ? (
@@ -256,15 +276,29 @@ export function AuthPage({
                 {auth === 'register' ? 'Ya tengo cuenta' : 'Crear una cuenta'}
               </button>
             </form>
+            {options?.verification && (
+              <button
+                type="button"
+                className="forgot-link"
+                disabled={disabled}
+                onClick={() => changeMode('resend')}
+              >
+                Reenviar confirmación de correo
+              </button>
+            )}
           </>
         ) : (
           <form onSubmit={recover}>
             <p className="auth-intro">
-              {mode === 'forgot'
-                ? 'Te enviaremos un enlace para elegir una nueva contraseña.'
-                : 'Elegí una contraseña de al menos 12 caracteres.'}
+              {mode === 'verify'
+                ? 'Para completar el registro, elegí la contraseña con la que vas a ingresar.'
+                : mode === 'resend'
+                  ? 'Te enviaremos otro enlace para confirmar tu cuenta.'
+                  : mode === 'forgot'
+                    ? 'Te enviaremos un enlace para elegir una nueva contraseña.'
+                    : 'Elegí una contraseña de al menos 12 caracteres.'}
             </p>
-            {mode === 'forgot' ? (
+            {['forgot', 'resend'].includes(mode) ? (
               <label>
                 Correo electrónico
                 <input
@@ -303,9 +337,13 @@ export function AuthPage({
             <button className="primary" disabled={disabled}>
               {working
                 ? 'Procesando…'
-                : mode === 'forgot'
-                  ? 'Enviar enlace de recuperación'
-                  : 'Guardar nueva contraseña'}
+                : mode === 'verify'
+                  ? 'Confirmar correo y contraseña'
+                  : mode === 'resend'
+                    ? 'Enviar confirmación'
+                    : mode === 'forgot'
+                      ? 'Enviar enlace de recuperación'
+                      : 'Guardar nueva contraseña'}
             </button>
             <button
               type="button"

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
+import { Pagination } from './Pagination.jsx';
 import { ProductPhoto } from './ProductPhoto.jsx';
 import { ProductModel } from './ProductModel.jsx';
 import {
@@ -103,21 +104,26 @@ function OrderEditor({ order, onSave, busy }) {
 export function Admin({ onCatalogChange, onPreview }) {
   const [tab, setTab] = useState('orders'),
     [products, setProducts] = useState([]),
+    [operations, setOperations] = useState(null),
+    [productPage, setProductPage] = useState({ page: 1, pages: 1, total: 0 }),
     [data, setData] = useState({ orders: [], page: 1, pages: 1, total: 0 }),
     [editing, setEditing] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [loading, setLoading] = useState(true);
-  async function load(page = 1) {
+  async function load(page = 1, productsPage = productPage.page) {
     setLoading(true);
     try {
-      const [items, orders] = await Promise.all([
-        api('/admin/products'),
+      const [items, orders, state] = await Promise.all([
+        api('/admin/products?page=' + productsPage),
         api('/admin/orders?page=' + page),
+        api('/admin/operations'),
       ]);
-      setProducts(items);
+      setProducts(items.products);
+      setProductPage(items);
       setData(orders);
+      setOperations(state);
     } finally {
       setLoading(false);
     }
@@ -203,6 +209,13 @@ export function Admin({ onCatalogChange, onPreview }) {
           Productos
         </button>
         <button
+          aria-pressed={tab === 'operations'}
+          className={tab === 'operations' ? 'active' : ''}
+          onClick={() => setTab('operations')}
+        >
+          Estado del servicio
+        </button>
+        <button
           disabled={busy || loading}
           onClick={() => {
             setError('');
@@ -224,6 +237,39 @@ export function Admin({ onCatalogChange, onPreview }) {
       )}
       {loading ? (
         <p role="status">Cargando taller…</p>
+      ) : tab === 'operations' ? (
+        <section>
+          <h2>Estado del servicio</h2>
+          <p>
+            Integraciones habilitadas en este servidor. La configuración no
+            sustituye una prueba completa con cada proveedor.
+          </p>
+          <ul>
+            {Object.entries({
+              images: 'Fotos',
+              models: 'Modelos 3D',
+              recovery: 'Recuperación de contraseña',
+              verification: 'Confirmación de correo',
+              google: 'Google',
+              facebook: 'Facebook',
+              orderNotifications: 'Avisos de pedidos',
+            }).map(([key, label]) => (
+              <li key={key}>
+                {label}:{' '}
+                {operations?.integrations[key]
+                  ? 'Habilitado'
+                  : 'Sin configurar'}
+              </li>
+            ))}
+          </ul>
+          <p>
+            Avisos que agotaron sus reintentos:{' '}
+            {operations?.failedNotifications || 0}
+          </p>
+          {operations?.commit && (
+            <p className="small">Versión: {operations.commit.slice(0, 7)}</p>
+          )}
+        </section>
       ) : tab === 'orders' ? (
         <>
           <p>
@@ -372,6 +418,10 @@ export function Admin({ onCatalogChange, onPreview }) {
               </button>
             </form>
           )}
+          <p>
+            {productPage.total} productos · Página {productPage.page} de{' '}
+            {productPage.pages}
+          </p>
           <div className="admin-products">
             {products.map((p) => (
               <article className="order" key={p._id}>
@@ -404,6 +454,14 @@ export function Admin({ onCatalogChange, onPreview }) {
               </article>
             ))}
           </div>
+          <Pagination
+            page={productPage.page}
+            pages={productPage.pages}
+            busy={busy || loading}
+            onPage={(page) =>
+              load(data.page, page).catch((e) => setError(e.message))
+            }
+          />
         </>
       )}
     </section>

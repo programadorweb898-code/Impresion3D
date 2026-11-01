@@ -11,7 +11,12 @@ import {
   orderUpdateSchema,
   statusTransitions,
 } from '@impresion3d/shared';
-export function createAdminRouter({ imageStorage } = {}) {
+export function createAdminRouter({
+  imageStorage,
+  accountServices = {},
+  notifyOrder,
+  buildCommit,
+} = {}) {
   const adminRouter = Router();
   adminRouter.use((req, res, next) =>
     req.user.role === 'admin'
@@ -32,9 +37,44 @@ export function createAdminRouter({ imageStorage } = {}) {
       ? next()
       : res.status(400).json({ message: 'Identificador inválido' }),
   );
-  adminRouter.get('/products', async (_req, res) =>
-    res.json(await Product.find().sort({ createdAt: -1 }).lean()),
-  );
+  adminRouter.get('/operations', async (_req, res) => {
+    const failedNotifications = await Order.countDocuments({
+      'notification.state': 'failed',
+    });
+    res.json({
+      commit: buildCommit || null,
+      integrations: {
+        images: !!imageStorage,
+        models: !!imageStorage?.uploadModel,
+        recovery: !!accountServices.sendReset,
+        verification: !!accountServices.sendVerification,
+        google: !!accountServices.providers?.google,
+        facebook: !!accountServices.providers?.facebook,
+        orderNotifications: !!notifyOrder,
+      },
+      failedNotifications,
+    });
+  });
+  adminRouter.get('/products', async (req, res) => {
+    const raw = req.query.page ?? '1';
+    if (typeof raw !== 'string' || !/^[1-9][0-9]{0,5}$/.test(raw))
+      return res.status(400).json({ message: 'Página inválida' });
+    const page = Number(raw),
+      limit = 20;
+    const products = await Product.find()
+      .sort({ createdAt: -1, _id: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+    if (req.query.page === undefined) return res.json(products);
+    const total = await Product.countDocuments();
+    res.json({
+      products,
+      page,
+      total,
+      pages: Math.max(1, Math.ceil(total / limit)),
+    });
+  });
   adminRouter.post('/products', validate(productSchema), async (req, res) =>
     res.status(201).json(await Product.create(req.body)),
   );

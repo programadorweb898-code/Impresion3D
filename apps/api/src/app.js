@@ -5,13 +5,17 @@ import helmet from 'helmet';
 import session from 'express-session';
 import { rateLimit } from 'express-rate-limit';
 import argon2 from 'argon2';
-import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { loginSchema, registerSchema, orderSchema } from '@impresion3d/shared';
 import { User } from './models.js';
 import { listProducts, listOrders } from './list-routes.js';
 import { createAdminRouter } from './admin.js';
 import { submitCatalogOrder } from './checkout.js';
-import { createAccountAccess } from './account-access.js';
+import { sendVerification } from './email-verification.js';
+import {
+  createAccountAccess,
+  createAccountServices,
+} from './account-access.js';
 import { createProfileRouter } from './profile.js';
 export function createApp({
   sessionStore,
@@ -21,9 +25,30 @@ export function createApp({
   trustProxy = false,
   staticDirectory,
   imageStorage,
-  accountServices,
+  accountServices = createAccountServices(),
+  notifyOrder,
+  buildCommit,
 }) {
   const app = express();
+  app.use('/api', (req, res, next) => {
+    req.requestId = randomUUID();
+    res.set('x-request-id', req.requestId);
+    const started = Date.now();
+    res.on('finish', () => {
+      if (res.statusCode >= 500)
+        console.error(
+          JSON.stringify({
+            event: 'http_request_failed',
+            requestId: req.requestId,
+            method: req.method,
+            route: req.route?.path || '/api',
+            status: res.statusCode,
+            durationMs: Date.now() - started,
+          }),
+        );
+    });
+    next();
+  });
   if (trustProxy) app.set('trust proxy', 1);
   app.use(
     helmet({
@@ -126,7 +151,14 @@ export function createApp({
     req.user = user;
     next();
   };
-  app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+  app.get('/api/health', (_req, res) =>
+    res.json({
+      status: 'ok',
+      ...(buildCommit && /^[a-f0-9]{40}$/.test(buildCommit)
+        ? { commit: buildCommit }
+        : {}),
+    }),
+  );
   app.get('/api/products', listProducts);
   app.post(
     '/api/auth/register',
@@ -134,13 +166,34 @@ export function createApp({
     validate(registerSchema),
     async (req, res) => {
       const { name, email, password } = req.body;
+      const verificationRequired =
+        accountServices.requireEmailVerification ??
+        !!accountServices.sendVerification;
+      if (verificationRequired && !accountServices.sendVerification)
+        return res.status(503).json({
+          message:
+            'El registro requiere confirmar tu correo y el envío todavía no está disponible. Intentá más tarde.',
+        });
       const passwordHash = await argon2.hash(password, {
         type: argon2.argon2id,
         memoryCost: 19456,
         timeCost: 2,
         parallelism: 1,
       });
-      const user = await User.create({ name, email, passwordHash });
+      const user = await User.create({
+        name,
+        email,
+        passwordHash,
+        verificationRequired,
+      });
+      if (verificationRequired) {
+        await sendVerification(user._id, accountServices, webOrigin);
+        return res.status(202).json({
+          verificationRequired: true,
+          message:
+            'Revisá tu correo para confirmar la cuenta y elegir tu contraseña. Si no llega, usá Reenviar confirmación.',
+        });
+      }
       await regenerate(req);
       req.session.userId = String(user._id);
       req.session.authVersion = user.authVersion || 0;
@@ -171,6 +224,12 @@ export function createApp({
         return res
           .status(401)
           .json({ message: 'Correo o contraseña incorrectos' });
+      if (user.verificationRequired)
+        return res.status(403).json({
+          code: 'EMAIL_UNVERIFIED',
+          message:
+            'Confirmá tu correo antes de ingresar. Podés reenviar la confirmación.',
+        });
       await regenerate(req);
       req.session.userId = String(user._id);
       req.session.authVersion = user.authVersion || 0;
@@ -222,7 +281,16 @@ export function createApp({
     validate(orderSchema),
     submitCatalogOrder,
   );
-  app.use('/api/admin', authenticated, createAdminRouter({ imageStorage }));
+  app.use(
+    '/api/admin',
+    authenticated,
+    createAdminRouter({
+      imageStorage,
+      accountServices,
+      notifyOrder,
+      buildCommit,
+    }),
+  );
   app.use('/api', (_req, res) =>
     res.status(404).json({ message: 'Ruta no encontrada' }),
   );
@@ -272,7 +340,13 @@ export function createApp({
       return res.status(400).json({ message: 'JSON inválido' });
     if (err.status === 413)
       return res.status(413).json({ message: 'Solicitud demasiado grande' });
-    console.error(err.name);
+    console.error(
+      JSON.stringify({
+        event: 'application_error',
+        requestId: req.requestId,
+        type: err.name || 'Error',
+      }),
+    );
     res.status(500).json({ message: 'No se pudo completar la operación' });
   });
   return app;

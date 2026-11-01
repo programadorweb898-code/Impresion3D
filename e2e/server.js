@@ -1,6 +1,7 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import argon2 from 'argon2';
+import express from 'express';
 import { resolve } from 'node:path';
 import { createApp } from '../apps/api/src/app.js';
 import { User, Product, Order } from '../apps/api/src/models.js';
@@ -10,6 +11,12 @@ await Promise.all([User.init(), Order.init()]);
 const user = await User.create({
   name: 'Cliente navegador',
   email: 'browser@example.com',
+  passwordHash: await argon2.hash('browser-password-12345'),
+});
+await User.create({
+  name: 'Admin navegador',
+  email: 'admin-browser@example.com',
+  role: 'admin',
   passwordHash: await argon2.hash('browser-password-12345'),
 });
 const products = await Product.create(
@@ -39,11 +46,24 @@ await Order.create(
     history: [],
   })),
 );
-const server = createApp({
-  sessionSecret: 'browser-tests-isolated-secret-long-enough',
-  webOrigin: 'http://127.0.0.1:3100',
-  staticDirectory: resolve('apps/web/dist'),
-}).listen(3100, '127.0.0.1');
+// The mailbox exists only in this isolated test server; it is never part of the production app.
+const mailbox = new Map();
+const host = express();
+host.get('/__test/mailbox/:email', (req, res) =>
+  res.json(mailbox.get(req.params.email) || null),
+);
+host.use(
+  createApp({
+    sessionSecret: 'browser-tests-isolated-secret-long-enough',
+    webOrigin: 'http://127.0.0.1:3100',
+    staticDirectory: resolve('apps/web/dist'),
+    accountServices: {
+      providers: {},
+      sendVerification: async (message) => mailbox.set(message.email, message),
+    },
+  }),
+);
+const server = host.listen(3100, '127.0.0.1');
 for (const signal of ['SIGTERM', 'SIGINT'])
   process.on(signal, () =>
     server.close(async () => {

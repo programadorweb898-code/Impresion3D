@@ -46,7 +46,7 @@ Catálogo e historial usan páginas de 20 registros; las respuestas incluyen pro
 
 La configuración de publicación está en `render.yaml`. Seguí [la guía de despliegue](docs/deployment.md) para conectar Atlas, configurar secretos y verificar el sitio. El repositorio preparado no implica que el servicio ya esté publicado.
 
-En producción Express sirve el frontend compilado y `/api` bajo el mismo origen HTTPS. Ejecutá `npm run build` y luego `npm start`; configurá WEB_ORIGIN con ese origen y NODE_ENV=production, o usá el origen que Render proporciona automáticamente. TRUST_PROXY=1 solamente si existe exactamente un proxy confiable delante de Express. Persistí MongoDB y configurá sus copias de seguridad. El Blueprint deja los despliegues automáticos desactivados.
+En producción Express sirve el frontend compilado y `/api` bajo el mismo origen HTTPS. Ejecutá `npm run build` y luego `npm start`; configurá WEB_ORIGIN con ese origen y NODE_ENV=production, o usá el origen que Render proporciona automáticamente. TRUST_PROXY=1 solamente si existe exactamente un proxy confiable delante de Express. Persistí MongoDB y configurá sus copias de seguridad. El Blueprint deja los despliegues automáticos desactivados para instalaciones nuevas. El servicio existente `Impresion_3D` tiene auto-deploy habilitado: las opciones del Dashboard determinan su comportamiento actual.
 
 El panel Administración permite crear y editar productos, ocultarlos del catálogo, consultar pedidos paginados, avanzar estados y establecer o quitar una fecha estimada de entrega. Los pedidos cerrados no se reabren. Los cambios concurrentes de pedidos y fichas de productos se rechazan para evitar pisar trabajo de otra pestaña. El rol se comprueba en MongoDB en cada solicitud administrativa; no se acepta desde el registro.
 
@@ -58,7 +58,7 @@ npm run admin:promote -w @impresion3d/api -- tu-correo@example.com
 
 Volvé a iniciar sesión para ver Administración. No existe una contraseña administrativa predeterminada ni un endpoint público para otorgar permisos. Los productos se ocultan en lugar de eliminarse; los pedidos conservan su copia histórica.
 
-Las fotos reales se cargan desde Administración con Cloudinary: seguí [la guía de fotos](docs/product-photos.md) para habilitar las tres variables del servidor. La recuperación de contraseña y el cambio confirmado de email usan Resend. El acceso con Google y Facebook se habilita con sus credenciales. Consultá [acceso y cuentas](docs/account-access.md). Quedan pendientes la verificación del correo en el registro y la revisión operativa antes de abrir al público. No se inventan plazos ni cuenta regresiva.
+Las fotos reales se cargan desde Administración con Cloudinary: seguí [la guía de fotos](docs/product-photos.md) para habilitar las tres variables del servidor. La recuperación de contraseña y el cambio confirmado de email usan Resend. El acceso con Google y Facebook se habilita con sus credenciales. Consultá [acceso y cuentas](docs/account-access.md). El registro confirma el correo cuando se configura Resend; los registros pendientes no abren sesión y el enlace permite elegir la contraseña definitiva. Consultá [operación y preparación para el público](docs/operations.md) para activar avisos, revisar integraciones y configurar backups. No se inventan plazos ni cuenta regresiva.
 
 El [visor 3D del catálogo](docs/catalog-3d.md) permite asociar un GLB, STL o 3MF a cada producto desde Administración, sin usar Meshy. Requiere archivos reales; no convierte las fotos en modelos.
 

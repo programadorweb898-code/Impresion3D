@@ -254,13 +254,19 @@ export function createProfileRouter({
             emailChangeExpiresAt: { $gt: new Date() },
           },
           {
-            $set: { email: pending.pendingEmail },
+            $set: {
+              email: pending.pendingEmail,
+              emailVerifiedAt: new Date(),
+              verificationRequired: false,
+            },
             $unset: {
               pendingEmail: 1,
               emailChangeTokenHash: 1,
               emailChangeExpiresAt: 1,
               resetTokenHash: 1,
               resetExpiresAt: 1,
+              verificationTokenHash: 1,
+              verificationExpiresAt: 1,
             },
             $inc: { authVersion: 1 },
           },
