@@ -15,12 +15,26 @@ export function Cart({
   catalogError,
 }) {
   const byId = new Map(products.map((p) => [p._id, p]));
-  const rows = items.map((i) => ({ ...i, product: byId.get(i.productId) }));
-  const unavailable = rows.some((i) => !i.product);
+  const confirmed = !refreshing && !catalogError;
+  const rows = items.map((i) => {
+    const product = byId.get(i.productId);
+    return {
+      ...i,
+      product,
+      name:
+        product?.name ||
+        (refreshing
+          ? 'Actualizando producto…'
+          : catalogError
+            ? 'Producto sin verificar'
+            : 'Producto no disponible'),
+    };
+  });
+  const unavailable = confirmed && rows.some((i) => !i.product);
   const currencies = new Set(
     rows.filter((i) => i.product).map((i) => i.product.currency),
   );
-  const mixed = currencies.size > 1,
+  const mixed = confirmed && currencies.size > 1,
     currency = [...currencies][0] || 'ARS';
   const total = rows.reduce(
     (sum, i) => sum + (i.product?.priceCents || 0) * i.quantity,
@@ -76,7 +90,7 @@ export function Cart({
             </p>
           )}
           <div className="cart-items">
-            {rows.map(({ productId, quantity, product }) => (
+            {rows.map(({ productId, quantity, product, name }) => (
               <article className="cart-item" key={productId}>
                 {product?.image?.url && (
                   <img
@@ -86,7 +100,7 @@ export function Cart({
                   />
                 )}
                 <div className="cart-item-info">
-                  <h2>{product?.name || 'Producto no disponible'}</h2>
+                  <h2>{name}</h2>
                   <p className="cart-quantity">
                     Cantidad: <strong>{quantity}</strong>
                   </p>
@@ -96,12 +110,9 @@ export function Cart({
                     </p>
                   )}
                   <label>
-                    Cantidad de {product?.name || 'producto no disponible'}
+                    Cantidad de {name}
                     <select
-                      aria-label={
-                        'Cantidad de ' +
-                        (product?.name || 'producto no disponible')
-                      }
+                      aria-label={'Cantidad de ' + name}
                       value={quantity}
                       disabled={busy}
                       onChange={(e) =>
@@ -119,9 +130,7 @@ export function Cart({
                     type="button"
                     disabled={busy}
                     className="remove-item"
-                    aria-label={
-                      'Quitar ' + (product?.name || 'producto no disponible')
-                    }
+                    aria-label={'Quitar ' + name}
                     onClick={() => onRemove(productId)}
                   >
                     Quitar
@@ -138,7 +147,9 @@ export function Cart({
           <div className="cart-summary">
             <div className="flex justify-between gap-4">
               <h2>Total de productos</h2>
-              <strong>{mixed ? '—' : money(total, currency)}</strong>
+              <strong>
+                {!confirmed || mixed ? '—' : money(total, currency)}
+              </strong>
             </div>
             <p className="small">
               El servidor confirma precios y disponibilidad al enviar. El plazo

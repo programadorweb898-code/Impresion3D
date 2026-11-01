@@ -64,7 +64,12 @@ function App() {
     }),
     [orderPage, setOrderPage] = useState({ page: 1, pages: 1 }),
     [ordersLoading, setOrdersLoading] = useState(false),
-    [cartProducts, setCartProducts] = useState([]),
+    [cartCatalog, setCartCatalog] = useState({
+      key: null,
+      products: [],
+      status: 'idle',
+    }),
+    [cartRefresh, setCartRefresh] = useState(0),
     [view, setView] = useState(() =>
       location.pathname === '/perfil' ? 'profile' : 'catalog',
     ),
@@ -90,8 +95,6 @@ function App() {
     [loading, setLoading] = useState(true),
     [category, setCategory] = useState('Todos'),
     [cartNotes, setCartNotes] = useState(''),
-    [refreshingCart, setRefreshingCart] = useState(false),
-    [cartCatalogError, setCartCatalogError] = useState(false),
     [viewing, setViewing] = useState(null);
   const cart = useCart(user?.id);
   const [authReady, setAuthReady] = useState(false);
@@ -111,28 +114,36 @@ function App() {
   const cartButtonRef = useRef(null);
   const cartProductIds = new Set(cart.items.map((item) => item.productId));
   const cartIds = cart.items.map((item) => item.productId).join(',');
+  const cartKey = JSON.stringify([user?.id, cartIds, cartRefresh]);
+  const currentCartCatalog = cartCatalog.key === cartKey;
+  const cartProducts = currentCartCatalog ? cartCatalog.products : [];
+  const cartCatalogError = currentCartCatalog && cartCatalog.status === 'error';
+  const refreshingCart =
+    !currentCartCatalog || ['idle', 'loading'].includes(cartCatalog.status);
   useEffect(() => {
     if (!cartOpen || !cart.ready || !user?.id) return;
     let active = true;
-    setRefreshingCart(true);
-    setCartCatalogError(false);
+    setCartCatalog((current) => ({
+      key: cartKey,
+      products: current.key === cartKey ? current.products : [],
+      status: 'loading',
+    }));
     const request = cartIds
       ? api('/products?ids=' + cartIds)
       : Promise.resolve([]);
     request
       .then((data) => {
-        if (active) setCartProducts(data);
+        if (active)
+          setCartCatalog({ key: cartKey, products: data, status: 'ready' });
       })
       .catch(() => {
-        if (active) setCartCatalogError(true);
-      })
-      .finally(() => {
-        if (active) setRefreshingCart(false);
+        if (active)
+          setCartCatalog({ key: cartKey, products: [], status: 'error' });
       });
     return () => {
       active = false;
     };
-  }, [cartOpen, cart.ready, user?.id, cartIds]);
+  }, [cartOpen, cart.ready, user?.id, cartIds, cartKey]);
   useEffect(() => {
     api('/auth/me')
       .then(setUser)
@@ -299,7 +310,7 @@ function App() {
       closeAuth();
       setAuthReady(true);
       if (loginDestination.current === 'cart') {
-        setCartOpen(true);
+        showCart();
       }
       if (loginDestination.current === 'profile') openProfile();
       loginDestination.current = null;
@@ -310,22 +321,12 @@ function App() {
       setBusy(false);
     }
   }
-  async function refreshCart() {
-    setRefreshingCart(true);
-    setCartCatalogError(false);
-    try {
-      setCartProducts(
-        cart.items.length
-          ? await api(
-              '/products?ids=' + cart.items.map((i) => i.productId).join(','),
-            )
-          : [],
-      );
-    } catch {
-      setCartCatalogError(true);
-    } finally {
-      setRefreshingCart(false);
-    }
+  function refreshCart() {
+    setCartRefresh((current) => current + 1);
+  }
+  function showCart() {
+    refreshCart();
+    setCartOpen(true);
   }
   async function openCart() {
     if (!authReady) return;
@@ -336,7 +337,7 @@ function App() {
       setNotice('Ingresá para armar tu carrito.');
       return;
     }
-    setCartOpen(true);
+    showCart();
     setError('');
   }
   function editCart(action) {
@@ -417,7 +418,7 @@ function App() {
           );
         }
       }
-      if ([404, 409].includes(e.status)) await refreshCart();
+      if ([404, 409].includes(e.status)) refreshCart();
       setBusy(false);
       return;
     }
