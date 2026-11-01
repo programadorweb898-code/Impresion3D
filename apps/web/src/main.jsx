@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  lazy,
+  Suspense,
+} from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   registerSchema,
@@ -21,6 +28,7 @@ import { Navbar } from './Navbar.jsx';
 import { CartDrawer } from './CartDrawer.jsx';
 import { Pagination } from './Pagination.jsx';
 import { Profile } from './Profile.jsx';
+import { Toast } from './Toast.jsx';
 const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
 );
@@ -77,6 +85,7 @@ function App() {
     [error, setError] = useState(''),
     [authMessage, setAuthMessage] = useState(''),
     [notice, setNotice] = useState(''),
+    [cartToast, setCartToast] = useState(null),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [category, setCategory] = useState('Todos'),
@@ -87,6 +96,8 @@ function App() {
   const cart = useCart(user?.id);
   const [authReady, setAuthReady] = useState(false);
   const loginDestination = useRef(null);
+  const toastSequence = useRef(0);
+  const dismissCartToast = useCallback(() => setCartToast(null), []);
   useEffect(() => {
     if (!user?.id) return;
     try {
@@ -186,6 +197,7 @@ function App() {
     };
   }, []);
   function openLogin() {
+    dismissCartToast();
     setCartOpen(false);
     setLoginPrompt(false);
     setError('');
@@ -347,7 +359,11 @@ function App() {
     }
     try {
       cart.add(product._id);
-      setNotice('Agregaste ' + product.name + ' al carrito.');
+      setNotice('');
+      setCartToast({
+        id: ++toastSequence.current,
+        message: 'Agregaste ' + product.name + ' al carrito.',
+      });
     } catch (e) {
       setNotice(e.message);
     }
@@ -792,6 +808,13 @@ function App() {
         </CartDrawer>
       )}
       {!loginPage && <WhatsAppButton phone="5491155606321" />}
+      {!loginPage && cartToast && (
+        <Toast
+          key={cartToast.id}
+          message={cartToast.message}
+          onDismiss={dismissCartToast}
+        />
+      )}
       {viewing && (
         <Modal wide onClose={() => setViewing(null)}>
           <button

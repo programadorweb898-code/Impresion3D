@@ -18,6 +18,61 @@ async function login(page, count = 0, email = 'browser@example.com') {
     page.getByRole('button', { name: `Abrir carrito, ${count} productos` }),
   ).toBeEnabled();
 }
+test('aviso del carrito sigue visible al scrollear, reemplaza mensajes y desaparece suavemente', async ({
+  page,
+}) => {
+  await login(page);
+  await page.clock.install();
+  await page
+    .locator('.product-card')
+    .nth(10)
+    .getByRole('button', { name: 'Agregar al carrito' })
+    .click();
+  const toast = page.locator('.toast');
+  await expect(toast).toContainText('Agregaste');
+  await expect(toast).toHaveCSS('animation-name', 'toast-enter');
+  expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
+  const before = await toast.boundingBox();
+  expect(before.y).toBeGreaterThan(0);
+  expect(before.y + before.height).toBeLessThan(844);
+  await page.evaluate(() => scrollBy({ top: 120, behavior: 'instant' }));
+  const after = await toast.boundingBox();
+  expect(Math.abs(after.y - before.y)).toBeLessThan(2);
+  await page.screenshot({
+    path: '/tmp/impresion3d-toast-mobile.png',
+    animations: 'disabled',
+  });
+  await page.clock.fastForward(1800);
+  await page
+    .locator('.product-card')
+    .nth(11)
+    .getByRole('button', { name: 'Agregar al carrito' })
+    .click();
+  await expect(toast).toHaveCount(1);
+  await expect(toast).not.toHaveClass(/is-closing/);
+  await page.clock.fastForward(1300);
+  await expect(toast).not.toHaveClass(/is-closing/);
+  await page.clock.fastForward(1600);
+  await expect(toast).toHaveClass(/is-closing/);
+  await expect(toast).toHaveCSS('animation-name', 'toast-exit');
+  await page.clock.fastForward(250);
+  await expect(toast).toHaveCount(0);
+});
+test('aviso del carrito respeta movimiento reducido y permite cierre manual', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await login(page);
+  await page
+    .locator('.product-card')
+    .first()
+    .getByRole('button', { name: 'Agregar al carrito' })
+    .click();
+  await expect(page.locator('.toast')).toBeVisible();
+  await expect(page.locator('.toast')).toHaveCSS('animation-name', 'none');
+  await page.getByRole('button', { name: 'Cerrar notificación' }).click();
+  await expect(page.locator('.toast')).toHaveCount(0);
+});
 test('menú móvil, páginas y categorías incluyen piezas fuera de la primera página', async ({
   page,
 }) => {
