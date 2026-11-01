@@ -1,3 +1,5 @@
+import { pageNumber, pageMetadata, pageSize as limit } from './pagination.js';
+import { validate } from './http-validation.js';
 import { Router } from 'express';
 import { addModelRoutes } from './model-routes.js';
 import { randomUUID } from 'node:crypto';
@@ -25,13 +27,6 @@ export function createAdminRouter({
           .status(403)
           .json({ message: 'Acceso exclusivo para administración' }),
   );
-  const validate = (schema) => (req, res, next) => {
-    const parsed = schema.safeParse(req.body);
-    if (!parsed.success)
-      return res.status(400).json({ message: parsed.error.issues[0].message });
-    req.body = parsed.data;
-    next();
-  };
   adminRouter.param('id', (req, res, next, id) =>
     /^[a-f0-9]{24}$/i.test(id)
       ? next()
@@ -56,11 +51,8 @@ export function createAdminRouter({
     });
   });
   adminRouter.get('/products', async (req, res) => {
-    const raw = req.query.page ?? '1';
-    if (typeof raw !== 'string' || !/^[1-9][0-9]{0,5}$/.test(raw))
-      return res.status(400).json({ message: 'Página inválida' });
-    const page = Number(raw),
-      limit = 20;
+    const page = pageNumber(req, res);
+    if (!page) return;
     const products = await Product.find()
       .sort({ createdAt: -1, _id: -1 })
       .skip((page - 1) * limit)
@@ -70,9 +62,7 @@ export function createAdminRouter({
     const total = await Product.countDocuments();
     res.json({
       products,
-      page,
-      total,
-      pages: Math.max(1, Math.ceil(total / limit)),
+      ...pageMetadata(page, total),
     });
   });
   adminRouter.post('/products', validate(productSchema), async (req, res) =>
@@ -99,11 +89,8 @@ export function createAdminRouter({
     },
   );
   adminRouter.get('/orders', async (req, res) => {
-    const raw = typeof req.query.page === 'string' ? req.query.page : '1';
-    if (!/^[1-9][0-9]{0,5}$/.test(raw))
-      return res.status(400).json({ message: 'Página inválida' });
-    const page = Number(raw);
-    const limit = 20;
+    const page = pageNumber(req, res);
+    if (!page) return;
     const [orders, total] = await Promise.all([
       Order.find()
         .sort({ createdAt: -1, _id: -1 })
@@ -115,9 +102,7 @@ export function createAdminRouter({
     ]);
     res.json({
       orders,
-      page,
-      total,
-      pages: Math.max(1, Math.ceil(total / limit)),
+      ...pageMetadata(page, total),
     });
   });
   adminRouter.patch(

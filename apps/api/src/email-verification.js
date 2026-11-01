@@ -1,6 +1,6 @@
+import { hashPassword } from './passwords.js';
 import { Router } from 'express';
 import { randomBytes, createHash } from 'node:crypto';
-import argon2 from 'argon2';
 import { z } from 'zod';
 import { User } from './models.js';
 const digest = (token) => createHash('sha256').update(token).digest('hex');
@@ -84,12 +84,7 @@ export function createVerificationRouter({
         message: 'El enlace venció o ya fue utilizado. Solicitá uno nuevo.',
       });
     // The email owner chooses the final password, so a preregistration cannot plant someone else's password.
-    const passwordHash = await argon2.hash(parsed.data.password, {
-      type: argon2.argon2id,
-      memoryCost: 19456,
-      timeCost: 2,
-      parallelism: 1,
-    });
+    const passwordHash = await hashPassword(parsed.data.password);
     const user = await User.findOneAndUpdate(filter, {
       $set: {
         passwordHash,

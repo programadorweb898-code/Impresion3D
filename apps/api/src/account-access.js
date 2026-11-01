@@ -1,6 +1,7 @@
+import { createMailer } from './mail.js';
+import { hashPassword } from './passwords.js';
 import { Router } from 'express';
 import { z } from 'zod';
-import argon2 from 'argon2';
 import {
   randomBytes,
   createHash,
@@ -10,12 +11,6 @@ import {
 import { User, SocialIdentity } from './models.js';
 import { createVerificationRouter } from './email-verification.js';
 const hash = (value) => createHash('sha256').update(value).digest('hex');
-export const passwordOptions = {
-  type: argon2.argon2id,
-  memoryCost: 19456,
-  timeCost: 2,
-  parallelism: 1,
-};
 export function createAccountServices(env = {}, transport = fetch) {
   const providers = {};
   for (const name of ['google', 'facebook']) {
@@ -26,75 +21,36 @@ export function createAccountServices(env = {}, transport = fetch) {
         clientSecret: env[prefix + '_CLIENT_SECRET'],
       };
   }
-  const sendEmailChange =
-    env.RESEND_API_KEY && env.EMAIL_FROM
-      ? async ({ email, url }) => {
-          const response = await transport('https://api.resend.com/emails', {
-            method: 'POST',
-            signal: AbortSignal.timeout(10000),
-            headers: {
-              Authorization: 'Bearer ' + env.RESEND_API_KEY,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              from: env.EMAIL_FROM,
-              to: [email],
-              subject: 'Confirmá tu nuevo email de impresión3D',
-              text: `Confirmá el nuevo correo de tu cuenta abriendo este enlace dentro de 30 minutos: ${url}\n\nSi no solicitaste este cambio, ignorá el mensaje.`,
-            }),
-          });
-          if (!response.ok) throw new Error('Email delivery failed');
-        }
+  const sendMail = createMailer(env, transport);
+  const linkEmail = (subject, text) =>
+    sendMail
+      ? ({ email, url }) => sendMail({ email, subject, text: text(url) })
       : null;
   return {
-    sendEmailChange,
+    sendEmailChange: linkEmail(
+      'Confirmá tu nuevo email de impresión3D',
+      (url) =>
+        `Confirmá el nuevo correo de tu cuenta abriendo este enlace dentro de 30 minutos: ${url}\n\nSi no solicitaste este cambio, ignorá el mensaje.`,
+    ),
     requireEmailVerification:
       env.REQUIRE_EMAIL_VERIFICATION === '1' ||
-      (env.REQUIRE_EMAIL_VERIFICATION !== '0' && !!sendEmailChange),
-    sendVerification: sendEmailChange
-      ? async ({ email, url }) => {
-          const response = await transport('https://api.resend.com/emails', {
-            method: 'POST',
-            signal: AbortSignal.timeout(10000),
-            headers: {
-              Authorization: 'Bearer ' + env.RESEND_API_KEY,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              from: env.EMAIL_FROM,
-              to: [email],
-              subject: 'Confirmá tu cuenta de impresión3D',
-              text: `Confirmá tu correo y elegí tu contraseña abriendo este enlace dentro de 30 minutos: ${url}\n\nSi no solicitaste una cuenta, ignorá este mensaje.`,
-            }),
-          });
-          if (!response.ok) throw new Error('Email delivery failed');
-        }
-      : null,
+      (env.REQUIRE_EMAIL_VERIFICATION !== '0' && !!sendMail),
+    sendVerification: linkEmail(
+      'Confirmá tu cuenta de impresión3D',
+      (url) =>
+        `Confirmá tu correo y elegí tu contraseña abriendo este enlace dentro de 30 minutos: ${url}\n\nSi no solicitaste una cuenta, ignorá este mensaje.`,
+    ),
+    sendReset: linkEmail(
+      'Recuperá tu cuenta de impresión3D',
+      (url) =>
+        `Recibimos una solicitud para cambiar tu contraseña. Abrí este enlace dentro de los próximos 30 minutos: ${url}\n\nSi no lo solicitaste, ignorá este correo. Tu contraseña no cambió.`,
+    ),
     providers,
     fetch: transport,
-    sendReset:
-      env.RESEND_API_KEY && env.EMAIL_FROM
-        ? async ({ email, url }) => {
-            const result = await transport('https://api.resend.com/emails', {
-              method: 'POST',
-              signal: AbortSignal.timeout(10000),
-              headers: {
-                Authorization: 'Bearer ' + env.RESEND_API_KEY,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                from: env.EMAIL_FROM,
-                to: [email],
-                subject: 'Recuperá tu cuenta de impresión3D',
-                text: `Recibimos una solicitud para cambiar tu contraseña. Abrí este enlace dentro de los próximos 30 minutos: ${url}\n\nSi no lo solicitaste, ignorá este correo. Tu contraseña no cambió.`,
-              }),
-            });
-            if (!result.ok) throw new Error('Email delivery failed');
-          }
-        : null,
     facebookVersion: env.FACEBOOK_GRAPH_VERSION || 'v23.0',
   };
 }
+
 export function createAccountAccess({
   webOrigin,
   services = createAccountServices(),
@@ -179,10 +135,7 @@ export function createAccountAccess({
         message:
           'Enlace inválido o contraseña demasiado corta. Usá al menos 12 caracteres.',
       });
-    const passwordHash = await argon2.hash(
-      parsed.data.password,
-      passwordOptions,
-    );
+    const passwordHash = await hashPassword(parsed.data.password);
     const user = await User.findOneAndUpdate(
       {
         resetTokenHash: hash(parsed.data.token),

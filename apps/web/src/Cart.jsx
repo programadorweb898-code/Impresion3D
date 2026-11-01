@@ -1,7 +1,4 @@
-const money = (value, currency = 'ARS') =>
-  new Intl.NumberFormat('es-AR', { style: 'currency', currency }).format(
-    value / 100,
-  );
+import { formatMoney as money } from '@impresion3d/shared';
 export function Cart({
   items,
   products,

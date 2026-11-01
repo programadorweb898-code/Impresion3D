@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
-import { registerSchema, loginSchema } from '@impresion3d/shared';
+import {
+  registerSchema,
+  loginSchema,
+  formatMoney as money,
+} from '@impresion3d/shared';
 import './styles.css';
 import { api } from './api.js';
 import { Cart } from './Cart.jsx';
@@ -21,13 +25,6 @@ const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
 );
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
-const money = (c, currency = 'ARS') =>
-  new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(c / 100);
 function Modal({ children, onClose, wide = false }) {
   const ref = useRef(null);
   useEffect(() => {

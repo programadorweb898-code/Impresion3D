@@ -1,35 +1,25 @@
+import { createMailer } from './mail.js';
+import { formatMoney } from '@impresion3d/shared';
 import { Order } from './models.js';
 import { z } from 'zod';
 export function createOrderNotifier(env = {}, transport = fetch) {
   if (!env.ORDER_NOTIFICATION_EMAIL) return null;
   const recipient = z.email().parse(env.ORDER_NOTIFICATION_EMAIL);
-  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+  const sendMail = createMailer(env, transport);
+  if (!sendMail) {
     console.warn(
       JSON.stringify({ event: 'order_notifications_not_configured' }),
     );
     return null;
   }
   return async (order) => {
-    const total = new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: order.currency,
-    }).format(order.totalCents / 100);
-    const response = await transport('https://api.resend.com/emails', {
-      method: 'POST',
-      signal: AbortSignal.timeout(10000),
-      headers: {
-        Authorization: 'Bearer ' + env.RESEND_API_KEY,
-        'Content-Type': 'application/json',
-        'Idempotency-Key': 'order-' + order._id,
-      },
-      body: JSON.stringify({
-        from: env.EMAIL_FROM,
-        to: [recipient],
-        subject: 'Nuevo pedido #' + String(order._id).slice(-6).toUpperCase(),
-        text: `Recibiste un nuevo pedido de ${order.items.reduce((sum, item) => sum + item.quantity, 0)} unidades por ${total}. Ingresá a Administración para revisar los detalles.`,
-      }),
+    const total = formatMoney(order.totalCents, order.currency);
+    await sendMail({
+      email: recipient,
+      subject: 'Nuevo pedido #' + String(order._id).slice(-6).toUpperCase(),
+      text: `Recibiste un nuevo pedido de ${order.items.reduce((sum, item) => sum + item.quantity, 0)} unidades por ${total}. Ingresá a Administración para revisar los detalles.`,
+      idempotencyKey: 'order-' + order._id,
     });
-    if (!response.ok) throw new Error('Order notification delivery failed');
   };
 }
 export async function deliverOrderNotifications(send, now = new Date()) {

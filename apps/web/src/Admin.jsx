@@ -5,6 +5,7 @@ import { ProductPhoto } from './ProductPhoto.jsx';
 import { ProductModel } from './ProductModel.jsx';
 import {
   productSchema,
+  formatMoney,
   statusLabels,
   statusTransitions,
 } from '@impresion3d/shared';
@@ -45,13 +46,7 @@ function OrderEditor({ order, onSave, busy }) {
         </p>
       ))}
       {order.notes && <p>Solicitud: {order.notes}</p>}
-      <p>
-        Total:{' '}
-        {new Intl.NumberFormat('es-AR', {
-          style: 'currency',
-          currency: order.currency,
-        }).format(order.totalCents / 100)}
-      </p>
+      <p>Total: {formatMoney(order.totalCents, order.currency)}</p>
       <ol>
         {order.history.map((h, i) => (
           <li key={i}>
@@ -443,10 +438,7 @@ export function Admin({ onCatalogChange, onPreview }) {
                 />
                 <p>
                   {p.active ? 'Publicado' : 'Oculto'} ·{' '}
-                  {new Intl.NumberFormat('es-AR', {
-                    style: 'currency',
-                    currency: p.currency,
-                  }).format(p.priceCents / 100)}
+                  {formatMoney(p.priceCents, p.currency)}
                 </p>
                 <button className="outline" onClick={() => setEditing(p)}>
                   Editar {p.name}

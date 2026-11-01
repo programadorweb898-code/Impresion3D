@@ -1,3 +1,5 @@
+import { hashPassword } from './passwords.js';
+import { validate } from './http-validation.js';
 import express from 'express';
 import path from 'node:path';
 import mongoose from 'mongoose';
@@ -121,13 +123,6 @@ export function createApp({
     standardHeaders: 'draft-8',
     legacyHeaders: false,
   });
-  const validate = (schema) => (req, res, next) => {
-    const parsed = schema.safeParse(req.body);
-    if (!parsed.success)
-      return res.status(400).json({ message: parsed.error.issues[0].message });
-    req.body = parsed.data;
-    next();
-  };
   const account = (u) => ({
     id: String(u._id),
     name: u.name,
@@ -174,12 +169,7 @@ export function createApp({
           message:
             'El registro requiere confirmar tu correo y el envío todavía no está disponible. Intentá más tarde.',
         });
-      const passwordHash = await argon2.hash(password, {
-        type: argon2.argon2id,
-        memoryCost: 19456,
-        timeCost: 2,
-        parallelism: 1,
-      });
+      const passwordHash = await hashPassword(password);
       const user = await User.create({
         name,
         email,
@@ -202,12 +192,7 @@ export function createApp({
     },
   );
   // A dummy hash makes unknown emails perform the same password verification work.
-  const dummyHash = argon2.hash(randomBytes(32), {
-    type: argon2.argon2id,
-    memoryCost: 19456,
-    timeCost: 2,
-    parallelism: 1,
-  });
+  const dummyHash = hashPassword(randomBytes(32));
   app.post(
     '/api/auth/login',
     authLimit,

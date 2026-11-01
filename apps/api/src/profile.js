@@ -1,9 +1,11 @@
+import { hashPassword } from './passwords.js';
+import { validate } from './http-validation.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import argon2 from 'argon2';
 import { randomBytes, createHash } from 'node:crypto';
 import { User, SocialIdentity } from './models.js';
-import { createAccountServices, passwordOptions } from './account-access.js';
+import { createAccountServices } from './account-access.js';
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 const email = z.string().trim().toLowerCase().pipe(z.email());
 export function createProfileRouter({
@@ -24,13 +26,6 @@ export function createProfileRouter({
       await SocialIdentity.find({ userId: user._id }).select('provider').lean()
     ).map((x) => x.provider),
   });
-  const validate = (schema) => (req, res, next) => {
-    const result = schema.safeParse(req.body);
-    if (!result.success)
-      return res.status(400).json({ message: result.error.issues[0].message });
-    req.body = result.data;
-    next();
-  };
   const confirmIdentity = async (req, res, next) => {
     const user = await User.findById(req.user._id).select(
       '+passwordHash +authVersion',
@@ -105,10 +100,7 @@ export function createProfileRouter({
     ),
     confirmIdentity,
     async (req, res) => {
-      const passwordHash = await argon2.hash(
-        req.body.password,
-        passwordOptions,
-      );
+      const passwordHash = await hashPassword(req.body.password);
       const version = req.profileUser.authVersion || 0;
       const user = await User.findOneAndUpdate(
         {
