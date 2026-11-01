@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 :root {
+  --site-header-height: 89px;
+  scroll-padding-top: calc(var(--site-header-height) + 16px);
   font-family: Arial, Helvetica, sans-serif;
   color: #272a27;
   background: #faf9f6;
@@ -1299,7 +1301,18 @@ header > nav {
     transform: none;
   }
 }
+.site-header-spacer {
+  height: var(--site-header-height);
+}
 .site-header {
+  position: fixed;
+  inset: 0 0 auto;
+  width: 100%;
+  max-height: 100dvh;
+  overflow-y: auto;
+  z-index: 20;
+  background: #faf9f6;
+  box-shadow: 0 2px 12px #272a270a;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -1474,6 +1487,9 @@ header > nav {
   }
 }
 @media (max-width: 575.98px) {
+  :root {
+    --site-header-height: 77px;
+  }
   .site-header {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 0 12px;
@@ -1550,6 +1566,7 @@ header > nav {
 @media (max-width: 575.98px) {
   .site-header .nav-collapse {
     display: grid;
+    max-height: calc(100dvh - var(--site-header-height));
     grid-column: 1/-1;
     grid-row: 2;
     grid-template-rows: 0fr;
@@ -1565,6 +1582,10 @@ header > nav {
     visibility: visible;
     padding-top: 14px;
     transition-delay: 0s;
+  }
+  .site-header .nav-collapse.is-expanded .site-nav {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
   }
   .site-header .site-nav,
   .site-header .site-nav.is-expanded {
