@@ -22,7 +22,17 @@ await User.create({
 const products = await Product.create(
   Array.from({ length: 25 }, (_, i) => ({
     name: 'Pieza ' + String(i).padStart(2, '0'),
-    description: 'Producto de prueba',
+    description:
+      'Producto de prueba\nDescripción completa conservada en la ficha.',
+    ...(i === 0
+      ? {
+          image: {
+            url: '/images/hero-3d-studio.svg',
+            width: 1000,
+            height: 1000,
+          },
+        }
+      : {}),
     category: i === 0 ? 'Especial' : 'Hogar',
     color: 'sand',
     priceCents: 10050,
@@ -56,6 +66,9 @@ host.use(
   createApp({
     sessionSecret: 'browser-tests-isolated-secret-long-enough',
     webOrigin: 'http://127.0.0.1:3100',
+    // Synthetic per-test client IPs isolate the real production rate limiter.
+    // This server binds localhost and is never deployed.
+    trustProxy: true,
     staticDirectory: resolve('apps/web/dist'),
     accountServices: {
       providers: {},

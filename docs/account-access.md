@@ -62,3 +62,23 @@ El nuevo correo debe confirmarse usando un enlace enviado a esa dirección. Se u
 Con Resend configurado, los nuevos registros quedan pendientes: no abren sesión y el login devuelve `EMAIL_UNVERIFIED` hasta confirmar. El enlace `#verify=` vence a los 30 minutos, se guarda sólo su hash y se consume una vez mediante POST con CSRF. La pantalla retira el secreto de la URL y pide elegir la contraseña definitiva; esto evita que una preregistración conserve una contraseña ajena al dueño del correo. El usuario inicia sesión después de confirmar. Las cuentas existentes conservan su acceso.
 
 «Reenviar confirmación» responde lo mismo para correos existentes e inexistentes, limita reenvíos por cuenta a uno por minuto y conserva los límites por IP. Un fallo de entrega mantiene la cuenta pendiente. Con `REQUIRE_EMAIL_VERIFICATION=1` y sin correo configurado, el registro informa indisponibilidad; con correo configurado la verificación se activa automáticamente salvo un `0` explícito. Google marca el email verificado sólo cuando el proveedor lo confirma; no se asume lo mismo para Facebook. La recuperación mediante un enlace válido también confirma la dirección que lo recibió.
+
+## Datos que faltan para activar los botones sociales
+
+El código ya intercambia los códigos OAuth en el backend. Para activar cada opción hay que crear sus credenciales y guardarlas en **Environment del servicio actual de Render**, sin prefijo `VITE_`:
+
+| Proveedor | Variable                 | Valor                                       |
+| --------- | ------------------------ | ------------------------------------------- |
+| Google    | `GOOGLE_CLIENT_ID`       | ID del cliente OAuth de tipo aplicación web |
+| Google    | `GOOGLE_CLIENT_SECRET`   | Secreto de ese mismo cliente                |
+| Facebook  | `FACEBOOK_CLIENT_ID`     | App ID de Meta                              |
+| Facebook  | `FACEBOOK_CLIENT_SECRET` | App Secret de esa misma aplicación          |
+
+Registrar las URLs de retorno exactas en cada consola, sin barra final:
+
+- Google: `https://impresion-3d.onrender.com/api/auth/google/callback`
+- Facebook: `https://impresion-3d.onrender.com/api/auth/facebook/callback`
+
+En Google configurar la pantalla de consentimiento y los usuarios de prueba; para el público general, pasar la configuración a producción y cumplir las verificaciones que pida Google. En Meta configurar Facebook Login web, el dominio/sitio, la política de privacidad y las instrucciones o mecanismo de eliminación de datos. Mientras la app esté en desarrollo, sólo pueden usarla sus roles y probadores; para clientes hay que cumplir los requisitos de Meta y activar el modo público. Estas páginas legales requieren datos reales del responsable del sitio.
+
+Al guardar las variables y aplicar el despliegue, `/api/auth/options` informa qué proveedores quedaron habilitados sin exponer secretos. La verificación final del acceso necesita las credenciales y cuentas de prueba propias; las pruebas automatizadas sustituyen las respuestas de los proveedores y no prueban la aprobación pública de las aplicaciones.

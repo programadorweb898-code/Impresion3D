@@ -1603,3 +1603,119 @@ header > nav {
     transition: none;
   }
 }
+.page-back {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 18px 5% 0;
+  box-sizing: border-box;
+}
+.page-back > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #465d37;
+  min-height: 30px;
+  text-decoration: none;
+}
+.page-back > a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.page-back > a[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: wait;
+}
+.product-image-link {
+  text-decoration: none;
+}
+.product-details {
+  padding: 28px 5% 65px;
+  min-height: 65vh;
+}
+.product-details > .eyebrow,
+.product-details > h1 {
+  text-align: center;
+}
+.product-details > h1 {
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.2;
+  letter-spacing: -1px;
+  margin: 14px 0 28px;
+  overflow-wrap: anywhere;
+}
+.product-detail-media {
+  width: 50vw;
+  max-width: 100%;
+  margin: 0 auto 34px;
+  overflow: hidden;
+  border: 1px solid #e0e2d9;
+  border-radius: 14px;
+  background: white;
+  aspect-ratio: 1;
+}
+.product-detail-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.product-detail-media > p {
+  padding: 24px;
+  line-height: 1.6;
+  text-align: center;
+  color: #687060;
+}
+.product-detail-copy {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.product-detail-copy h2 {
+  font-size: 23px;
+  margin: 26px 0 14px;
+}
+.product-detail-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+  color: #525b4c;
+}
+.product-detail-dimensions {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 24px;
+}
+.product-detail-dimensions > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e0e2d9;
+}
+.product-detail-dimensions dt {
+  color: #687060;
+}
+.product-detail-price {
+  font-size: 23px;
+  font-weight: 600;
+  margin: 24px 0;
+}
+.product-detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 28px 0 14px;
+}
+.product-detail-actions > button {
+  width: 100%;
+  min-height: 48px;
+  justify-content: center;
+  text-align: center;
+}
+.product-detail-actions > button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.login-page {
+  min-height: calc(100dvh - 60px);
+}

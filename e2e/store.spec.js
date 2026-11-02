@@ -1,4 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { createHash } from 'node:crypto';
+test.beforeEach(async ({ page }, testInfo) => {
+  const bytes = createHash('sha256').update(testInfo.testId).digest();
+  await page.setExtraHTTPHeaders({
+    'X-Forwarded-For': `198.18.${bytes[0]}.${bytes[1]}`,
+  });
+});
 import { tetraGlb } from '../apps/api/test/helpers/model-fixtures.js';
 async function menu(page, name) {
   await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
@@ -159,7 +166,9 @@ test('menú móvil, páginas y categorías incluyen piezas fuera de la primera p
   await expect(
     page.getByRole('heading', { name: 'Qué bueno verte' }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Volver al catálogo' }).click();
+  await page
+    .getByRole('link', { name: 'Volver a la página anterior', exact: true })
+    .click();
   await expect(page.locator('.site-header')).toBeVisible();
 });
 test('pedido con respuesta perdida conserva clave y comentarios al recargar; historial pagina', async ({
@@ -508,4 +517,164 @@ test('la advertencia de disponibilidad se mantiene cuando el servidor confirma q
   await expect(
     drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
   ).toBeDisabled();
+});
+test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver y continuar comprando', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Especial', exact: true }).click();
+  const link = page.getByRole('link', {
+    name: 'Ver detalles de Pieza 00',
+    exact: true,
+  });
+  await expect(link).toBeVisible();
+  const url = await link.getAttribute('href');
+  await link.click();
+  await expect(page).toHaveURL(new RegExp('/descripcion/[a-f0-9]{24}$'));
+  await expect(
+    page.getByRole('heading', { name: 'Pieza 00', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.product-detail-description')).toHaveText(
+    'Producto de prueba\nDescripción completa conservada en la ficha.',
+  );
+  await expect(page.locator('.product-detail-dimensions')).toContainText(
+    'Ancho100 mm',
+  );
+  await expect(page.locator('.product-detail-media img')).toHaveAttribute(
+    'src',
+    '/images/hero-3d-studio.svg',
+  );
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    const image = await page.locator('.product-detail-media').boundingBox();
+    expect(Math.abs(image.width - width / 2)).toBeLessThan(2);
+    expect(Math.abs(image.x + image.width / 2 - width / 2)).toBeLessThan(2);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth,
+      ),
+    ).toBe(false);
+  }
+  await page.screenshot({
+    path: '/tmp/impresion3d-description-desktop.png',
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: '/tmp/impresion3d-description-mobile.png',
+    fullPage: true,
+  });
+  await page
+    .getByRole('button', { name: 'Continuar comprando', exact: true })
+    .click();
+  await expect(page.locator('.product-card')).toHaveCount(1);
+  await page.goBack();
+  await expect(
+    page.getByRole('heading', { name: 'Pieza 00', exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: 'Pieza 00', exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('link', { name: 'Volver a la página anterior', exact: true })
+    .click();
+  await expect(page.locator('.product-card')).toHaveCount(1);
+  await page.goto(url);
+  await page
+    .getByRole('link', { name: 'Volver a la página anterior', exact: true })
+    .click();
+  await expect(page.locator('.product-card')).toHaveCount(20);
+  for (const prefix of ['descripci%C3%B3n', 'descripction']) {
+    await page.goto(url.replace('descripcion', prefix));
+    await expect(
+      page.getByRole('heading', { name: 'Pieza 00', exact: true }),
+    ).toBeVisible();
+  }
+  await page.goto('/descripcion/invalid');
+  await expect(
+    page.getByRole('heading', { name: 'Producto no disponible' }),
+  ).toBeVisible();
+});
+test('agregar desde ficha exige login, vuelve al producto y conserva carrito sin duplicados', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Especial', exact: true }).click();
+  await page
+    .getByRole('link', { name: 'Ver detalles de Pieza 00', exact: true })
+    .click();
+  const url = page.url();
+  await page
+    .getByRole('button', { name: 'Agregar al carrito', exact: true })
+    .click();
+  await page
+    .getByRole('button', { name: 'Crear cuenta o iniciar sesión', exact: true })
+    .click();
+  await expect(page.locator('.site-header')).toHaveCount(0);
+  await expect(
+    page.getByRole('link', {
+      name: 'Volver a la página anterior',
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page
+    .getByLabel('Correo electrónico', { exact: true })
+    .fill('browser@example.com');
+  await page
+    .getByLabel('Contraseña', { exact: true })
+    .fill('browser-password-12345');
+  await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
+  await expect(page).toHaveURL(url);
+  await expect(
+    page.getByRole('heading', { name: 'Pieza 00', exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Agregar al carrito', exact: true })
+    .click();
+  await expect(
+    page.getByRole('button', { name: 'En el carrito', exact: true }),
+  ).toBeDisabled();
+  await page
+    .getByRole('button', { name: 'Abrir carrito, 1 productos', exact: true })
+    .click();
+  await expect(page.getByRole('dialog', { name: 'Tu carrito' })).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Cerrar carrito', exact: true })
+    .click();
+  await expect(page.getByRole('dialog', { name: 'Tu carrito' })).toHaveCount(0);
+  await page.reload();
+  await expect(
+    page.getByRole('button', { name: 'En el carrito', exact: true }),
+  ).toBeDisabled();
+});
+test('volver funciona en perfil, pedidos y administración sin salir del sitio', async ({
+  page,
+}) => {
+  await login(page, 0, 'admin-browser@example.com');
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await page.getByRole('link', { name: 'Mi perfil', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Mi perfil', exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('link', { name: 'Volver a la página anterior', exact: true })
+    .click();
+  await expect(page.locator('.product-card')).toHaveCount(20);
+  await menu(page, 'Mis pedidos');
+  await expect(
+    page.getByRole('heading', { name: 'Mis pedidos', exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('link', { name: 'Volver a la página anterior', exact: true })
+    .click();
+  await expect(page.locator('.product-card')).toHaveCount(20);
+  await menu(page, 'Administración');
+  await expect(
+    page.getByRole('heading', { name: 'Administración', exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('link', { name: 'Volver a la página anterior', exact: true })
+    .click();
+  await expect(page.locator('.product-card')).toHaveCount(20);
 });

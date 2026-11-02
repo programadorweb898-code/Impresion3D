@@ -9,7 +9,7 @@ import { rateLimit } from 'express-rate-limit';
 import argon2 from 'argon2';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { loginSchema, registerSchema, orderSchema } from '@impresion3d/shared';
-import { User } from './models.js';
+import { User, Product } from './models.js';
 import { listProducts, listOrders } from './list-routes.js';
 import { createAdminRouter } from './admin.js';
 import { submitCatalogOrder } from './checkout.js';
@@ -155,6 +155,16 @@ export function createApp({
     }),
   );
   app.get('/api/products', listProducts);
+  app.get('/api/products/:id', async (req, res) => {
+    if (!/^[a-f0-9]{24}$/i.test(req.params.id))
+      return res.status(404).json({ message: 'Producto no disponible.' });
+    const product = await Product.findOne({ _id: req.params.id, active: true })
+      .select('-__v')
+      .lean();
+    if (!product)
+      return res.status(404).json({ message: 'Producto no disponible.' });
+    res.json(product);
+  });
   app.post(
     '/api/auth/register',
     authLimit,

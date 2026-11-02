@@ -294,3 +294,24 @@ test('catálogo e historial paginan sin mezclar usuarios; el carrito recupera pi
   assert.equal((await agent.get('/api/admin/products')).body.length, 20);
   await agent.get('/api/admin/products?page=0').expect(400);
 });
+test('ficha pública muestra descripción y medidas sin sesión; ocultos e IDs inválidos responden 404', async () => {
+  const p = await Product.create({
+    ...productData,
+    name: 'Ficha de producto',
+    description: 'Descripción completa\ncon detalles de la pieza.',
+  });
+  const detail = await request(app)
+    .get('/api/products/' + p._id)
+    .expect(200);
+  assert.equal(detail.body.description, p.description);
+  assert.equal(detail.body.dimensions.width, productData.dimensions.width);
+  assert.equal(detail.body.__v, undefined);
+  await Product.updateOne({ _id: p._id }, { $set: { active: false } });
+  await request(app)
+    .get('/api/products/' + p._id)
+    .expect(404);
+  await request(app)
+    .get('/api/products/' + new mongoose.Types.ObjectId())
+    .expect(404);
+  await request(app).get('/api/products/invalid-id').expect(404);
+});

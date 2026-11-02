@@ -29,6 +29,16 @@ import { CartDrawer } from './CartDrawer.jsx';
 import { Pagination } from './Pagination.jsx';
 import { Profile } from './Profile.jsx';
 import { Toast } from './Toast.jsx';
+import { ProductDetails } from './ProductDetails.jsx';
+import { BackLink } from './BackLink.jsx';
+import {
+  currentPage,
+  catalogContext,
+  rememberCatalog,
+  initializeNavigation,
+  navigatePage,
+  returnToPreviousPage,
+} from './navigation.js';
 const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
 );
@@ -58,7 +68,7 @@ function App() {
     [products, setProducts] = useState([]),
     [orders, setOrders] = useState([]),
     [catalogPage, setCatalogPage] = useState({
-      page: 1,
+      page: catalogContext().page,
       pages: 1,
       categories: [],
     }),
@@ -70,9 +80,8 @@ function App() {
       status: 'idle',
     }),
     [cartRefresh, setCartRefresh] = useState(0),
-    [view, setView] = useState(() =>
-      location.pathname === '/perfil' ? 'profile' : 'catalog',
-    ),
+    [view, setView] = useState(() => currentPage().view),
+    [detailId, setDetailId] = useState(() => currentPage().id),
     [profileToken, setProfileToken] = useState(() =>
       location.pathname === '/perfil'
         ? new URLSearchParams(location.hash.slice(1)).get('email') || ''
@@ -93,7 +102,7 @@ function App() {
     [cartToast, setCartToast] = useState(null),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
-    [category, setCategory] = useState('Todos'),
+    [category, setCategory] = useState(() => catalogContext().category),
     [cartNotes, setCartNotes] = useState(''),
     [viewing, setViewing] = useState(null);
   const cart = useCart(user?.id);
@@ -175,6 +184,10 @@ function App() {
       active = false;
     };
   }, [catalogPage.page, category]);
+  useEffect(() => {
+    if (view === 'orders' && user?.id && !ordersLoading && !orders.length)
+      history(orderPage.page);
+  }, [view, user?.id]);
   async function reloadCatalog() {
     const query = new URLSearchParams({ page: String(catalogPage.page) });
     if (category !== 'Todos') query.set('category', category);
@@ -187,13 +200,21 @@ function App() {
     });
   }
   useEffect(() => {
+    initializeNavigation();
     const onNavigate = () => {
       const isLogin = location.pathname === '/login';
       setLoginPage(isLogin);
       setAuth(isLogin ? 'login' : null);
       setLoginPrompt(false);
       setCartOpen(false);
-      setView(location.pathname === '/perfil' ? 'profile' : 'catalog');
+      const page = currentPage();
+      setView(page.view);
+      setDetailId(page.id);
+      if (page.view === 'catalog') {
+        const saved = catalogContext();
+        setCategory(saved.category);
+        setCatalogPage((current) => ({ ...current, page: saved.page }));
+      }
       const emailToken =
         location.pathname === '/perfil' &&
         new URLSearchParams(location.hash.slice(1)).get('email');
@@ -208,39 +229,60 @@ function App() {
     };
   }, []);
   function openLogin() {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'product' && !loginDestination.current)
+      loginDestination.current = 'product';
     dismissCartToast();
     setCartOpen(false);
     setLoginPrompt(false);
     setError('');
     setNotice('');
-    if (location.pathname !== '/login')
-      window.history.pushState(null, '', '/login');
+    navigatePage('login', '/login');
     setLoginPage(true);
     setAuth('login');
     window.scrollTo(0, 0);
   }
   function closeAuth() {
     if (location.pathname === '/login')
-      window.history.replaceState(null, '', '/');
+      navigatePage('catalog', '/', { replace: true });
     setLoginPage(false);
     setAuth(null);
     setError('');
   }
-  function showCatalog() {
+  function showCatalog(options = {}) {
     closeAuth();
     loginDestination.current = null;
     setView('catalog');
-    if (location.pathname === '/perfil')
-      window.history.pushState(null, '', '/');
+    navigatePage('catalog', '/', { replace: options.replace === true });
   }
   useEffect(() => {
     if (location.pathname === '/perfil' && location.hash.startsWith('#email='))
-      window.history.replaceState(null, '', '/perfil');
+      window.history.replaceState(window.history.state, '', '/perfil');
   }, [profileToken]);
+  function openProduct(id, replace = false) {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    navigatePage('product', '/descripcion/' + encodeURIComponent(id), {
+      replace,
+    });
+    setDetailId(id);
+    setView('product');
+    setError('');
+    setNotice('');
+    window.scrollTo(0, 0);
+  }
+  function goBack() {
+    if (!returnToPreviousPage()) showCatalog({ replace: true });
+  }
+  function openAdmin() {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    navigatePage('admin', '/');
+    setView('admin');
+    setError('');
+  }
   function openProfile() {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
     closeAuth();
-    if (location.pathname !== '/perfil')
-      window.history.pushState(null, '', '/perfil');
+    navigatePage('profile', '/perfil');
     setView('profile');
     setError('');
     setNotice('');
@@ -256,7 +298,7 @@ function App() {
       setCartNotes('');
       setOrders([]);
       setProfileToken('');
-      window.history.replaceState(null, '', '/');
+      navigatePage('catalog', '/', { replace: true });
       setView('catalog');
       setNotice('Cerraste sesión.');
       setError('');
@@ -268,8 +310,8 @@ function App() {
     }
   }
   async function history(page = 1) {
-    if (location.pathname === '/perfil')
-      window.history.pushState(null, '', '/');
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    navigatePage('orders', '/');
     setView('orders');
     setError('');
     setOrdersLoading(true);
@@ -313,6 +355,8 @@ function App() {
         showCart();
       }
       if (loginDestination.current === 'profile') openProfile();
+      if (loginDestination.current === 'product' && detailId)
+        openProduct(detailId, true);
       loginDestination.current = null;
       setNotice('Ya podés armar tu carrito y consultar tus pedidos.');
     } catch (e) {
@@ -352,7 +396,7 @@ function App() {
   function addToCart(product) {
     if (!authReady) return;
     if (!user) {
-      loginDestination.current = 'catalog';
+      loginDestination.current = view === 'product' ? 'product' : 'catalog';
       setError('');
       setNotice('');
       setLoginPrompt(true);
@@ -440,6 +484,7 @@ function App() {
         ' recibido. Coordinaremos disponibilidad, pago y entrega.',
     );
     setCartOpen(false);
+    navigatePage('orders', '/');
     setView('orders');
     try {
       const data = await api('/orders?page=1');
@@ -465,14 +510,12 @@ function App() {
           onCatalog={showCatalog}
           onCart={openCart}
           onOrders={() => history()}
-          onAdmin={() => {
-            showCatalog();
-            setView('admin');
-          }}
+          onAdmin={openAdmin}
           onProfile={openProfile}
           onLogin={openLogin}
         />
       )}
+      <BackLink onBack={goBack} disabled={busy || loggingOut} />
       {!loginPage && (
         <main>
           {notice && (
@@ -488,7 +531,15 @@ function App() {
               {error}
             </p>
           )}
-          {view === 'profile' ? (
+          {view === 'product' ? (
+            <ProductDetails
+              id={detailId || ''}
+              onAdd={addToCart}
+              onContinue={showCatalog}
+              inCart={cartProductIds.has(detailId)}
+              authReady={authReady}
+            />
+          ) : view === 'profile' ? (
             authReady ? (
               <Profile
                 user={user}
@@ -589,7 +640,25 @@ function App() {
                         key={p._id}
                         aria-labelledby={'product-' + p._id}
                       >
-                        <div className={'product-art color-' + p.color}>
+                        <a
+                          className={
+                            'product-art product-image-link color-' + p.color
+                          }
+                          href={'/descripcion/' + p._id}
+                          aria-label={'Ver detalles de ' + p.name}
+                          onClick={(event) => {
+                            if (
+                              event.button === 0 &&
+                              !event.metaKey &&
+                              !event.ctrlKey &&
+                              !event.shiftKey &&
+                              !event.altKey
+                            ) {
+                              event.preventDefault();
+                              openProduct(p._id);
+                            }
+                          }}
+                        >
                           {p.image?.url ? (
                             <img
                               className="product-photo"
@@ -612,7 +681,7 @@ function App() {
                               </span>
                             </>
                           )}
-                        </div>
+                        </a>
                         <div className="flex justify-between items-start gap-4 mt-5">
                           <div>
                             <p className="small uppercase">{p.category}</p>
@@ -917,7 +986,6 @@ function App() {
             setAuthMessage('');
           }}
           busy={busy}
-          onBack={showCatalog}
         />
       )}
     </>

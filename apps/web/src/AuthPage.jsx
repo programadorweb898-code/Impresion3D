@@ -49,7 +49,6 @@ export function AuthPage({
   accountMessage,
   clearError,
   busy,
-  onBack,
 }) {
   const [token, setToken] = useState(
     () =>
@@ -75,7 +74,7 @@ export function AuthPage({
   useEffect(() => {
     // Keep reset secrets out of browser history, referrers, and subsequent navigations.
     if (location.hash || location.search)
-      window.history.replaceState(null, '', '/login');
+      window.history.replaceState(window.history.state, '', '/login');
     api('/auth/options')
       .then(setOptions)
       .catch(() =>
@@ -91,7 +90,7 @@ export function AuthPage({
         setMode(params.has('verify') ? 'verify' : 'reset');
         setLocalError('');
         setMessage('');
-        window.history.replaceState(null, '', '/login');
+        window.history.replaceState(window.history.state, '', '/login');
       }
     };
     window.addEventListener('hashchange', readResetLink);
@@ -149,9 +148,6 @@ export function AuthPage({
   return (
     <main className="login-page">
       <section className="login-panel" aria-labelledby="login-title">
-        <button className="login-back" disabled={disabled} onClick={onBack}>
-          ← Volver al catálogo
-        </button>
         <p className="auth-brand">
           <span aria-hidden="true">✳</span> impresión<span>3D</span>
         </p>
