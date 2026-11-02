@@ -515,7 +515,9 @@ function App() {
           onLogin={openLogin}
         />
       )}
-      <BackLink onBack={goBack} disabled={busy || loggingOut} />
+      {(loginPage || view !== 'catalog') && (
+        <BackLink onBack={goBack} disabled={busy || loggingOut} />
+      )}
       {!loginPage && (
         <main>
           {notice && (
