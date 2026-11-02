@@ -852,12 +852,14 @@ select {
   border-radius: 14px;
 }
 .product-card .product-art {
+  background: white;
   flex: none;
   width: 100%;
   height: 260px;
   overflow: hidden;
 }
 .product-card .product-photo {
+  background: white;
   object-fit: contain;
   object-position: center;
 }
