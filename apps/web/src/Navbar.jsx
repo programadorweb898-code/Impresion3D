@@ -10,10 +10,13 @@ export function Navbar({
   onAdmin,
   onProfile,
   onLogin,
+  onLogout,
+  onHowItWorks,
   cartButtonRef,
 }) {
   const [expanded, setExpanded] = useState(false);
   const toggle = useRef(null);
+  const showingProcess = view === 'catalog' && location.hash === '#proceso';
   const headerRef = useRef(null);
   const spacerRef = useRef(null);
   const [mobile, setMobile] = useState(
@@ -91,15 +94,47 @@ export function Navbar({
               }
             }}
           >
-            <button onClick={() => choose(onCatalog)}>Catálogo</button>
-            <a href="#proceso" onClick={() => choose(onCatalog)}>
+            <button
+              aria-current={
+                (view === 'catalog' && !showingProcess) || view === 'product'
+                  ? 'page'
+                  : undefined
+              }
+              onClick={() => choose(onCatalog)}
+            >
+              Catálogo
+            </button>
+            <a
+              href="/#proceso"
+              aria-current={showingProcess ? 'location' : undefined}
+              onClick={(event) => {
+                if (
+                  event.button === 0 &&
+                  !event.metaKey &&
+                  !event.ctrlKey &&
+                  !event.shiftKey &&
+                  !event.altKey
+                ) {
+                  event.preventDefault();
+                  choose(onHowItWorks);
+                }
+              }}
+            >
               Cómo funciona
             </a>
             {user ? (
               <>
-                <button onClick={() => choose(onOrders)}>Mis pedidos</button>
+                <button
+                  aria-current={view === 'orders' ? 'page' : undefined}
+                  onClick={() => choose(onOrders)}
+                >
+                  Mis pedidos
+                </button>
                 {user.role === 'admin' && (
-                  <button onClick={() => choose(onAdmin)}>
+                  <button
+                    aria-current={view === 'admin' ? 'page' : undefined}
+                    onClick={() => choose(onAdmin)}
+                  >
                     Administración
                   </button>
                 )}
@@ -114,6 +149,9 @@ export function Navbar({
                 >
                   <span aria-hidden="true">◉</span> Mi perfil
                 </a>
+                <button className="nav-logout" onClick={() => choose(onLogout)}>
+                  Cerrar sesión
+                </button>
               </>
             ) : (
               <button className="outline" onClick={() => choose(onLogin)}>

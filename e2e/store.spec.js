@@ -778,3 +778,167 @@ test('Google y visitantes pueden leer las páginas legales sin JavaScript ni aut
     await context.close();
   }
 });
+test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni restaurar el scroll anterior', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('.product-card')).toHaveCount(20);
+  await page.evaluate(() => {
+    window.__navigationFrames = [];
+    window.__recordNavigation = true;
+    const record = () => {
+      if (!window.__recordNavigation) return;
+      window.__navigationFrames.push({
+        path: location.pathname,
+        title: document.querySelector('main h1')?.textContent,
+        y: scrollY,
+      });
+      requestAnimationFrame(record);
+    };
+    requestAnimationFrame(record);
+  });
+  await page
+    .locator('footer')
+    .getByRole('link', { name: 'Política de privacidad', exact: true })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
+  ).toBeVisible();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.evaluate(() => scrollTo({ top: 1200, behavior: 'instant' }));
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(500);
+  await page
+    .locator('footer')
+    .getByRole('link', { name: 'Términos y condiciones', exact: true })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Términos y condiciones', exact: true }),
+  ).toBeVisible();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await expect(
+    page
+      .locator('footer')
+      .getByRole('link', { name: 'Términos y condiciones', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+  await page.evaluate(() => scrollTo({ top: 1400, behavior: 'instant' }));
+  await page.goBack();
+  await expect(
+    page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
+  ).toBeVisible();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.evaluate(() => scrollTo({ top: 900, behavior: 'instant' }));
+  await page.goBack();
+  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  const frames = await page.evaluate(async () => {
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
+    window.__recordNavigation = false;
+    return window.__navigationFrames;
+  });
+  for (const [path, title] of [
+    ['/politica-de-privacidad', 'Política de privacidad'],
+    ['/terminos-y-condiciones', 'Términos y condiciones'],
+  ]) {
+    // Deliberate scrolling inside a page is allowed; assess its first rendered frame on each entry.
+    const entries = frames.filter(
+      (frame, index) =>
+        frame.path === path &&
+        frame.title === title &&
+        (index === 0 ||
+          frames[index - 1].path !== path ||
+          frames[index - 1].title !== title),
+    );
+    expect(entries.length).toBeGreaterThan(0);
+    for (const frame of entries) expect(frame.y).toBe(0);
+  }
+  await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
+  expect(await page.evaluate(() => history.scrollRestoration)).toBe('manual');
+});
+test('menú resalta la página activa; cancelar conserva sesión y confirmar salir abre login', async ({
+  page,
+}) => {
+  await login(page);
+  const nav = page.getByRole('navigation', { name: 'Principal' });
+  let logoutRequests = 0;
+  page.on('request', (request) => {
+    if (new URL(request.url()).pathname === '/api/auth/logout')
+      logoutRequests++;
+  });
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await expect(
+    nav.getByRole('button', { name: 'Catálogo', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+  await expect(
+    nav.getByRole('button', { name: 'Catálogo', exact: true }),
+  ).toHaveCSS('font-weight', '700');
+  await expect(
+    nav.getByRole('button', { name: 'Cerrar sesión', exact: true }),
+  ).toBeVisible();
+  await nav.getByRole('link', { name: 'Mi perfil', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Mi perfil', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await expect(
+    nav.getByRole('link', { name: 'Mi perfil', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+  await expect(
+    nav.getByRole('link', { name: 'Mi perfil', exact: true }),
+  ).toHaveCSS('font-weight', '700');
+  await expect(
+    nav.getByRole('button', { name: 'Catálogo', exact: true }),
+  ).not.toHaveAttribute('aria-current', 'page');
+  await nav.getByRole('button', { name: 'Mis pedidos', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Mis pedidos', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await expect(
+    nav.getByRole('button', { name: 'Mis pedidos', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
+  await nav.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+  let dialog = page.getByRole('dialog', {
+    name: '¿Querés cerrar sesión?',
+    exact: true,
+  });
+  await expect(dialog).toBeVisible();
+  expect(logoutRequests).toBe(0);
+  await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(
+    page.getByRole('heading', { name: 'Mis pedidos', exact: true }),
+  ).toBeVisible();
+  await page.route('**/api/auth/logout', (route) =>
+    route.fulfill({
+      status: 503,
+      json: { message: 'No se pudo cerrar la sesión. Intentá otra vez.' },
+    }),
+  );
+  await menu(page, 'Cerrar sesión');
+  dialog = page.getByRole('dialog', {
+    name: '¿Querés cerrar sesión?',
+    exact: true,
+  });
+  await dialog.getByRole('button', { name: 'Salir', exact: true }).click();
+  await expect(dialog.getByRole('alert')).toContainText(
+    'No se pudo cerrar la sesión',
+  );
+  expect(page.url().endsWith('/login')).toBe(false);
+  await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
+  await page.unroute('**/api/auth/logout');
+  await menu(page, 'Cerrar sesión');
+  await page
+    .getByRole('dialog', { name: '¿Querés cerrar sesión?', exact: true })
+    .getByRole('button', { name: 'Salir', exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(
+    page.getByRole('heading', { name: 'Qué bueno verte', exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole('status')).toContainText('Cerraste sesión.');
+  await expect(page.locator('header,footer')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  expect(logoutRequests).toBe(2);
+});

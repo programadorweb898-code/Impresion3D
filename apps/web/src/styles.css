@@ -6,7 +6,7 @@
   color: #272a27;
   background: #faf9f6;
   font-synthesis: none;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 body {
   margin: 0;
@@ -1835,4 +1835,27 @@ header > nav {
   color: #36532b;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.site-nav [aria-current='page'],
+.site-nav [aria-current='location'] {
+  font-weight: 700;
+  color: #263b21;
+}
+.site-nav .profile-link[aria-current='page'] {
+  background: #e6eddd;
+  color: #263b21;
+  border-color: #aebfa0;
+}
+.footer-legal a[aria-current='page'] {
+  font-weight: 700;
+  color: #263b21;
+  text-decoration-thickness: 2px;
+}
+@media (max-width: 575.98px) {
+  .site-nav [aria-current='page'],
+  .site-nav [aria-current='location'] {
+    background: #e6eddd;
+    border-radius: 9px;
+  }
 }

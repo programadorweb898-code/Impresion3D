@@ -1,6 +1,7 @@
 import React, {
   useState,
   useEffect,
+  useLayoutEffect,
   useRef,
   useCallback,
   lazy,
@@ -106,7 +107,8 @@ function App() {
     [loading, setLoading] = useState(true),
     [category, setCategory] = useState(() => catalogContext().category),
     [cartNotes, setCartNotes] = useState(''),
-    [viewing, setViewing] = useState(null);
+    [viewing, setViewing] = useState(null),
+    [navigationVersion, setNavigationVersion] = useState(0);
   const cart = useCart(user?.id);
   const [authReady, setAuthReady] = useState(false);
   const loginDestination = useRef(null);
@@ -123,6 +125,21 @@ function App() {
     }
   }, [user?.id]);
   const cartButtonRef = useRef(null);
+  const scrollTarget = useRef(location.hash.slice(1) || null);
+  useLayoutEffect(() => {
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    return () => {
+      window.history.scrollRestoration = previous;
+    };
+  }, []);
+  useLayoutEffect(() => {
+    const target =
+      scrollTarget.current && document.getElementById(scrollTarget.current);
+    if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    else window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    scrollTarget.current = null;
+  }, [view, loginPage, detailId, navigationVersion]);
   const cartProductIds = new Set(cart.items.map((item) => item.productId));
   const cartIds = cart.items.map((item) => item.productId).join(',');
   const cartKey = JSON.stringify([user?.id, cartIds, cartRefresh]);
@@ -204,6 +221,8 @@ function App() {
   useEffect(() => {
     initializeNavigation();
     const onNavigate = () => {
+      scrollTarget.current = null;
+      setNavigationVersion((current) => current + 1);
       const isLogin = location.pathname === '/login';
       setLoginPage(isLogin);
       setAuth(isLogin ? 'login' : null);
@@ -242,7 +261,8 @@ function App() {
     navigatePage('login', '/login');
     setLoginPage(true);
     setAuth('login');
-    window.scrollTo(0, 0);
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
   }
   function closeAuth() {
     if (location.pathname === '/login')
@@ -256,6 +276,8 @@ function App() {
     loginDestination.current = null;
     setView('catalog');
     navigatePage('catalog', '/', { replace: options.replace === true });
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
   }
   useEffect(() => {
     if (location.pathname === '/perfil' && location.hash.startsWith('#email='))
@@ -266,13 +288,27 @@ function App() {
       ? legalPages[view].title + ' | ' + legalSite.name
       : legalSite.name + ' · Ideas que toman forma';
   }, [view]);
+  function openSection(id) {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    navigatePage('catalog', '/#' + id);
+    scrollTarget.current = id;
+    setView('catalog');
+    setError('');
+    setNotice('');
+    setNavigationVersion((current) => current + 1);
+  }
+  function requestLogout() {
+    setLogoutError('');
+    setLogoutPrompt(true);
+  }
   function openLegal(key) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
     navigatePage(key, legalPages[key].path);
     setView(key);
     setError('');
     setNotice('');
-    window.scrollTo(0, 0);
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
   }
   function openProduct(id, replace = false) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
@@ -283,7 +319,8 @@ function App() {
     setView('product');
     setError('');
     setNotice('');
-    window.scrollTo(0, 0);
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
   }
   function goBack() {
     if (!returnToPreviousPage()) showCatalog({ replace: true });
@@ -291,6 +328,8 @@ function App() {
   function openAdmin() {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
     navigatePage('admin', '/');
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
     setView('admin');
     setError('');
   }
@@ -301,7 +340,8 @@ function App() {
     setView('profile');
     setError('');
     setNotice('');
-    window.scrollTo(0, 0);
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
   }
   async function logout() {
     if (loggingOut) return;
@@ -313,9 +353,19 @@ function App() {
       setCartNotes('');
       setOrders([]);
       setProfileToken('');
-      navigatePage('catalog', '/', { replace: true });
+      navigatePage('login', '/login', { replace: true });
+      setLoginPage(true);
+      setAuth('login');
+      setAuthMessage('Cerraste sesión.');
       setView('catalog');
-      setNotice('Cerraste sesión.');
+      setDetailId(null);
+      setCartOpen(false);
+      setLoginPrompt(false);
+      dismissCartToast();
+      loginDestination.current = null;
+      scrollTarget.current = null;
+      setNavigationVersion((current) => current + 1);
+      setNotice('');
       setError('');
       setLogoutPrompt(false);
     } catch (e) {
@@ -327,6 +377,8 @@ function App() {
   async function history(page = 1) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
     navigatePage('orders', '/');
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
     setView('orders');
     setError('');
     setOrdersLoading(true);
@@ -500,6 +552,8 @@ function App() {
     );
     setCartOpen(false);
     navigatePage('orders', '/');
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
     setView('orders');
     try {
       const data = await api('/orders?page=1');
@@ -528,6 +582,8 @@ function App() {
           onAdmin={openAdmin}
           onProfile={openProfile}
           onLogin={openLogin}
+          onLogout={requestLogout}
+          onHowItWorks={() => openSection('proceso')}
         />
       )}
       {(loginPage || view !== 'catalog') && (
@@ -563,10 +619,7 @@ function App() {
               <Profile
                 user={user}
                 onUser={setUser}
-                onLogout={() => {
-                  setLogoutError('');
-                  setLogoutPrompt(true);
-                }}
+                onLogout={requestLogout}
                 onLogin={() => {
                   loginDestination.current = 'profile';
                   openLogin();
@@ -598,7 +651,22 @@ function App() {
                     Objetos que hacen tu día un poco más tuyo. Descubrí diseños
                     únicos y contanos cómo los imaginás.
                   </p>
-                  <a className="primary" href="#catalogo">
+                  <a
+                    className="primary"
+                    href="#catalogo"
+                    onClick={(event) => {
+                      if (
+                        event.button === 0 &&
+                        !event.metaKey &&
+                        !event.ctrlKey &&
+                        !event.shiftKey &&
+                        !event.altKey
+                      ) {
+                        event.preventDefault();
+                        openSection('catalogo');
+                      }
+                    }}
+                  >
                     Explorar diseños <span>↗</span>
                   </a>
                   <p className="small mt-6">
@@ -870,6 +938,7 @@ function App() {
               <a
                 key={key}
                 href={page.path}
+                aria-current={view === key ? 'page' : undefined}
                 onClick={(event) => {
                   if (
                     event.button === 0 &&
