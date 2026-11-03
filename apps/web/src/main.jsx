@@ -220,7 +220,18 @@ function App() {
   }
   useEffect(() => {
     initializeNavigation();
-    const onNavigate = () => {
+    const onNavigate = (event) => {
+      if (
+        event.type === 'popstate' &&
+        currentPage().view === 'catalog' &&
+        ['#proceso', '#catalogo'].includes(location.hash)
+      ) {
+        window.history.replaceState(
+          window.history.state,
+          '',
+          location.pathname + location.search,
+        );
+      }
       scrollTarget.current = null;
       setNavigationVersion((current) => current + 1);
       const isLogin = location.pathname === '/login';

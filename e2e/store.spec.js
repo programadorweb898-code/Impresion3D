@@ -830,6 +830,29 @@ test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni 
   await page.goBack();
   await expect(page.locator('.product-card')).toHaveCount(20);
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Principal' })
+    .getByRole('link', { name: 'Cómo funciona', exact: true })
+    .click();
+  await expect(page).toHaveURL(/#proceso$/);
+  await page
+    .locator('footer')
+    .getByRole('link', { name: 'Política de privacidad', exact: true })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
+  ).toBeVisible();
+  await page.goBack();
+  await expect(page.locator('.product-card')).toHaveCount(20);
+  expect(new URL(page.url()).hash).toBe('');
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Principal' })
+      .getByRole('button', { name: 'Catálogo', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
   const frames = await page.evaluate(async () => {
     await new Promise((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(resolve)),
