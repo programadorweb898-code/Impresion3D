@@ -960,7 +960,9 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
   await expect(
     page.getByRole('heading', { name: 'Qué bueno verte', exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole('status')).toContainText('Cerraste sesión.');
+  await expect(page.getByText('Cerraste sesión.', { exact: true })).toHaveCount(
+    0,
+  );
   await expect(page.locator('header,footer')).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
   expect(logoutRequests).toBe(2);

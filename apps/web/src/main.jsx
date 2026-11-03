@@ -367,7 +367,7 @@ function App() {
       navigatePage('login', '/login', { replace: true });
       setLoginPage(true);
       setAuth('login');
-      setAuthMessage('Cerraste sesión.');
+      setAuthMessage('');
       setView('catalog');
       setDetailId(null);
       setCartOpen(false);
