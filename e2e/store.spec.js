@@ -1183,3 +1183,47 @@ test('confirmar identidad mantiene el perfil al aceptar, cancelar y cerrar la ve
     else await expect(confirm).toBeVisible();
   }
 });
+
+test('Facebook recupera en el mismo intento una cookie omitida en el regreso externo', async ({
+  page,
+  context,
+}) => {
+  await context.route('**/api/auth/facebook/start**', async (route) => {
+    const response = await route.fetch({ maxRedirects: 0 });
+    const url = new URL(response.headers().location);
+    const callback = new URL(url.searchParams.get('redirect_uri'));
+    callback.searchParams.set('state', url.searchParams.get('state'));
+    callback.searchParams.set('code', 'browser-code');
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: `<a href="${callback.href.replaceAll('&', '&amp;')}">Volver de Facebook</a>`,
+    });
+  });
+  let omitted = 0,
+    checked = 0;
+  await context.route('**/api/auth/facebook/callback**', async (route) => {
+    const url = new URL(route.request().url());
+    if (url.searchParams.get('returnCheck') === '1') {
+      checked++;
+      return route.continue();
+    }
+    omitted++;
+    const response = await route.fetch({
+      maxRedirects: 0,
+      headers: { ...route.request().headers(), cookie: '' },
+    });
+    expect(response.status()).toBe(200);
+    expect(response.headers()['set-cookie']).toBeUndefined();
+    await route.fulfill({ response });
+  });
+  await page.goto('/login');
+  await page.getByRole('button', { name: 'Continuar con Facebook' }).click();
+  await page.getByRole('link', { name: 'Volver de Facebook' }).click();
+  await expect(page).toHaveURL('/');
+  expect(omitted).toBe(1);
+  expect(checked).toBe(1);
+  expect((await (await page.request.get('/api/auth/me')).json()).role).toBe(
+    'customer',
+  );
+});

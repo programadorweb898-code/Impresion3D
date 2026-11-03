@@ -148,3 +148,11 @@ el código HTTP del proveedor. No registra correos, identificadores sociales,
 cookies, códigos OAuth, state, tokens, secretos ni mensajes arbitrarios de errores.
 Esto permite investigar un primer intento fallido sin inferir su causa a partir
 del mensaje genérico ni repetir automáticamente un intercambio de código OAuth.
+
+Cuando el callback inicial llega sin intento OAuth en la sesión, responde una
+página intermedia sin guardar una sesión vacía ni emitir una cookie nueva. Un
+script del mismo origen repite una sola vez la navegación con `returnCheck=1`,
+permitiendo recuperar una cookie omitida en el regreso externo. No guarda códigos
+en almacenamiento local ni cambia los controles: sigue siendo obligatorio el
+state original, ligado a la sesión, vigente y de un uso. Si el intento sigue
+ausente, se rechaza sin repetir la navegación. La página aplica no-referrer.

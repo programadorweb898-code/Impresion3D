@@ -170,6 +170,13 @@ export function createAccountAccess({
         'Cambiaste tu contraseña. Iniciá sesión con tu nueva contraseña.',
     });
   });
+  router.get('/oauth-return.js', (_req, res) => {
+    res
+      .type('application/javascript')
+      .send(
+        "const u = new URL(location.href); u.searchParams.set('returnCheck', '1'); location.replace(u.pathname + u.search);",
+      );
+  });
   router.get('/reauth-popup.js', (_req, res) => {
     res.type('application/javascript').send('window.close();');
   });
@@ -224,6 +231,16 @@ export function createAccountAccess({
   router.get('/:provider/callback', authLimit, async (req, res) => {
     const provider = req.params.provider,
       pending = req.session.oauth;
+    // Some mobile consent flows omit the session cookie on the cross-site return.
+    // Do not save an empty session and replace the original cookie before a same-site check.
+    if (!pending && req.query.returnCheck !== '1') {
+      res.set('Referrer-Policy', 'no-referrer');
+      return res
+        .type('html')
+        .send(
+          '<!doctype html><html lang="es"><meta charset="utf-8"><title>Mundo 3D</title><body><p>Comprobando el regreso a Mundo 3D…</p><script src="/api/auth/oauth-return.js"></script></body></html>',
+        );
+    }
     const finish = (destination) => {
       if (!pending?.popup)
         return res.redirect(

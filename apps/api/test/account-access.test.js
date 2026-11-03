@@ -172,7 +172,7 @@ async function start(agent, provider) {
 async function callback(agent, provider, state) {
   return agent
     .get('/api/auth/' + provider + '/callback')
-    .query({ state, code: 'one-use-provider-code' });
+    .query({ state, code: 'one-use-provider-code', returnCheck: '1' });
 }
 test('Google usa state por sesión y PKCE; crea cliente y reutiliza identidad sin almacenar tokens', async () => {
   const services = socialServices('google', {
@@ -395,4 +395,33 @@ test('fallos transitorios de OAuth dejan referencia y etapa sin registrar secret
     );
     await agent.get('/api/auth/me').expect(200);
   }
+});
+
+test('regreso sin cookie no reemplaza la sesión; comprobación del mismo origen recupera el intento y mantiene state obligatorio', async () => {
+  const services = socialServices('facebook', {
+    id: 'mobile-cookie-return',
+    name: 'Cliente',
+  });
+  const instance = app(services),
+    agent = request.agent(instance);
+  const url = await start(agent, 'facebook');
+  const state = url.searchParams.get('state');
+  const landing = await request(instance)
+    .get('/api/auth/facebook/callback')
+    .query({ state, code: 'test-code' })
+    .expect(200);
+  assert.match(landing.text, /oauth-return.js/);
+  assert.equal(landing.headers['set-cookie'], undefined);
+  assert.equal(landing.headers['referrer-policy'], 'no-referrer');
+  assert.equal(services.calls.length, 0);
+  const valid = await callback(agent, 'facebook', state);
+  assert.equal(valid.headers.location, '/');
+  await agent.get('/api/auth/me').expect(200);
+  const count = services.calls.length;
+  const invalid = await request(instance)
+    .get('/api/auth/facebook/callback')
+    .query({ state, code: 'test-code', returnCheck: '1' })
+    .expect(302);
+  assert.match(invalid.headers.location, /authError=cancelled/);
+  assert.equal(services.calls.length, count);
 });
