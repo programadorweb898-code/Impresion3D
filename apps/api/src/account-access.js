@@ -10,7 +10,6 @@ import {
 } from 'node:crypto';
 import { User, SocialIdentity } from './models.js';
 import { createVerificationRouter } from './email-verification.js';
-import { facebookEmailPermission } from './facebook-email-permission.js';
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 export function createAccountServices(env = {}, transport = fetch) {
   const providers = {};
@@ -280,50 +279,24 @@ export function createAccountAccess({
         identity &&
         (await User.findById(identity.userId).select('+authVersion'));
       if (!user) {
+        if (identity) throw new Error('identity_without_account');
         if (pending.expectedUserId)
           return res.redirect('/login?authError=existing');
         const parsed = emailSchema.safeParse({ email: profile.email });
         if (
-          !parsed.success ||
-          (provider === 'google' && profile.email_verified !== true)
-        ) {
-          if (provider === 'facebook') {
-            const permission = await facebookEmailPermission({
-              transport: services.fetch,
-              version: services.facebookVersion,
-              clientSecret: config.clientSecret,
-              accessToken: tokens.access_token,
-            });
-            console.info(
-              JSON.stringify({
-                event: 'facebook_email_unavailable',
-                requestId: req.requestId,
-                permission,
-                emailField:
-                  typeof profile.email === 'string' && profile.email.trim()
-                    ? 'invalid_format'
-                    : 'missing',
-              }),
-            );
-            const error =
-              permission === 'granted'
-                ? 'facebook_email_account'
-                : permission === 'unknown'
-                  ? 'facebook_email'
-                  : 'facebook_email_permission';
-            return res.redirect('/login?authError=' + error);
-          }
+          provider === 'google' &&
+          (!parsed.success || profile.email_verified !== true)
+        )
           return res.redirect('/login?authError=email');
-        }
         // Never link by matching email: that could let a different identity take over an existing account.
-        if (await User.exists({ email: parsed.data.email }))
+        if (parsed.success && (await User.exists({ email: parsed.data.email })))
           return res.redirect('/login?authError=existing');
         user = await User.create({
           name:
             typeof profile.name === 'string'
-              ? profile.name.slice(0, 80)
+              ? profile.name.trim().slice(0, 80) || 'Cliente'
               : 'Cliente',
-          email: parsed.data.email,
+          ...(parsed.success ? { email: parsed.data.email } : {}),
           role: 'customer',
           ...(provider === 'google' ? { emailVerifiedAt: new Date() } : {}),
         });
@@ -331,7 +304,13 @@ export function createAccountAccess({
           await SocialIdentity.create({ provider, subject, userId: user._id });
         } catch (error) {
           await User.deleteOne({ _id: user._id });
-          throw error;
+          if (error.code !== 11000) throw error;
+          // Concurrent first logins must resolve to the one identity that won the unique index.
+          const existing = await SocialIdentity.findOne({ provider, subject });
+          user =
+            existing &&
+            (await User.findById(existing.userId).select('+authVersion'));
+          if (!user) throw error;
         }
       }
       if (pending.expectedUserId && pending.expectedUserId !== String(user._id))

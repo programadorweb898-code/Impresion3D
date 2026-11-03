@@ -4,10 +4,15 @@ import argon2 from 'argon2';
 import express from 'express';
 import { resolve } from 'node:path';
 import { createApp } from '../apps/api/src/app.js';
-import { User, Product, Order } from '../apps/api/src/models.js';
+import {
+  User,
+  Product,
+  Order,
+  SocialIdentity,
+} from '../apps/api/src/models.js';
 const mongo = await MongoMemoryServer.create();
 await mongoose.connect(mongo.getUri());
-await Promise.all([User.init(), Order.init()]);
+await Promise.all([User.init(), Order.init(), SocialIdentity.init()]);
 const user = await User.create({
   name: 'Cliente navegador',
   email: 'browser@example.com',
@@ -71,8 +76,26 @@ host.use(
     trustProxy: true,
     staticDirectory: resolve('apps/web/dist'),
     accountServices: {
-      providers: {},
+      providers: {
+        facebook: {
+          clientId: 'browser-test-id',
+          clientSecret: 'browser-test-secret',
+        },
+      },
+      facebookVersion: 'v26.0',
+      // Only the isolated test server substitutes the provider. Production always calls Graph.
+      fetch: async (url) => ({
+        ok: true,
+        json: async () =>
+          url.includes('/oauth/access_token')
+            ? { access_token: 'browser-test-token' }
+            : {
+                id: 'facebook-browser-no-email',
+                name: 'Cliente Facebook navegador',
+              },
+      }),
       sendVerification: async (message) => mailbox.set(message.email, message),
+      sendEmailChange: async (message) => mailbox.set(message.email, message),
     },
   }),
 );

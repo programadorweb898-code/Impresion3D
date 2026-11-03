@@ -131,8 +131,8 @@ export function Profile({
         <section className="profile-panel email-confirm">
           <h2>Confirmá tu nuevo email</h2>
           <p>
-            Este enlace actualizará el correo de tu cuenta actual. Tu nuevo
-            email se usará para iniciar sesión.
+            Este enlace asociará el correo a tu cuenta actual. Conservás tus
+            pedidos y tu método de inicio de sesión.
           </p>
           <button
             className="primary"
@@ -173,8 +173,15 @@ export function Profile({
         <section className="profile-panel">
           <h2>Datos personales</h2>
           <p className="profile-current-email">
-            Correo actual: <strong>{profile.email}</strong>
+            Correo actual:{' '}
+            <strong>{profile.email || 'Sin correo agregado'}</strong>
           </p>
+          {!profile.email && (
+            <p>
+              Ingresás con Facebook. Podés usar tu cuenta y consultar tus
+              pedidos.
+            </p>
+          )}
           <form
             onSubmit={(e) =>
               update(e, '', { name: new FormData(e.currentTarget).get('name') })
@@ -199,8 +206,12 @@ export function Profile({
           </form>
         </section>
         <section className="profile-panel">
-          <h2>Cambiar email</h2>
-          <p>Confirmaremos el cambio con un enlace en tu nuevo correo.</p>
+          <h2>{profile.email ? 'Cambiar email' : 'Agregar email'}</h2>
+          <p>
+            {profile.canUpdateEmail
+              ? 'Te enviaremos un enlace para confirmar que el correo es tuyo.'
+              : 'La confirmación por correo todavía no está disponible. Podés seguir usando tu método de ingreso habitual.'}
+          </p>
           <form
             onSubmit={(e) => {
               const data = Object.fromEntries(new FormData(e.currentTarget));
@@ -214,11 +225,14 @@ export function Profile({
                 name="email"
                 autoComplete="email"
                 required
-                disabled={busy}
+                disabled={busy || !profile.canUpdateEmail}
               />
             </label>
             {proof}
-            <button className="primary" disabled={busy}>
+            <button
+              className="primary"
+              disabled={busy || !profile.canUpdateEmail}
+            >
               Confirmar nuevo email
             </button>
           </form>
@@ -227,52 +241,65 @@ export function Profile({
           <h2>
             {profile.hasPassword ? 'Cambiar contraseña' : 'Crear contraseña'}
           </h2>
-          <p>
-            Usá al menos 12 caracteres. Tus otras sesiones se cerrarán al
-            guardar.
-          </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const data = Object.fromEntries(new FormData(e.currentTarget));
-              if (data.password !== data.confirmPassword) {
-                setMessage('');
-                setError('Las contraseñas no coinciden.');
-                return;
-              }
-              delete data.confirmPassword;
-              update(e, '/password', data);
-            }}
-          >
-            {proof}
-            <label>
-              Nueva contraseña
-              <input
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                minLength="12"
-                maxLength="128"
-                required
-                disabled={busy}
-              />
-            </label>
-            <label>
-              Confirmar nueva contraseña
-              <input
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                minLength="12"
-                maxLength="128"
-                required
-                disabled={busy}
-              />
-            </label>
-            <button className="primary" disabled={busy}>
-              {profile.hasPassword ? 'Cambiar contraseña' : 'Crear contraseña'}
-            </button>
-          </form>
+          {!profile.email ? (
+            <p>
+              Para crear una contraseña, primero agregá y confirmá un correo.
+              Mientras tanto, ingresá con Facebook.
+            </p>
+          ) : (
+            <>
+              <p>
+                Usá al menos 12 caracteres. Tus otras sesiones se cerrarán al
+                guardar.
+              </p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const data = Object.fromEntries(
+                    new FormData(e.currentTarget),
+                  );
+                  if (data.password !== data.confirmPassword) {
+                    setMessage('');
+                    setError('Las contraseñas no coinciden.');
+                    return;
+                  }
+                  delete data.confirmPassword;
+                  update(e, '/password', data);
+                }}
+              >
+                {proof}
+                <label>
+                  Nueva contraseña
+                  <input
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    minLength="12"
+                    maxLength="128"
+                    required
+                    disabled={busy}
+                  />
+                </label>
+                <label>
+                  Confirmar nueva contraseña
+                  <input
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    minLength="12"
+                    maxLength="128"
+                    required
+                    disabled={busy}
+                  />
+                </label>
+                <button className="primary" disabled={busy}>
+                  {profile.hasPassword
+                    ? 'Cambiar contraseña'
+                    : 'Crear contraseña'}
+                </button>
+              </form>
+            </>
+          )}
         </section>
       </div>
     </section>

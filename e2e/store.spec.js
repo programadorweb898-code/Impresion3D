@@ -7,66 +7,157 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 });
 import { tetraGlb } from '../apps/api/test/helpers/model-fixtures.js';
-test('correo ausente de Facebook ofrece revisar permisos y conserva el reintento tras limpiar la URL', async ({
+test('enlaces anteriores de error permiten continuar con Facebook sin volver a exigir email', async ({
   page,
 }) => {
-  await page.route('**/api/auth/options', (route) =>
-    route.fulfill({
-      json: {
-        google: true,
-        facebook: true,
-        recovery: false,
-        verification: false,
-      },
-    }),
-  );
   const starts = [];
   await page.route('**/api/auth/facebook/start**', (route) => {
     starts.push(new URL(route.request().url()));
     return route.fulfill({
       contentType: 'text/html',
-      body: 'Solicitud de permisos',
+      body: 'Ingreso de Facebook',
     });
   });
-  await page.goto('/login?authError=facebook_email');
-  await expect(page.getByRole('alert')).toContainText(
-    'Facebook no compartió un correo válido',
-  );
-  await expect(page).toHaveURL('/login');
-  await page
-    .getByRole('button', { name: 'Revisar permisos de Facebook', exact: true })
-    .click();
-  await expect.poll(() => starts.length).toBe(1);
-  expect(starts[0].pathname).toBe('/api/auth/facebook/start');
-  expect(starts[0].searchParams.get('rerequest')).toBe('1');
-  for (const [code, message] of [
-    ['facebook_email_permission', 'Facebook no tiene concedido el permiso'],
-    ['facebook_email_account', 'Facebook concedió el permiso de correo'],
+  for (const code of [
+    'facebook_email',
+    'facebook_email_permission',
+    'facebook_email_account',
   ]) {
     await page.goto('/login?authError=' + code);
-    await expect(page.getByRole('alert')).toContainText(message);
+    await expect(page.getByRole('alert')).toContainText(
+      'Podés continuar con Facebook aunque no comparta tu correo',
+    );
     await expect(page).toHaveURL('/login');
     await page
-      .getByRole('button', {
-        name: 'Revisar permisos de Facebook',
-        exact: true,
-      })
+      .getByRole('button', { name: 'Continuar con Facebook', exact: true })
       .click();
-    await expect
-      .poll(() => starts.length)
-      .toBe(code === 'facebook_email_permission' ? 2 : 3);
-    expect(starts.at(-1).searchParams.get('rerequest')).toBe('1');
+    await expect(page).toHaveURL('/api/auth/facebook/start');
+    expect(starts.at(-1).searchParams.has('rerequest')).toBe(false);
   }
+});
+test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio desde el perfil', async ({
+  page,
+}) => {
+  // Run the real start endpoint, then substitute the provider's consent redirect.
+  // State, cookies, callback, MongoDB and checkout are handled by the real app.
+  await page.route('**/api/auth/facebook/start**', async (route) => {
+    const response = await route.fetch({ maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    const authorization = new URL(response.headers().location);
+    expect(authorization.origin).toBe('https://www.facebook.com');
+    const callback = new URL(authorization.searchParams.get('redirect_uri'));
+    callback.searchParams.set('state', authorization.searchParams.get('state'));
+    callback.searchParams.set('code', 'browser-facebook-code');
+    await route.fulfill({
+      response,
+      headers: { ...response.headers(), location: callback.href },
+    });
+  });
   await page.goto('/login');
+  await page
+    .getByRole('button', { name: 'Continuar con Facebook', exact: true })
+    .click();
+  await expect(page).toHaveURL('/');
   await expect(
-    page.getByRole('button', { name: 'Continuar con Facebook', exact: true }),
+    page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
   ).toBeEnabled();
+  const original = await (await page.request.get('/api/auth/me')).json();
+  expect(original.role).toBe('customer');
+  expect(original.email).toBeUndefined();
+  await page
+    .locator('.product-card')
+    .first()
+    .getByRole('button', { name: 'Agregar al carrito' })
+    .click();
+  await page
+    .getByRole('button', { name: 'Abrir carrito, 1 productos' })
+    .click();
+  await page
+    .getByRole('button', { name: 'Enviar pedido', exact: true })
+    .click();
   await expect(
-    page.getByRole('button', {
-      name: 'Revisar permisos de Facebook',
-      exact: true,
-    }),
+    page.getByRole('heading', { name: 'Mis pedidos' }),
+  ).toBeVisible();
+  await page.goto('/perfil');
+  await expect(
+    page.getByText('Sin correo agregado', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Agregar email', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel('Nueva contraseña', { exact: true }),
   ).toHaveCount(0);
+  // Cover the current production configuration too: no email delivery service yet.
+  await page.route('**/api/profile', async (route) => {
+    const response = await route.fetch();
+    const profile = await response.json();
+    await route.fulfill({
+      response,
+      json: { ...profile, canUpdateEmail: false },
+    });
+  });
+  await page.reload();
+  await expect(
+    page.getByText('La confirmación por correo todavía no está disponible.', {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Confirmar nuevo email', exact: true }),
+  ).toBeDisabled();
+  await page.screenshot({
+    path: '/tmp/mundo3d-facebook-perfil.png',
+    fullPage: true,
+  });
+  await page.unroute('**/api/profile');
+  await page.reload();
+  await page
+    .getByLabel('Nombre', { exact: true })
+    .fill('Nombre Facebook editado');
+  await page.getByRole('button', { name: 'Guardar datos' }).click();
+  await expect(page.getByRole('status')).toContainText('Datos actualizados');
+  await page
+    .getByLabel('Nuevo correo electrónico', { exact: true })
+    .fill('facebook-browser-contact@example.com');
+  await page.getByRole('button', { name: 'Confirmar nuevo email' }).click();
+  await expect(page.getByRole('status')).toContainText('Enviamos un enlace');
+  await expect(
+    page.getByText('Sin correo agregado', { exact: true }),
+  ).toBeVisible();
+  const mail = await (
+    await page.request.get(
+      '/__test/mailbox/facebook-browser-contact@example.com',
+    )
+  ).json();
+  await page.goto(mail.url);
+  await page.getByRole('button', { name: 'Confirmar cambio de email' }).click();
+  await expect(page.getByRole('status')).toContainText('Correo confirmado');
+  await expect(page.locator('.profile-current-email')).toContainText(
+    'facebook-browser-contact@example.com',
+  );
+  await expect(
+    page.getByLabel('Nueva contraseña', { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Cerrar sesión', exact: true })
+    .click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Salir', exact: true })
+    .click();
+  await expect(page).toHaveURL('/login');
+  await page
+    .getByRole('button', { name: 'Continuar con Facebook', exact: true })
+    .click();
+  await expect(page).toHaveURL('/');
+  const returned = await (await page.request.get('/api/auth/me')).json();
+  expect(returned.id).toBe(original.id);
+  expect(returned.name).toBe('Nombre Facebook editado');
+  expect(returned.email).toBe('facebook-browser-contact@example.com');
+  const orders = await (await page.request.get('/api/orders')).json();
+  expect(orders).toHaveLength(1);
+  expect(orders[0].userId).toBe(original.id);
 });
 async function menu(page, name) {
   await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();

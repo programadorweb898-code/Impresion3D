@@ -37,7 +37,8 @@ function OrderEditor({ order, onSave, busy }) {
         <strong>{statusLabels[order.status]}</strong>
       </div>
       <p>
-        {order.userId?.name || 'Cuenta no disponible'} · {order.userId?.email}
+        {order.userId?.name || 'Cuenta no disponible'} ·{' '}
+        {order.userId?.email || 'Sin correo agregado'}
       </p>
       <p>{new Date(order.createdAt).toLocaleString('es-AR')}</p>
       {order.items.map((item, i) => (

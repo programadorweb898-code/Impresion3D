@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { createApp } from './app.js';
 import { createImageStorage } from './images.js';
 import { createAccountServices } from './account-access.js';
+import { SocialIdentity } from './models.js';
+import { ensureUserEmailIndex } from './user-email-index.js';
 import {
   createOrderNotifier,
   startOrderNotifications,
@@ -45,6 +47,7 @@ const staticDirectory =
 if (staticDirectory && !existsSync(staticDirectory + 'index.html'))
   throw new Error('Primero ejecutá npm run build');
 await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
+await Promise.all([ensureUserEmailIndex(), SocialIdentity.init()]);
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,

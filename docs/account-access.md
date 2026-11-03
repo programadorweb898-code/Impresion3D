@@ -37,26 +37,40 @@ Permisos solicitados: `openid email profile`. Se valida un email verificado. El 
 4. La versión de Graph API predeterminada es `v23.0`. Puede configurarse con `FACEBOOK_GRAPH_VERSION` cuando corresponda actualizarla.
 5. En modo desarrollo sólo ingresan los roles y probadores autorizados de la app. Para clientes reales, configurar las URLs públicas de política de privacidad y eliminación de datos, pasar los requisitos que solicite Meta y activar el modo público. No publicar textos legales con datos ficticios.
 
-Permisos solicitados: `email,public_profile`. Si Facebook no comparte un email, se indica usar otra opción o revisar permisos. El backend intercambia el código, solicita el perfil y envía `appsecret_proof`. No guarda tokens del proveedor. El `state` depende de la sesión, vence a los 10 minutos y se consume al recibir el callback. Cancelaciones, códigos inválidos y errores regresan a `/login` con mensajes controlados.
+Permisos solicitados: `email,public_profile`. El correo es opcional para Facebook:
+si falta, es inválido o el usuario no comparte ese permiso, una identidad válida
+puede crear su cuenta e iniciar sesión. La identidad se obtiene exclusivamente del
+perfil que devuelve Graph después del intercambio del código; no se acepta un ID
+enviado por el navegador. Se conserva `appsecret_proof`, la sesión HttpOnly y el
+`state` de un solo uso con vencimiento de diez minutos. Cancelar el acceso completo,
+un código inválido o una respuesta sin ID siguen impidiendo el ingreso.
 
-Si falta un correo válido para crear una cuenta de Facebook, se vuelve a
-`/login?authError=facebook_email`. El botón cambia a «Revisar permisos de Facebook»
-y abre `/api/auth/facebook/start?rerequest=1`, que envía `auth_type=rerequest`
-para volver a solicitar permisos rechazados. Es una acción explícita, sin
-redirecciones automáticas ni bucles. La cuenta de Facebook debe disponer de un
-correo confirmado que permita compartir y el permiso `email` debe estar habilitado
-en el caso de uso de Meta. Reintentar no garantiza que Facebook devuelva un correo.
-No se inventan direcciones ni se vinculan cuentas existentes sólo por email.
+La cuenta queda sin el campo `email`, sin dirección inventada y sin marcar el
+correo como verificado. Los siguientes accesos buscan `provider + subject` y
+recuperan el mismo usuario y sus pedidos, incluso si Facebook cambia u omite el
+correo. No se incorpora ni reemplaza automáticamente un email en accesos posteriores.
+La creación concurrente de la misma identidad recupera la cuenta ganadora y elimina
+únicamente la cuenta provisional del intento que perdió el índice único.
 
-Si Facebook omite un correo válido, el backend consulta `/me/permissions` con el
-token en la cabecera Authorization y `appsecret_proof`, con un máximo de tres
-segundos. El estado `granted` produce `facebook_email_account`; un permiso
-rechazado, vencido o ausente produce `facebook_email_permission`. Si esa consulta
-falla o la respuesta no tiene el formato esperado, se conserva `facebook_email`
-sin inferir que el permiso fue rechazado. No se hace esta consulta en accesos
-correctos. El registro `facebook_email_unavailable` incluye sólo el identificador
-de solicitud, el estado del permiso y si el campo falta o tiene formato inválido;
-no contiene el perfil, la dirección de correo, el ID de Facebook ni sus tokens.
+El perfil indica «Sin correo agregado». Con Resend disponible, permite agregar
+una dirección mediante el flujo existente de confirmación por enlace. Hasta
+confirmarla, no se puede crear una contraseña. Sin Resend, el ingreso por Facebook,
+el catálogo, los pedidos y la edición del nombre siguen disponibles; el formulario
+de correo explica la indisponibilidad. Los antiguos enlaces de error por email
+permiten reintentar el acceso normal, sin exigir permisos adicionales.
+
+### Índice de email para cuentas sociales
+
+`users_email_unique` mantiene la unicidad sólo para documentos cuyo email es una
+cadena. Antes de atender solicitudes, `server.js` construye ese índice y después
+retira exclusivamente el índice legado `email_1` si coincide con su definición
+conocida (único, email ascendente, sin filtro, sparse ni collation). La transición
+es idempotente y conserva la protección de los emails durante todo el cambio; no
+modifica usuarios ni otros índices. Usa índices con la misma clave y distintas
+opciones, compatibles con MongoDB 5 o superior. Si la construcción o validación
+falla, el servidor no comienza a escuchar. Una reversión a la versión anterior
+requiere conservar este índice: no recrear el índice único sin filtro cuando ya
+existan varias cuentas sin correo.
 
 ## Identidades y cuentas existentes
 

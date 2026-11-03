@@ -19,7 +19,8 @@ export function createProfileRouter({
   const summary = async (user) => ({
     id: String(user._id),
     name: user.name,
-    email: user.email,
+    email: user.email || null,
+    canUpdateEmail: !!services.sendEmailChange,
     role: user.role,
     hasPassword: !!user.passwordHash,
     providers: (
@@ -100,6 +101,12 @@ export function createProfileRouter({
     ),
     confirmIdentity,
     async (req, res) => {
+      if (!req.profileUser.email)
+        return res.status(400).json({
+          code: 'EMAIL_REQUIRED',
+          message:
+            'Agregá y confirmá un correo antes de crear una contraseña. Podés seguir ingresando con Facebook.',
+        });
       const passwordHash = await hashPassword(req.body.password);
       const version = req.profileUser.authVersion || 0;
       const user = await User.findOneAndUpdate(
@@ -151,7 +158,7 @@ export function createProfileRouter({
       if (!services.sendEmailChange)
         return res.status(503).json({
           message:
-            'El cambio de email requiere confirmar el nuevo correo. El envío de correos todavía no está disponible.',
+            'Para agregar o cambiar el email hay que confirmarlo. El envío de correos todavía no está disponible.',
         });
       if (await User.exists({ email: req.body.email }))
         return res
@@ -212,12 +219,12 @@ export function createProfileRouter({
         );
         return res.status(502).json({
           message:
-            'No pudimos enviar la confirmación. Tu correo actual sigue vigente.',
+            'No pudimos enviar la confirmación. Volvé a intentarlo más tarde.',
         });
       }
       res.json({
         message:
-          'Enviamos un enlace al nuevo correo. Tu email actual seguirá vigente hasta confirmarlo.',
+          'Enviamos un enlace al nuevo correo. Confirmalo para asociar esa dirección a tu cuenta.',
       });
     },
   );
@@ -277,7 +284,9 @@ export function createProfileRouter({
       await renew(req, user);
       res.json({
         user: await summary(user),
-        message: 'Email actualizado. Usá tu nuevo correo para ingresar.',
+        message: user.passwordHash
+          ? 'Email actualizado. Usá tu nuevo correo para ingresar.'
+          : 'Correo confirmado. Podés crear una contraseña desde tu perfil o seguir ingresando con tu proveedor.',
       });
     },
   );

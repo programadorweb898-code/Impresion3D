@@ -3,7 +3,7 @@ const { Schema, model } = mongoose;
 const userSchema = new Schema(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String },
     emailVerifiedAt: Date,
     verificationRequired: { type: Boolean, default: false },
     verificationTokenHash: { type: String, select: false },
@@ -21,6 +21,15 @@ const userSchema = new Schema(
     role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
   },
   { timestamps: true },
+);
+// Social accounts can exist without an email. Addresses that are present remain unique.
+userSchema.index(
+  { email: 1 },
+  {
+    name: 'users_email_unique',
+    unique: true,
+    partialFilterExpression: { email: { $type: 'string' } },
+  },
 );
 userSchema.index({ resetTokenHash: 1 }, { sparse: true });
 userSchema.index({ verificationTokenHash: 1 }, { sparse: true });

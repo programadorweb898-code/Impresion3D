@@ -37,11 +37,11 @@ const providerErrors = {
   email:
     'El proveedor no compartió un correo válido. Usá email y contraseña o revisá los permisos de tu cuenta.',
   facebook_email:
-    'Facebook no compartió un correo válido. Revisá los permisos y permití compartir tu email con Mundo 3D. Tu perfil de Facebook debe tener un correo confirmado.',
+    'Podés continuar con Facebook aunque no comparta tu correo. Volvé a intentarlo.',
   facebook_email_permission:
-    'Facebook no tiene concedido el permiso para compartir tu correo con Mundo 3D. Podés volver a solicitarlo con «Revisar permisos de Facebook» o ingresar con otro método.',
+    'Podés continuar con Facebook aunque no comparta tu correo. Volvé a intentarlo.',
   facebook_email_account:
-    'Facebook concedió el permiso de correo, pero no entregó una dirección válida. Revisá el correo confirmado de tu perfil de Facebook o ingresá con otro método.',
+    'Podés continuar con Facebook aunque no comparta tu correo. Volvé a intentarlo.',
   existing:
     'Ya existe una cuenta con ese correo. Ingresá usando el método con el que la creaste.',
   provider:
@@ -152,11 +152,6 @@ export function AuthPage({
     }
   }
   const disabled = busy || working;
-  const retryFacebookEmail = [
-    'facebook_email',
-    'facebook_email_permission',
-    'facebook_email_account',
-  ].includes(providerError);
   return (
     <main className="login-page">
       <section className="login-panel" aria-labelledby="login-title">
@@ -201,21 +196,12 @@ export function AuthPage({
                   className="social-button"
                   disabled={disabled || !options?.[provider]}
                   onClick={() => {
-                    window.location.assign(
-                      '/api/auth/' +
-                        provider +
-                        '/start' +
-                        (provider === 'facebook' && retryFacebookEmail
-                          ? '?rerequest=1'
-                          : ''),
-                    );
+                    window.location.assign('/api/auth/' + provider + '/start');
                   }}
                 >
                   <ProviderLogo provider={provider} />
-                  {provider === 'facebook' && retryFacebookEmail
-                    ? 'Revisar permisos de Facebook'
-                    : 'Continuar con ' +
-                      (provider === 'google' ? 'Google' : 'Facebook')}
+                  {'Continuar con ' +
+                    (provider === 'google' ? 'Google' : 'Facebook')}
                   {options && !options[provider] && (
                     <span className="social-soon">Próximamente</span>
                   )}
