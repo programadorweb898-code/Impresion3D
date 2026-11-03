@@ -26,3 +26,22 @@ Las condiciones describen el carrito como solicitud, la confirmación manual del
 Ambas páginas tienen enlaces en el footer y en el acceso a la cuenta. El servidor coloca el contenido legal en el HTML inicial para que pueda leerse sin ejecutar JavaScript ni iniciar sesión; React mantiene luego la navegación del sitio y el enlace Volver. No se requiere una sesión ni se crea una cookie para leer el contenido estático. Los títulos y el nombre visible usan Mundo 3D.
 
 Pruebas: HTTP público sin autenticación, contenido y contacto en HTML, ausencia de cookie, navegación desde el footer, recarga, Atrás, pantallas de 320 a 1280 px y navegador con JavaScript deshabilitado. Estas comprobaciones técnicas no sustituyen una revisión jurídica ni garantizan la aprobación de marca o dominio por Google.
+
+## Diagnóstico de acceso de Meta
+
+`/robots.txt` permite rastrear las páginas públicas y excluye `/api/`.
+Las páginas legales y `robots.txt` registran `public_document_request` al recibir
+la solicitud y al completar la respuesta. Cada registro incluye identificador,
+método, ruta, clasificación del identificador del rastreador y, al finalizar,
+estado HTTP y duración. La respuesta expone el mismo `x-request-id`.
+No se registran IP, cookies, cabeceras de autorización ni parámetros de consulta.
+La clasificación `meta` depende del User-Agent declarado, no prueba la identidad
+del solicitante.
+
+Cuando Meta informa 403, repetir la extracción y correlacionar la hora con estos
+registros de aplicación. Una respuesta 200 desde otro origen (incluso usando el
+User-Agent de Facebook) no demuestra que los servidores de Meta reciban 200.
+La ausencia de registros HTTP nativos no prueba que el bloqueo sea del proveedor:
+primero verificar que el registro de aplicación nuevo esté activo y registrar
+una solicitud de control. Si Meta no llega al backend, revisar las capas de red
+con el proveedor y solicitar el contenido del error que obtuvo el depurador.

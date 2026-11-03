@@ -5,6 +5,7 @@ import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { legalPageFromPath } from '@impresion3d/shared';
 import { renderLegalDocument } from './legal-pages.js';
+import { observePublicDocuments } from './public-document-requests.js';
 import mongoose from 'mongoose';
 import helmet from 'helmet';
 import session from 'express-session';
@@ -35,6 +36,7 @@ export function createApp({
   buildCommit,
 }) {
   const app = express();
+  app.use(observePublicDocuments());
   app.use('/api', (req, res, next) => {
     req.requestId = randomUUID();
     res.set('x-request-id', req.requestId);
