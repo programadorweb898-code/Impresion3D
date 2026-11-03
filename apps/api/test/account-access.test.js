@@ -190,7 +190,9 @@ test('Google usa state por sesión y PKCE; crea cliente y reutiliza identidad si
   const state = url.searchParams.get('state');
   const wrong = request.agent(instance);
   assert.equal(
-    (await callback(wrong, 'google', state)).headers.location,
+    (await callback(wrong, 'google', state)).headers.location.split(
+      '&authRef=',
+    )[0],
     '/login?authError=cancelled',
   );
   assert.equal(services.calls.length, 0);
@@ -199,7 +201,9 @@ test('Google usa state por sesión y PKCE; crea cliente y reutiliza identidad si
   const me = await agent.get('/api/auth/me').expect(200);
   assert.equal(me.body.role, 'customer');
   assert.equal(
-    (await callback(agent, 'google', state)).headers.location,
+    (await callback(agent, 'google', state)).headers.location.split(
+      '&authRef=',
+    )[0],
     '/login?authError=cancelled',
   );
   assert.ok(services.calls[0].options.body.get('code_verifier'));
@@ -260,7 +264,9 @@ test('Google no vincula por email ni acepta email sin verificar y rechaza state 
   assert.equal(await User.countDocuments({ email: profile.email }), 0);
   url = await start(agent, 'google');
   assert.equal(
-    (await callback(agent, 'google', 'é'.repeat(64))).headers.location,
+    (await callback(agent, 'google', 'é'.repeat(64))).headers.location.split(
+      '&authRef=',
+    )[0],
     '/login?authError=cancelled',
   );
 });
@@ -330,4 +336,63 @@ test('fallo al enviar correo no revela si existe la cuenta; Resend usa un remite
   });
   assert.equal(response.status, 200);
   assert.doesNotMatch(JSON.stringify(response.body), /private/);
+});
+
+test('fallos transitorios de OAuth dejan referencia y etapa sin registrar secretos; el siguiente intento usa un state nuevo', async (t) => {
+  const logs = [];
+  t.mock.method(console, 'warn', (line) => logs.push(JSON.parse(line)));
+  for (const failure of ['timeout', 'profile']) {
+    const services = socialServices('facebook', {
+      id: 'diagnostic-' + failure,
+      name: 'Cliente',
+    });
+    const transport = services.fetch;
+    let fail = true;
+    services.fetch = async (url, options) => {
+      if (fail && failure === 'timeout')
+        throw new DOMException('private token secret details', 'TimeoutError');
+      if (
+        fail &&
+        failure === 'profile' &&
+        new URL(url).pathname.endsWith('/me')
+      )
+        return { ok: false, status: 503 };
+      return transport(url, options);
+    };
+    const agent = request.agent(app(services));
+    const url = await start(agent, 'facebook');
+    const result = await callback(
+      agent,
+      'facebook',
+      url.searchParams.get('state'),
+    );
+    const destination = new URL(result.headers.location, origin);
+    assert.equal(destination.searchParams.get('authError'), 'provider');
+    assert.match(destination.searchParams.get('authRef'), /^[a-f0-9-]{36}$/);
+    assert.equal(
+      logs.at(-1).requestId,
+      destination.searchParams.get('authRef'),
+    );
+    assert.equal(
+      logs.at(-1).stage,
+      failure === 'timeout' ? 'exchange' : 'profile',
+    );
+    assert.doesNotMatch(
+      JSON.stringify(logs),
+      /private token|provider-secret-token|server-secret|client_secret/,
+    );
+    await agent.get('/api/auth/me').expect(401);
+    fail = false;
+    const next = await start(agent, 'facebook');
+    assert.notEqual(
+      next.searchParams.get('state'),
+      url.searchParams.get('state'),
+    );
+    assert.equal(
+      (await callback(agent, 'facebook', next.searchParams.get('state')))
+        .headers.location,
+      '/',
+    );
+    await agent.get('/api/auth/me').expect(200);
+  }
 });

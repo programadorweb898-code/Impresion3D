@@ -186,6 +186,7 @@ export function createAccountAccess({
       state,
       verifier,
       expires: Date.now() + 10 * 60000,
+      attemptId: req.requestId,
       popup:
         req.query.popup === '1' &&
         req.query.reauthenticate === '1' &&
@@ -224,7 +225,14 @@ export function createAccountAccess({
     const provider = req.params.provider,
       pending = req.session.oauth;
     const finish = (destination) => {
-      if (!pending?.popup) return res.redirect(destination);
+      if (!pending?.popup)
+        return res.redirect(
+          ['/login?authError=provider', '/login?authError=cancelled'].includes(
+            destination,
+          )
+            ? destination + '&authRef=' + req.requestId
+            : destination,
+        );
       return res
         .type('html')
         .send(
@@ -234,6 +242,22 @@ export function createAccountAccess({
     delete req.session.oauth;
     await save(req);
     const state = typeof req.query.state === 'string' ? req.query.state : '';
+    const started = Date.now();
+    const report = (stage, reason, extra = {}) =>
+      console.warn(
+        JSON.stringify({
+          event: 'oauth_access_failed',
+          provider: ['google', 'facebook'].includes(provider)
+            ? provider
+            : 'unknown',
+          requestId: req.requestId,
+          attemptId: pending?.attemptId,
+          stage,
+          reason,
+          durationMs: Date.now() - started,
+          ...extra,
+        }),
+      );
     if (
       !pending ||
       pending.provider !== provider ||
@@ -243,8 +267,23 @@ export function createAccountAccess({
       typeof req.query.code !== 'string' ||
       req.query.code.length > 4096 ||
       req.query.error
-    )
+    ) {
+      report(
+        'state',
+        req.query.error
+          ? 'provider_cancelled'
+          : !pending
+            ? 'missing_session'
+            : pending.expires < Date.now()
+              ? 'expired'
+              : pending.provider !== provider
+                ? 'provider_mismatch'
+                : 'invalid_callback',
+      );
       return finish('/login?authError=cancelled');
+    }
+    let stage = 'configuration',
+      upstreamStatus;
     try {
       const config = services.providers[provider];
       if (!config) throw new Error('unavailable');
@@ -257,12 +296,14 @@ export function createAccountAccess({
         grant_type: 'authorization_code',
       });
       if (provider === 'google') body.set('code_verifier', pending.verifier);
+      stage = 'exchange';
       const exchange = await services.fetch(
         provider === 'google'
           ? 'https://oauth2.googleapis.com/token'
           : `https://graph.facebook.com/${services.facebookVersion}/oauth/access_token`,
         { method: 'POST', body, signal: AbortSignal.timeout(10000) },
       );
+      upstreamStatus = exchange.status;
       if (!exchange.ok) throw new Error('exchange');
       const tokens = await exchange.json();
       if (typeof tokens.access_token !== 'string') throw new Error('token');
@@ -280,15 +321,20 @@ export function createAccountAccess({
             .digest('hex'),
         );
       }
+      stage = 'profile';
+      upstreamStatus = undefined;
       const response = await services.fetch(profileUrl.href, {
         headers: { Authorization: 'Bearer ' + tokens.access_token },
         signal: AbortSignal.timeout(10000),
       });
+      upstreamStatus = response.status;
       if (!response.ok) throw new Error('profile');
       const profile = await response.json();
       const subject = provider === 'google' ? profile.sub : profile.id;
       if (typeof subject !== 'string' || !subject || subject.length > 255)
         throw new Error('subject');
+      stage = 'account';
+      upstreamStatus = undefined;
       const identity = await SocialIdentity.findOne({ provider, subject });
       let user =
         identity &&
@@ -329,13 +375,37 @@ export function createAccountAccess({
       }
       if (pending.expectedUserId && pending.expectedUserId !== String(user._id))
         return finish('/login?authError=existing');
+      stage = 'session';
       await regenerate(req);
       req.session.reauthenticatedAt = Date.now();
       req.session.userId = String(user._id);
       req.session.authVersion = user.authVersion || 0;
       await save(req);
       finish(pending.returnToProfile ? '/perfil' : '/');
-    } catch {
+    } catch (error) {
+      const known = [
+        'unavailable',
+        'exchange',
+        'token',
+        'profile',
+        'subject',
+        'identity_without_account',
+      ];
+      report(
+        stage,
+        known.includes(error.message) ? error.message : 'operation_failed',
+        {
+          ...(Number.isInteger(upstreamStatus) ? { upstreamStatus } : {}),
+          errorType: [
+            'TimeoutError',
+            'AbortError',
+            'MongoServerError',
+            'SyntaxError',
+          ].includes(error.name)
+            ? error.name
+            : 'Error',
+        },
+      );
       finish('/login?authError=provider');
     }
   });

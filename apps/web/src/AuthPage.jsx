@@ -74,9 +74,16 @@ export function AuthPage({
   const [providerError] = useState(() =>
     new URLSearchParams(location.search).get('authError'),
   );
-  const [localError, setLocalError] = useState(
-    () => providerErrors[providerError] || '',
-  );
+  const [localError, setLocalError] = useState(() => {
+    const message = providerErrors[providerError] || '';
+    const reference = new URLSearchParams(location.search).get('authRef');
+    return (
+      message +
+      (message && /^[a-f0-9-]{36}$/.test(reference || '')
+        ? ` Referencia: ${reference}.`
+        : '')
+    );
+  });
   const [working, setWorking] = useState(false);
   useEffect(() => {
     // Keep reset secrets out of browser history, referrers, and subsequent navigations.

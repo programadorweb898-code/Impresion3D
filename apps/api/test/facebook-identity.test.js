@@ -161,7 +161,7 @@ test('state, perfil válido e identidad original siguen siendo obligatorios', as
   const agent = request.agent(app);
   const count = await User.countDocuments();
   assert.equal(
-    (await login(agent)).headers.location,
+    (await login(agent)).headers.location.split('&authRef=')[0],
     '/login?authError=provider',
   );
   assert.equal(await User.countDocuments(), count);

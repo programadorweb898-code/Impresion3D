@@ -137,3 +137,14 @@ ni datos de autenticación enviados por la ventana. Helmet usa
 Las pruebas automatizadas verifican aceptar, cancelar, cerrar con la cruz y rechazar
 una identidad diferente. Las pantallas de consentimiento de los proveedores se
 sustituyen sólo en el servidor y navegador aislados de pruebas.
+
+## Diagnóstico de fallos intermitentes del acceso social
+
+Los errores de proveedor y callback incluyen una referencia aleatoria `authRef`,
+que la pantalla conserva en su mensaje y retira de la URL al montarse. El evento
+`oauth_access_failed` registra la referencia, el intento, la etapa (state,
+exchange, profile, account o session), una causa controlada, duración y, si existe,
+el código HTTP del proveedor. No registra correos, identificadores sociales,
+cookies, códigos OAuth, state, tokens, secretos ni mensajes arbitrarios de errores.
+Esto permite investigar un primer intento fallido sin inferir su causa a partir
+del mensaje genérico ni repetir automáticamente un intercambio de código OAuth.
