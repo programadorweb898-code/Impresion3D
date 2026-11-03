@@ -39,6 +39,24 @@ test('correo ausente de Facebook ofrece revisar permisos y conserva el reintento
   await expect.poll(() => starts.length).toBe(1);
   expect(starts[0].pathname).toBe('/api/auth/facebook/start');
   expect(starts[0].searchParams.get('rerequest')).toBe('1');
+  for (const [code, message] of [
+    ['facebook_email_permission', 'Facebook no tiene concedido el permiso'],
+    ['facebook_email_account', 'Facebook concedió el permiso de correo'],
+  ]) {
+    await page.goto('/login?authError=' + code);
+    await expect(page.getByRole('alert')).toContainText(message);
+    await expect(page).toHaveURL('/login');
+    await page
+      .getByRole('button', {
+        name: 'Revisar permisos de Facebook',
+        exact: true,
+      })
+      .click();
+    await expect
+      .poll(() => starts.length)
+      .toBe(code === 'facebook_email_permission' ? 2 : 3);
+    expect(starts.at(-1).searchParams.get('rerequest')).toBe('1');
+  }
   await page.goto('/login');
   await expect(
     page.getByRole('button', { name: 'Continuar con Facebook', exact: true }),

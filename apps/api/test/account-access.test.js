@@ -338,6 +338,47 @@ test('Facebook sin correo permite volver a pedir permisos y sólo crea la cuenta
   assert.equal(await SocialIdentity.countDocuments({ subject: profile.id }), 1);
   assert.equal(await User.countDocuments(), accountsBefore + 1);
 });
+test('Facebook distingue permiso no concedido de perfil sin correo y no crea cuentas en ninguno de los dos casos', async () => {
+  for (const permission of ['granted', 'declined', 'expired', 'absent']) {
+    const profile = { id: 'fb-without-email-' + permission, name: 'Cliente' };
+    const services = socialServices('facebook', profile);
+    const transport = services.fetch;
+    services.fetch = async (url, options) => {
+      if (new URL(url).pathname.endsWith('/me/permissions'))
+        return {
+          ok: true,
+          json: async () => ({
+            data:
+              permission === 'absent'
+                ? []
+                : [{ permission: 'email', status: permission }],
+          }),
+        };
+      return transport(url, options);
+    };
+    const agent = request.agent(app(services));
+    const url = await start(agent, 'facebook');
+    const countBefore = await User.countDocuments();
+    const result = await callback(
+      agent,
+      'facebook',
+      url.searchParams.get('state'),
+    );
+    assert.equal(
+      result.headers.location,
+      '/login?authError=' +
+        (permission === 'granted'
+          ? 'facebook_email_account'
+          : 'facebook_email_permission'),
+    );
+    await agent.get('/api/auth/me').expect(401);
+    assert.equal(await User.countDocuments(), countBefore);
+    assert.equal(
+      await SocialIdentity.countDocuments({ subject: profile.id }),
+      0,
+    );
+  }
+});
 test('fallo al enviar correo no revela si existe la cuenta; Resend usa un remitente y destino del servidor', async () => {
   const transportCalls = [];
   const services = createAccountServices(

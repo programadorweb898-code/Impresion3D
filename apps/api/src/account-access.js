@@ -10,6 +10,7 @@ import {
 } from 'node:crypto';
 import { User, SocialIdentity } from './models.js';
 import { createVerificationRouter } from './email-verification.js';
+import { facebookEmailPermission } from './facebook-email-permission.js';
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 export function createAccountServices(env = {}, transport = fetch) {
   const providers = {};
@@ -285,12 +286,35 @@ export function createAccountAccess({
         if (
           !parsed.success ||
           (provider === 'google' && profile.email_verified !== true)
-        )
-          return res.redirect(
-            provider === 'facebook'
-              ? '/login?authError=facebook_email'
-              : '/login?authError=email',
-          );
+        ) {
+          if (provider === 'facebook') {
+            const permission = await facebookEmailPermission({
+              transport: services.fetch,
+              version: services.facebookVersion,
+              clientSecret: config.clientSecret,
+              accessToken: tokens.access_token,
+            });
+            console.info(
+              JSON.stringify({
+                event: 'facebook_email_unavailable',
+                requestId: req.requestId,
+                permission,
+                emailField:
+                  typeof profile.email === 'string' && profile.email.trim()
+                    ? 'invalid_format'
+                    : 'missing',
+              }),
+            );
+            const error =
+              permission === 'granted'
+                ? 'facebook_email_account'
+                : permission === 'unknown'
+                  ? 'facebook_email'
+                  : 'facebook_email_permission';
+            return res.redirect('/login?authError=' + error);
+          }
+          return res.redirect('/login?authError=email');
+        }
         // Never link by matching email: that could let a different identity take over an existing account.
         if (await User.exists({ email: parsed.data.email }))
           return res.redirect('/login?authError=existing');

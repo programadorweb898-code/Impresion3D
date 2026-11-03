@@ -48,6 +48,16 @@ correo confirmado que permita compartir y el permiso `email` debe estar habilita
 en el caso de uso de Meta. Reintentar no garantiza que Facebook devuelva un correo.
 No se inventan direcciones ni se vinculan cuentas existentes sólo por email.
 
+Si Facebook omite un correo válido, el backend consulta `/me/permissions` con el
+token en la cabecera Authorization y `appsecret_proof`, con un máximo de tres
+segundos. El estado `granted` produce `facebook_email_account`; un permiso
+rechazado, vencido o ausente produce `facebook_email_permission`. Si esa consulta
+falla o la respuesta no tiene el formato esperado, se conserva `facebook_email`
+sin inferir que el permiso fue rechazado. No se hace esta consulta en accesos
+correctos. El registro `facebook_email_unavailable` incluye sólo el identificador
+de solicitud, el estado del permiso y si el campo falta o tiene formato inválido;
+no contiene el perfil, la dirección de correo, el ID de Facebook ni sus tokens.
+
 ## Identidades y cuentas existentes
 
 La colección `socialidentities` mantiene un índice único de proveedor e identificador. Los pedidos y roles siguen asociados a `users`. No hay vinculación automática por coincidencia de email: si ya existe otra cuenta con ese correo, hay que usar su método original. La vinculación explícita de múltiples métodos desde una cuenta autenticada queda fuera de esta entrega. Las cuentas sociales nuevas siempre tienen rol `customer`.
