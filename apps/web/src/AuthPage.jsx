@@ -149,7 +149,7 @@ export function AuthPage({
     <main className="login-page">
       <section className="login-panel" aria-labelledby="login-title">
         <p className="auth-brand">
-          <span aria-hidden="true">✳</span> impresión<span>3D</span>
+          <span aria-hidden="true">✳</span> Mundo <span>3D</span>
         </p>
         <h1 id="login-title">
           {mode === 'verify'
@@ -353,6 +353,25 @@ export function AuthPage({
             </button>
           </form>
         )}
+        <p className="auth-legal">
+          Consultá nuestra{' '}
+          <a
+            href="/politica-de-privacidad"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Política de privacidad
+          </a>{' '}
+          y los{' '}
+          <a
+            href="/terminos-y-condiciones"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Términos y condiciones
+          </a>
+          .
+        </p>
       </section>
     </main>
   );

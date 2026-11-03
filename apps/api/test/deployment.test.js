@@ -9,7 +9,7 @@ const directory = await mkdtemp(path.join(tmpdir(), 'impresion3d-static-'));
 await mkdir(path.join(directory, 'assets'));
 await writeFile(
   path.join(directory, 'index.html'),
-  '<!doctype html><html lang="es"><body>Tienda</body></html>',
+  '<!doctype html><html lang="es"><head><title>Tienda</title><meta name="description" content="Tienda de prueba"></head><body><div id="root">Tienda</div></body></html>',
 );
 await writeFile(
   path.join(directory, 'assets', 'app-test.js'),
@@ -59,4 +59,32 @@ test('assets versionados tienen caché y respuestas privadas no', async () => {
 test('readiness devuelve 503 sin conexión a MongoDB', async () => {
   await request(app).get('/api/ready').expect(503);
   await request(app).get('/api/health').expect(200);
+});
+test('páginas legales son públicas, incluyen el contenido en HTML sin ejecutar JavaScript y tienen contacto real', async () => {
+  const privacy = await request(app)
+    .get('/politica-de-privacidad')
+    .expect(200)
+    .expect('Content-Type', /html/);
+  assert.match(
+    privacy.text,
+    /<title>Política de privacidad \| Mundo 3D<\/title>/,
+  );
+  assert.match(privacy.text, /Luis Alberto Gómez/);
+  assert.match(privacy.text, /gomito724@gmail\.com/);
+  assert.match(privacy.text, /Ley argentina 25\.326/);
+  assert.match(privacy.text, /id="eliminacion-de-datos"/);
+  assert.match(privacy.text, /Solicitar eliminación de cuenta y datos/);
+  assert.match(privacy.text, /mailto:gomito724@gmail\.com\?subject=/);
+  assert.doesNotMatch(privacy.text, /Tienda de prueba/);
+  assert.equal(privacy.headers['set-cookie'], undefined);
+  const terms = await request(app).get('/terminos-y-condiciones').expect(200);
+  assert.match(
+    terms.text,
+    /<title>Términos y condiciones \| Mundo 3D<\/title>/,
+  );
+  assert.match(terms.text, /Actualmente no se realizan pagos online/);
+  assert.match(terms.text, /Ley 24\.240/);
+  assert.match(terms.text, /href="\/politica-de-privacidad"/);
+  assert.equal(terms.headers['set-cookie'], undefined);
+  await request(app).get('/politica-de-privacidad/').expect(200);
 });

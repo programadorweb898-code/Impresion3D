@@ -75,7 +75,7 @@ export function Navbar({
             choose(onCatalog);
           }}
         >
-          <span className="brand-icon">✳</span> impresión
+          <span className="brand-icon">✳</span> Mundo{' '}
           <span className="text-orange-600">3D</span>
         </a>
         <div className={'nav-collapse' + (expanded ? ' is-expanded' : '')}>

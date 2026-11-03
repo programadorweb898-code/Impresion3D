@@ -90,3 +90,4 @@ export const orderUpdateSchema = z.strictObject({
   estimatedReadyAt: z.iso.datetime().nullable(),
   version: z.number().int().nonnegative(),
 });
+export { legalSite, legalPages, legalPageFromPath } from './legal.js';

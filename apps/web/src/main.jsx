@@ -31,6 +31,8 @@ import { Profile } from './Profile.jsx';
 import { Toast } from './Toast.jsx';
 import { ProductDetails } from './ProductDetails.jsx';
 import { BackLink } from './BackLink.jsx';
+import { LegalPage } from './LegalPage.jsx';
+import { legalPages, legalSite } from '@impresion3d/shared';
 import {
   currentPage,
   catalogContext,
@@ -259,6 +261,19 @@ function App() {
     if (location.pathname === '/perfil' && location.hash.startsWith('#email='))
       window.history.replaceState(window.history.state, '', '/perfil');
   }, [profileToken]);
+  useEffect(() => {
+    document.title = legalPages[view]
+      ? legalPages[view].title + ' | ' + legalSite.name
+      : legalSite.name + ' · Ideas que toman forma';
+  }, [view]);
+  function openLegal(key) {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    navigatePage(key, legalPages[key].path);
+    setView(key);
+    setError('');
+    setNotice('');
+    window.scrollTo(0, 0);
+  }
   function openProduct(id, replace = false) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
     navigatePage('product', '/descripcion/' + encodeURIComponent(id), {
@@ -533,7 +548,9 @@ function App() {
               {error}
             </p>
           )}
-          {view === 'product' ? (
+          {legalPages[view] ? (
+            <LegalPage pageKey={view} />
+          ) : view === 'product' ? (
             <ProductDetails
               id={detailId || ''}
               onAdd={addToCart}
@@ -842,10 +859,35 @@ function App() {
       {!loginPage && (
         <footer>
           <a className="brand" href="#" onClick={showCatalog}>
-            ✳ impresión3D
+            ✳ Mundo 3D
           </a>
           <p>Ideas que toman forma.</p>
-          <span className="small">Diseño local. Posibilidades infinitas.</span>
+          <div className="footer-legal">
+            <span className="small">
+              Diseño local. Posibilidades infinitas.
+            </span>
+            {Object.entries(legalPages).map(([key, page]) => (
+              <a
+                key={key}
+                href={page.path}
+                onClick={(event) => {
+                  if (
+                    event.button === 0 &&
+                    !event.metaKey &&
+                    !event.ctrlKey &&
+                    !event.shiftKey &&
+                    !event.altKey
+                  ) {
+                    event.preventDefault();
+                    openLegal(key);
+                  }
+                }}
+              >
+                {page.title}
+              </a>
+            ))}
+            <a href={'mailto:' + legalSite.email}>{legalSite.email}</a>
+          </div>
         </footer>
       )}
       {user && !loginPage && (

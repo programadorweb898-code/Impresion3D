@@ -1721,3 +1721,118 @@ header > nav {
 .login-page {
   min-height: calc(100dvh - 60px);
 }
+.legal-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 36px 5% 70px;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+.legal-page h1 {
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1.2;
+  letter-spacing: -1px;
+  margin: 16px 0;
+}
+.legal-updated {
+  font-size: 13px;
+  color: #687060;
+  margin: 0 0 24px;
+}
+.legal-introduction {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #46513e;
+}
+.legal-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  margin: 26px 0;
+  background: #edf1e7;
+  border: 1px solid #d6dfcc;
+  border-radius: 12px;
+  font-size: 14px;
+}
+.legal-section {
+  margin-top: 34px;
+  scroll-margin-top: calc(var(--site-header-height) + 18px);
+}
+.legal-section h2 {
+  font-size: 22px;
+  line-height: 1.4;
+  margin-bottom: 15px;
+  letter-spacing: -0.3px;
+}
+.legal-section p,
+.legal-section li {
+  font-size: 15px;
+  line-height: 1.85;
+  color: #4e5847;
+  margin: 12px 0;
+}
+.legal-section ul {
+  padding-left: 24px;
+  list-style: disc;
+}
+.legal-page a {
+  color: #36532b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.legal-page .legal-action {
+  display: inline-block;
+  margin: 6px 0;
+}
+.footer-legal {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.footer-legal a {
+  color: #46513e;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.legal-static-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 5%;
+  border-bottom: 1px solid #e0e2d9;
+}
+@media (max-width: 575.98px) {
+  .legal-page {
+    padding-top: 26px;
+  }
+  .legal-section h2 {
+    font-size: 20px;
+  }
+  .legal-contact {
+    padding: 16px;
+  }
+  .legal-static-header {
+    flex-wrap: wrap;
+  }
+  .footer-legal {
+    width: 100%;
+  }
+}
+
+.auth-legal {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #687060;
+  margin: 22px 0 0;
+}
+.auth-legal a {
+  color: #36532b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

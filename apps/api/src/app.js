@@ -2,6 +2,9 @@ import { hashPassword } from './passwords.js';
 import { validate } from './http-validation.js';
 import express from 'express';
 import path from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { legalPageFromPath } from '@impresion3d/shared';
+import { renderLegalDocument } from './legal-pages.js';
 import mongoose from 'mongoose';
 import helmet from 'helmet';
 import session from 'express-session';
@@ -299,9 +302,17 @@ export function createApp({
       }),
     );
     app.use(express.static(staticDirectory, { maxAge: 0 }));
-    app.get('/{*path}', (req, res, next) => {
+    app.get('/{*path}', async (req, res, next) => {
       if (path.extname(req.path)) return res.status(404).end();
       res.set('Cache-Control', 'no-cache');
+      const legalKey = legalPageFromPath(req.path);
+      if (legalKey) {
+        const template = await readFile(
+          path.join(staticDirectory, 'index.html'),
+          'utf8',
+        );
+        return res.type('html').send(renderLegalDocument(template, legalKey));
+      }
       res.sendFile(path.join(staticDirectory, 'index.html'));
     });
   }

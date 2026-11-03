@@ -678,3 +678,103 @@ test('volver funciona en perfil, pedidos y administración sin salir del sitio',
     .click();
   await expect(page.locator('.product-card')).toHaveCount(20);
 });
+test('privacidad y condiciones se abren desde el footer sin sesión y conservan navegación y contacto', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page
+    .locator('footer')
+    .getByRole('link', { name: 'Política de privacidad', exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/politica-de-privacidad$/);
+  await expect(
+    page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
+  ).toBeVisible();
+  await expect(page).toHaveTitle('Política de privacidad | Mundo 3D');
+  await expect(page.locator('.legal-contact')).toContainText(
+    'Luis Alberto Gómez',
+  );
+  await expect(page.locator('.legal-contact')).toContainText('Argentina');
+  await expect(
+    page
+      .locator('.legal-contact')
+      .getByRole('link', { name: 'gomito724@gmail.com', exact: true }),
+  ).toHaveAttribute('href', 'mailto:gomito724@gmail.com');
+  await expect(page.locator('.site-header')).toBeVisible();
+  await expect(page.locator('footer')).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Solicitar eliminación de cuenta y datos' }),
+  ).toHaveAttribute('href', /^mailto:gomito724@gmail.com\?subject=/);
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth,
+      ),
+    ).toBe(false);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: '/tmp/mundo3d-privacidad-mobile.png',
+    fullPage: true,
+  });
+  await page
+    .locator('footer')
+    .getByRole('link', { name: 'Términos y condiciones', exact: true })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Términos y condiciones', exact: true }),
+  ).toBeVisible();
+  await expect(page).toHaveTitle('Términos y condiciones | Mundo 3D');
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: 'Términos y condiciones', exact: true }),
+  ).toBeVisible();
+  await page.goBack();
+  await expect(
+    page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('link', { name: 'Volver a la página anterior', exact: true })
+    .click();
+  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.page-back')).toHaveCount(0);
+  await expect(page).toHaveTitle('Mundo 3D · Ideas que toman forma');
+  await page.goto('/login');
+  await expect(page.locator('header,footer')).toHaveCount(0);
+  await expect(
+    page.getByRole('link', { name: 'Política de privacidad', exact: true }),
+  ).toHaveAttribute('href', '/politica-de-privacidad');
+});
+test('Google y visitantes pueden leer las páginas legales sin JavaScript ni autenticación', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    baseURL: 'http://127.0.0.1:3100',
+    viewport: { width: 390, height: 844 },
+  });
+  try {
+    const page = await context.newPage();
+    for (const [path, title] of [
+      ['/politica-de-privacidad', 'Política de privacidad'],
+      ['/terminos-y-condiciones', 'Términos y condiciones'],
+    ]) {
+      const response = await page.goto(path);
+      expect(response.status()).toBe(200);
+      await expect(
+        page.getByRole('heading', { name: title, exact: true }),
+      ).toBeVisible();
+      await expect(page.locator('.legal-contact')).toContainText(
+        'Luis Alberto Gómez',
+      );
+      await expect(page.locator('.legal-contact')).toContainText(
+        'gomito724@gmail.com',
+      );
+      await expect(page).toHaveTitle(title + ' | Mundo 3D');
+    }
+    expect(await context.cookies()).toHaveLength(0);
+  } finally {
+    await context.close();
+  }
+});
