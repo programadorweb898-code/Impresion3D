@@ -36,6 +36,8 @@ const providerErrors = {
     'No se completó el acceso. Podés intentarlo de nuevo o ingresar con tu correo.',
   email:
     'El proveedor no compartió un correo válido. Usá email y contraseña o revisá los permisos de tu cuenta.',
+  facebook_email:
+    'Facebook no compartió un correo válido. Revisá los permisos y permití compartir tu email con Mundo 3D. Tu perfil de Facebook debe tener un correo confirmado.',
   existing:
     'Ya existe una cuenta con ese correo. Ingresá usando el método con el que la creaste.',
   provider:
@@ -65,10 +67,11 @@ export function AuthPage({
   );
   const [options, setOptions] = useState(null);
   const [message, setMessage] = useState('');
+  const [providerError] = useState(() =>
+    new URLSearchParams(location.search).get('authError'),
+  );
   const [localError, setLocalError] = useState(
-    () =>
-      providerErrors[new URLSearchParams(location.search).get('authError')] ||
-      '',
+    () => providerErrors[providerError] || '',
   );
   const [working, setWorking] = useState(false);
   useEffect(() => {
@@ -189,11 +192,22 @@ export function AuthPage({
                   className="social-button"
                   disabled={disabled || !options?.[provider]}
                   onClick={() => {
-                    window.location.assign('/api/auth/' + provider + '/start');
+                    window.location.assign(
+                      '/api/auth/' +
+                        provider +
+                        '/start' +
+                        (provider === 'facebook' &&
+                        providerError === 'facebook_email'
+                          ? '?rerequest=1'
+                          : ''),
+                    );
                   }}
                 >
                   <ProviderLogo provider={provider} />
-                  Continuar con {provider === 'google' ? 'Google' : 'Facebook'}
+                  {provider === 'facebook' && providerError === 'facebook_email'
+                    ? 'Revisar permisos de Facebook'
+                    : 'Continuar con ' +
+                      (provider === 'google' ? 'Google' : 'Facebook')}
                   {options && !options[provider] && (
                     <span className="social-soon">Próximamente</span>
                   )}

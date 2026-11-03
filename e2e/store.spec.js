@@ -7,6 +7,49 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 });
 import { tetraGlb } from '../apps/api/test/helpers/model-fixtures.js';
+test('correo ausente de Facebook ofrece revisar permisos y conserva el reintento tras limpiar la URL', async ({
+  page,
+}) => {
+  await page.route('**/api/auth/options', (route) =>
+    route.fulfill({
+      json: {
+        google: true,
+        facebook: true,
+        recovery: false,
+        verification: false,
+      },
+    }),
+  );
+  const starts = [];
+  await page.route('**/api/auth/facebook/start**', (route) => {
+    starts.push(new URL(route.request().url()));
+    return route.fulfill({
+      contentType: 'text/html',
+      body: 'Solicitud de permisos',
+    });
+  });
+  await page.goto('/login?authError=facebook_email');
+  await expect(page.getByRole('alert')).toContainText(
+    'Facebook no compartió un correo válido',
+  );
+  await expect(page).toHaveURL('/login');
+  await page
+    .getByRole('button', { name: 'Revisar permisos de Facebook', exact: true })
+    .click();
+  await expect.poll(() => starts.length).toBe(1);
+  expect(starts[0].pathname).toBe('/api/auth/facebook/start');
+  expect(starts[0].searchParams.get('rerequest')).toBe('1');
+  await page.goto('/login');
+  await expect(
+    page.getByRole('button', { name: 'Continuar con Facebook', exact: true }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('button', {
+      name: 'Revisar permisos de Facebook',
+      exact: true,
+    }),
+  ).toHaveCount(0);
+});
 async function menu(page, name) {
   await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page

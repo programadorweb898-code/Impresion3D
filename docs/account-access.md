@@ -39,6 +39,15 @@ Permisos solicitados: `openid email profile`. Se valida un email verificado. El 
 
 Permisos solicitados: `email,public_profile`. Si Facebook no comparte un email, se indica usar otra opción o revisar permisos. El backend intercambia el código, solicita el perfil y envía `appsecret_proof`. No guarda tokens del proveedor. El `state` depende de la sesión, vence a los 10 minutos y se consume al recibir el callback. Cancelaciones, códigos inválidos y errores regresan a `/login` con mensajes controlados.
 
+Si falta un correo válido para crear una cuenta de Facebook, se vuelve a
+`/login?authError=facebook_email`. El botón cambia a «Revisar permisos de Facebook»
+y abre `/api/auth/facebook/start?rerequest=1`, que envía `auth_type=rerequest`
+para volver a solicitar permisos rechazados. Es una acción explícita, sin
+redirecciones automáticas ni bucles. La cuenta de Facebook debe disponer de un
+correo confirmado que permita compartir y el permiso `email` debe estar habilitado
+en el caso de uso de Meta. Reintentar no garantiza que Facebook devuelva un correo.
+No se inventan direcciones ni se vinculan cuentas existentes sólo por email.
+
 ## Identidades y cuentas existentes
 
 La colección `socialidentities` mantiene un índice único de proveedor e identificador. Los pedidos y roles siguen asociados a `users`. No hay vinculación automática por coincidencia de email: si ya existe otra cuenta con ese correo, hay que usar su método original. La vinculación explícita de múltiples métodos desde una cuenta autenticada queda fuera de esta entrega. Las cuentas sociales nuevas siempre tienen rol `customer`.

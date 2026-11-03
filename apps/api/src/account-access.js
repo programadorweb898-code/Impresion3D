@@ -202,6 +202,8 @@ export function createAccountAccess({
         provider === 'google' ? 'openid email profile' : 'email,public_profile',
       state,
     });
+    if (provider === 'facebook' && req.query.rerequest === '1')
+      url.searchParams.set('auth_type', 'rerequest');
     if (provider === 'google') {
       url.searchParams.set(
         'code_challenge',
@@ -284,7 +286,11 @@ export function createAccountAccess({
           !parsed.success ||
           (provider === 'google' && profile.email_verified !== true)
         )
-          return res.redirect('/login?authError=email');
+          return res.redirect(
+            provider === 'facebook'
+              ? '/login?authError=facebook_email'
+              : '/login?authError=email',
+          );
         // Never link by matching email: that could let a different identity take over an existing account.
         if (await User.exists({ email: parsed.data.email }))
           return res.redirect('/login?authError=existing');

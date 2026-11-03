@@ -274,6 +274,7 @@ test('Facebook solicita email y usa appsecret_proof sin exponer el token en URL'
   const url = await start(agent, 'facebook');
   assert.equal(url.origin, 'https://www.facebook.com');
   assert.equal(url.searchParams.get('scope'), 'email,public_profile');
+  assert.equal(url.searchParams.get('auth_type'), null);
   assert.equal(
     (await callback(agent, 'facebook', url.searchParams.get('state'))).headers
       .location,
@@ -291,6 +292,51 @@ test('Facebook solicita email y usa appsecret_proof sin exponer el token en URL'
     profileCall.options.headers.Authorization,
     'Bearer provider-secret-token',
   );
+});
+test('Facebook sin correo permite volver a pedir permisos y sólo crea la cuenta cuando recibe uno válido', async () => {
+  const profile = { id: 'facebook-email-retry', name: 'Cliente Facebook' },
+    services = socialServices('facebook', profile),
+    agent = request.agent(app(services));
+  const first = await start(agent, 'facebook');
+  const accountsBefore = await User.countDocuments();
+  assert.equal(
+    (await callback(agent, 'facebook', first.searchParams.get('state'))).headers
+      .location,
+    '/login?authError=facebook_email',
+  );
+  await agent.get('/api/auth/me').expect(401);
+  assert.equal(await User.countDocuments(), accountsBefore);
+  assert.equal(await SocialIdentity.countDocuments({ subject: profile.id }), 0);
+  profile.email = 'invalid-email';
+  const invalid = await start(agent, 'facebook');
+  assert.equal(
+    (await callback(agent, 'facebook', invalid.searchParams.get('state')))
+      .headers.location,
+    '/login?authError=facebook_email',
+  );
+  assert.equal(await User.countDocuments(), accountsBefore);
+
+  const retry = new URL(
+    (await agent.get('/api/auth/facebook/start?rerequest=1').expect(302))
+      .headers.location,
+  );
+  assert.equal(retry.searchParams.get('auth_type'), 'rerequest');
+  assert.equal(retry.searchParams.get('scope'), 'email,public_profile');
+  assert.notEqual(
+    retry.searchParams.get('state'),
+    first.searchParams.get('state'),
+  );
+  profile.email = 'facebook-email-retry@example.com';
+  assert.equal(
+    (await callback(agent, 'facebook', retry.searchParams.get('state'))).headers
+      .location,
+    '/',
+  );
+  const me = await agent.get('/api/auth/me').expect(200);
+  assert.equal(me.body.email, profile.email);
+  assert.equal(me.body.role, 'customer');
+  assert.equal(await SocialIdentity.countDocuments({ subject: profile.id }), 1);
+  assert.equal(await User.countDocuments(), accountsBefore + 1);
 });
 test('fallo al enviar correo no revela si existe la cuenta; Resend usa un remitente y destino del servidor', async () => {
   const transportCalls = [];
