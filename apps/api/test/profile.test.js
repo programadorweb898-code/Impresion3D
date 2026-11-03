@@ -362,3 +362,91 @@ test('social exige identidad reciente; reautenticación vuelve a perfil y no per
     'social-profile@example.com',
   );
 });
+
+test('confirmación en ventana emergente conserva el perfil al aceptar, cancelar o recibir otra identidad', async () => {
+  const store = new session.MemoryStore();
+  const profile = {
+    id: 'popup-facebook',
+    name: 'Cliente popup',
+    email: 'popup@example.com',
+  };
+  const app = createApp({
+    sessionStore: store,
+    sessionSecret: 'popup-test-session-secret-long-enough',
+    webOrigin: origin,
+    accountServices: {
+      providers: { facebook: { clientId: 'id', clientSecret: 'secret' } },
+      facebookVersion: 'v26.0',
+      fetch: async (url) => ({
+        ok: true,
+        json: async () =>
+          url.includes('/oauth/access_token')
+            ? { access_token: 'token' }
+            : profile,
+      }),
+    },
+  });
+  const agent = request.agent(app);
+  async function begin(popup = false) {
+    const result = await agent
+      .get('/api/auth/facebook/start')
+      .query(
+        popup ? { popup: '1', reauthenticate: '1', returnTo: 'profile' } : {},
+      );
+    return new URL(result.headers.location).searchParams.get('state');
+  }
+  const initialState = await begin();
+  await agent
+    .get('/api/auth/facebook/callback')
+    .query({ state: initialState, code: 'code' })
+    .expect(302);
+  const account = (await agent.get('/api/profile')).body;
+  assert.ok(account.reauthenticatedUntil > Date.now());
+  async function expire() {
+    const sessions = await new Promise((resolve, reject) =>
+      store.all((err, data) => (err ? reject(err) : resolve(data))),
+    );
+    for (const [id, data] of Object.entries(sessions)) {
+      data.reauthenticatedAt = 1;
+      await new Promise((resolve, reject) =>
+        store.set(id, data, (err) => (err ? reject(err) : resolve())),
+      );
+    }
+  }
+  for (const outcome of [
+    'cancel',
+    'wrong-state',
+    'other-identity',
+    'success',
+  ]) {
+    await expire();
+    const state = await begin(true);
+    profile.id =
+      outcome === 'other-identity' ? 'different-popup-id' : 'popup-facebook';
+    const result = await agent
+      .get('/api/auth/facebook/callback')
+      .query({
+        state: outcome === 'wrong-state' ? 'invalid' : state,
+        ...(outcome === 'cancel'
+          ? { error: 'access_denied' }
+          : { code: 'code' }),
+      })
+      .expect(200);
+    assert.match(result.headers['content-type'], /text\/html/);
+    assert.match(result.text, /src="\/api\/auth\/reauth-popup.js"/);
+    assert.doesNotMatch(result.text, /token|popup@example/);
+    const current = (await agent.get('/api/profile').expect(200)).body;
+    assert.equal(current.id, account.id);
+    assert.equal(
+      current.reauthenticatedUntil > Date.now(),
+      outcome === 'success',
+    );
+  }
+  const script = await agent.get('/api/auth/reauth-popup.js').expect(200);
+  assert.match(script.headers['content-type'], /javascript/);
+  assert.match(script.text, /window.close/);
+  assert.equal(
+    script.headers['cross-origin-opener-policy'],
+    'same-origin-allow-popups',
+  );
+});

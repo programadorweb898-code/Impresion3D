@@ -60,9 +60,12 @@ export function createProfileRouter({
     await save(req);
   };
   router.get('/', async (req, res) =>
-    res.json(
-      await summary(await User.findById(req.user._id).select('+passwordHash')),
-    ),
+    res.json({
+      ...(await summary(
+        await User.findById(req.user._id).select('+passwordHash'),
+      )),
+      reauthenticatedUntil: (req.session.reauthenticatedAt || 0) + 5 * 60000,
+    }),
   );
   router.patch(
     '/',

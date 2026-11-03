@@ -115,3 +115,25 @@ Registrar las URLs de retorno exactas en cada consola, sin barra final:
 En Google configurar la pantalla de consentimiento y los usuarios de prueba; para el público general, pasar la configuración a producción y cumplir las verificaciones que pida Google. En Meta configurar Facebook Login web, el dominio/sitio, la política de privacidad y las instrucciones o mecanismo de eliminación de datos. Mientras la app esté en desarrollo, sólo pueden usarla sus roles y probadores; para clientes hay que cumplir los requisitos de Meta y activar el modo público. Estas páginas legales requieren datos reales del responsable del sitio.
 
 Al guardar las variables y aplicar el despliegue, `/api/auth/options` informa qué proveedores quedaron habilitados sin exponer secretos. La verificación final del acceso necesita las credenciales y cuentas de prueba propias; las pruebas automatizadas sustituyen las respuestas de los proveedores y no prueban la aprobación pública de las aplicaciones.
+
+## Confirmar identidad sin abandonar el perfil
+
+El perfil consulta al servidor hasta cuándo está vigente la identidad confirmada.
+Durante esos cinco minutos se oculta la opción de volver a confirmar. También se
+oculta si no existe ninguna operación sensible disponible (sin correo y sin envío
+de confirmaciones). Al vencer, Google/Facebook se abre mediante una ventana
+emergente; el perfil permanece en la pestaña original. El navegador puede presentar
+esa ventana como otra pestaña en dispositivos móviles.
+
+Sólo una sesión autenticada que solicita reautenticación puede activar el modo
+popup. La respuesta del callback vuelve al origen del sitio y usa un script externo
+permitido por CSP para cerrar la ventana. Aceptar renueva la identidad; cancelar,
+fallar el state o usar otra identidad no la renueva. El perfil vuelve a consultar el
+estado real del servidor después del cierre y muestra el resultado. Cerrar la ventana
+manualmente conserva la sesión y permite seguir navegando. No se confía en mensajes
+ni datos de autenticación enviados por la ventana. Helmet usa
+`same-origin-allow-popups` para conservar el control de las ventanas de OAuth.
+
+Las pruebas automatizadas verifican aceptar, cancelar, cerrar con la cruz y rechazar
+una identidad diferente. Las pantallas de consentimiento de los proveedores se
+sustituyen sólo en el servidor y navegador aislados de pruebas.

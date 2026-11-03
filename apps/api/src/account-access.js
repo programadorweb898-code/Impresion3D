@@ -170,6 +170,9 @@ export function createAccountAccess({
         'Cambiaste tu contraseña. Iniciá sesión con tu nueva contraseña.',
     });
   });
+  router.get('/reauth-popup.js', (_req, res) => {
+    res.type('application/javascript').send('window.close();');
+  });
   router.get('/:provider/start', authLimit, async (req, res) => {
     const provider = req.params.provider;
     const config =
@@ -183,6 +186,10 @@ export function createAccountAccess({
       state,
       verifier,
       expires: Date.now() + 10 * 60000,
+      popup:
+        req.query.popup === '1' &&
+        req.query.reauthenticate === '1' &&
+        !!req.session.userId,
       returnToProfile: req.query.returnTo === 'profile',
       expectedUserId:
         req.query.reauthenticate === '1' ? req.session.userId : undefined,
@@ -216,6 +223,14 @@ export function createAccountAccess({
   router.get('/:provider/callback', authLimit, async (req, res) => {
     const provider = req.params.provider,
       pending = req.session.oauth;
+    const finish = (destination) => {
+      if (!pending?.popup) return res.redirect(destination);
+      return res
+        .type('html')
+        .send(
+          '<!doctype html><html lang="es"><meta charset="utf-8"><title>Mundo 3D</title><body><p>Podés cerrar esta ventana y volver a Mundo 3D.</p><script src="/api/auth/reauth-popup.js"></script></body></html>',
+        );
+    };
     delete req.session.oauth;
     await save(req);
     const state = typeof req.query.state === 'string' ? req.query.state : '';
@@ -229,7 +244,7 @@ export function createAccountAccess({
       req.query.code.length > 4096 ||
       req.query.error
     )
-      return res.redirect('/login?authError=cancelled');
+      return finish('/login?authError=cancelled');
     try {
       const config = services.providers[provider];
       if (!config) throw new Error('unavailable');
@@ -280,17 +295,16 @@ export function createAccountAccess({
         (await User.findById(identity.userId).select('+authVersion'));
       if (!user) {
         if (identity) throw new Error('identity_without_account');
-        if (pending.expectedUserId)
-          return res.redirect('/login?authError=existing');
+        if (pending.expectedUserId) return finish('/login?authError=existing');
         const parsed = emailSchema.safeParse({ email: profile.email });
         if (
           provider === 'google' &&
           (!parsed.success || profile.email_verified !== true)
         )
-          return res.redirect('/login?authError=email');
+          return finish('/login?authError=email');
         // Never link by matching email: that could let a different identity take over an existing account.
         if (parsed.success && (await User.exists({ email: parsed.data.email })))
-          return res.redirect('/login?authError=existing');
+          return finish('/login?authError=existing');
         user = await User.create({
           name:
             typeof profile.name === 'string'
@@ -314,15 +328,15 @@ export function createAccountAccess({
         }
       }
       if (pending.expectedUserId && pending.expectedUserId !== String(user._id))
-        return res.redirect('/login?authError=existing');
+        return finish('/login?authError=existing');
       await regenerate(req);
       req.session.reauthenticatedAt = Date.now();
       req.session.userId = String(user._id);
       req.session.authVersion = user.authVersion || 0;
       await save(req);
-      res.redirect(pending.returnToProfile ? '/perfil' : '/');
+      finish(pending.returnToProfile ? '/perfil' : '/');
     } catch {
-      res.redirect('/login?authError=provider');
+      finish('/login?authError=provider');
     }
   });
   return router;

@@ -2,6 +2,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import argon2 from 'argon2';
 import express from 'express';
+import session from 'express-session';
 import { resolve } from 'node:path';
 import { createApp } from '../apps/api/src/app.js';
 import {
@@ -64,11 +65,28 @@ await Order.create(
 // The mailbox exists only in this isolated test server; it is never part of the production app.
 const mailbox = new Map();
 const host = express();
+const sessionStore = new session.MemoryStore();
+// This test-only endpoint simulates the five-minute wait without changing production timeouts.
+host.post('/__test/expire-reauth', async (_req, res) => {
+  const sessions = await new Promise((resolve, reject) =>
+    sessionStore.all((error, data) => (error ? reject(error) : resolve(data))),
+  );
+  for (const [id, data] of Object.entries(sessions)) {
+    data.reauthenticatedAt = 1;
+    await new Promise((resolve, reject) =>
+      sessionStore.set(id, data, (error) =>
+        error ? reject(error) : resolve(),
+      ),
+    );
+  }
+  res.sendStatus(204);
+});
 host.get('/__test/mailbox/:email', (req, res) =>
   res.json(mailbox.get(req.params.email) || null),
 );
 host.use(
   createApp({
+    sessionStore,
     sessionSecret: 'browser-tests-isolated-secret-long-enough',
     webOrigin: 'http://127.0.0.1:3100',
     // Synthetic per-test client IPs isolate the real production rate limiter.

@@ -59,6 +59,7 @@ export function createApp({
   if (trustProxy) app.set('trust proxy', 1);
   app.use(
     helmet({
+      crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
       contentSecurityPolicy: {
         directives: {
           imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],

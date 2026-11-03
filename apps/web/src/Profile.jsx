@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { api } from './api.js';
 export function Profile({
   user,
@@ -13,6 +13,48 @@ export function Profile({
     [message, setMessage] = useState(''),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true);
+  const popupPoll = useRef(null);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 10000);
+    return () => {
+      clearInterval(timer);
+      clearInterval(popupPoll.current);
+    };
+  }, []);
+  function confirmProvider(event, provider) {
+    event.preventDefault();
+    const popup = window.open(
+      '/api/auth/' +
+        provider +
+        '/start?returnTo=profile&reauthenticate=1&popup=1',
+      'mundo3d-confirmar-identidad',
+      'popup,width=520,height=700',
+    );
+    if (!popup) {
+      setError('Permití las ventanas emergentes para confirmar tu identidad.');
+      return;
+    }
+    setError('');
+    setMessage('');
+    clearInterval(popupPoll.current);
+    popupPoll.current = setInterval(async () => {
+      if (!popup.closed) return;
+      clearInterval(popupPoll.current);
+      try {
+        const data = await api('/profile');
+        setProfile(data);
+        setNow(Date.now());
+        setMessage(
+          data.reauthenticatedUntil > Date.now()
+            ? 'Identidad confirmada. Ya podés continuar.'
+            : 'Confirmación cancelada. Podés seguir navegando.',
+        );
+      } catch (e) {
+        setError(e.message);
+      }
+    }, 500);
+  }
   useEffect(() => {
     let active = true;
     if (!user) {
@@ -45,7 +87,7 @@ export function Profile({
         body: JSON.stringify(body),
       });
       if (path === '' || response.user) {
-        const next = response.user || response;
+        const next = await api('/profile');
         setProfile(next);
         onUser(next);
       }
@@ -98,8 +140,9 @@ export function Profile({
     </label>
   ) : (
     <p className="small">
-      Confirmá tu identidad con tu proveedor antes de cambiar el email o crear
-      una contraseña.
+      {profile.reauthenticatedUntil > now
+        ? 'Tu identidad está confirmada para realizar este cambio.'
+        : 'Usá Confirmar identidad antes de cambiar el email o crear una contraseña.'}
     </p>
   );
   return (
@@ -145,30 +188,34 @@ export function Profile({
           </button>
         </section>
       )}
-      {!profile.hasPassword && profile.providers.length > 0 && (
-        <section className="profile-panel">
-          <h2>Confirmar identidad</h2>
-          <p>
-            Se abrirá tu proveedor de acceso y volverás a esta página. La
-            confirmación dura cinco minutos.
-          </p>
-          <div className="profile-provider-actions">
-            {profile.providers.map((provider) => (
-              <a
-                className="outline"
-                key={provider}
-                href={
-                  '/api/auth/' +
-                  provider +
-                  '/start?returnTo=profile&reauthenticate=1'
-                }
-              >
-                Confirmar con {provider === 'google' ? 'Google' : 'Facebook'}
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
+      {!profile.hasPassword &&
+        profile.providers.length > 0 &&
+        (profile.email || profile.canUpdateEmail) &&
+        !(profile.reauthenticatedUntil > now) && (
+          <section className="profile-panel">
+            <h2>Confirmar identidad</h2>
+            <p>
+              Se abrirá una ventana para confirmar tu identidad. Tu perfil
+              seguirá abierto. La confirmación dura cinco minutos.
+            </p>
+            <div className="profile-provider-actions">
+              {profile.providers.map((provider) => (
+                <a
+                  className="outline"
+                  key={provider}
+                  onClick={(event) => confirmProvider(event, provider)}
+                  href={
+                    '/api/auth/' +
+                    provider +
+                    '/start?returnTo=profile&reauthenticate=1'
+                  }
+                >
+                  Confirmar con {provider === 'google' ? 'Google' : 'Facebook'}
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
       <div className="profile-grid">
         <section className="profile-panel">
           <h2>Datos personales</h2>

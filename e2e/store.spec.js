@@ -1119,3 +1119,67 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
   expect(logoutRequests).toBe(2);
 });
+
+test('confirmar identidad mantiene el perfil al aceptar, cancelar y cerrar la ventana', async ({
+  page,
+  context,
+}) => {
+  let consent = false;
+  await context.route('**/api/auth/facebook/start**', async (route) => {
+    const response = await route.fetch({ maxRedirects: 0 });
+    const authorization = new URL(response.headers().location);
+    const callback = new URL(authorization.searchParams.get('redirect_uri'));
+    callback.searchParams.set('state', authorization.searchParams.get('state'));
+    const success = new URL(callback);
+    success.searchParams.set('code', 'browser-code');
+    const cancel = new URL(callback);
+    cancel.searchParams.set('error', 'access_denied');
+    if (!consent)
+      return route.fulfill({
+        response,
+        headers: { ...response.headers(), location: success.href },
+      });
+    return route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: `<a href="${success.href.replaceAll('&', '&amp;')}">Aceptar</a><a href="${cancel.href.replaceAll('&', '&amp;')}">Cancelar</a>`,
+    });
+  });
+  await page.goto('/login');
+  await page.getByRole('button', { name: 'Continuar con Facebook' }).click();
+  await expect(page).toHaveURL('/');
+  await page.goto('/perfil');
+  const confirm = page.getByRole('link', {
+    name: 'Confirmar con Facebook',
+    exact: true,
+  });
+  await expect(page.locator('.profile-current-email')).toBeVisible();
+  await expect(confirm).toHaveCount(0);
+  await page.request.post('/__test/expire-reauth');
+  await page.reload();
+  await expect(confirm).toBeVisible();
+  consent = true;
+  for (const outcome of ['cancel', 'close', 'accept']) {
+    const opened = page.waitForEvent('popup');
+    await confirm.click();
+    const popup = await opened;
+    await expect(page).toHaveURL('/perfil');
+    await expect(popup.getByRole('link', { name: 'Aceptar' })).toBeVisible();
+    if (outcome === 'close') await popup.close();
+    else {
+      const closed = popup.waitForEvent('close');
+      await popup
+        .getByRole('link', {
+          name: outcome === 'accept' ? 'Aceptar' : 'Cancelar',
+        })
+        .click();
+      await closed;
+    }
+    await expect(page.getByRole('status')).toContainText(
+      outcome === 'accept' ? 'Identidad confirmada' : 'Confirmación cancelada',
+    );
+    await expect(page).toHaveURL('/perfil');
+    if (outcome === 'accept') await expect(confirm).toHaveCount(0);
+    else await expect(confirm).toBeVisible();
+  }
+});
