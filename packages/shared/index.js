@@ -99,3 +99,21 @@ export const orderUpdateSchema = z.strictObject({
   version: z.number().int().nonnegative(),
 });
 export { legalSite, legalPages, legalPageFromPath } from './legal.js';
+
+export function validationMessage(issue) {
+  const field = issue?.path?.[0];
+  const label = {
+    name: 'El nombre', description: 'La descripción', category: 'La categoría',
+    quantity: 'La cantidad', notes: 'Los comentarios', priceCents: 'El precio',
+    width: 'El ancho', height: 'El alto', depth: 'La profundidad',
+  }[field] || 'El dato ingresado';
+  // Preserve deliberately written Spanish messages, including password rules.
+  if (issue?.code === 'custom' || /^(Usá|Incluí|La contraseña|Formato de email|No repitas|El carrito)/.test(issue?.message || ''))
+    return issue.message;
+  if (field === 'email') return 'Ingresá un correo electrónico con formato válido.';
+  if (['token', 'requestId'].includes(field)) return 'El enlace o la solicitud no son válidos. Volvé a intentarlo.';
+  if (['password', 'currentPassword'].includes(field)) return 'Revisá la contraseña ingresada.';
+  if (issue?.code === 'too_small') return label + ' no alcanza el mínimo permitido. Revisalo e intentá nuevamente.';
+  if (issue?.code === 'too_big') return label + ' supera el máximo permitido. Revisalo e intentá nuevamente.';
+  return label + ' no es válido. Revisalo e intentá nuevamente.';
+}

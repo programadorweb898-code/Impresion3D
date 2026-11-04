@@ -10,8 +10,7 @@ export function cloudinaryFailure(error) {
   ) {
     return {
       reason: 'api_key_not_recognized',
-      message:
-        'Cloudinary no reconoce la API Key en el entorno seleccionado. Verificá que API Key y Cloud Name pertenezcan al mismo entorno; Key Name no es ninguno de esos valores.',
+      message: 'No pudimos guardar la imagen. Intentá nuevamente más tarde.',
     };
   }
   if (
@@ -21,8 +20,7 @@ export function cloudinaryFailure(error) {
   ) {
     return {
       reason: 'request_time_rejected',
-      message:
-        'Cloudinary rechazó la fecha de la solicitud. Es un problema del firmado o del reloj del servidor; no hace falta cambiar tus claves todavía.',
+      message: 'No pudimos guardar la imagen. Intentá nuevamente más tarde.',
     };
   }
   if (
@@ -32,8 +30,7 @@ export function cloudinaryFailure(error) {
   ) {
     return {
       reason: 'signature_rejected',
-      message:
-        'Cloudinary rechazó la firma de la solicitud. Hay que comprobar el firmado del backend y que el API Secret corresponda a esa misma API Key.',
+      message: 'No pudimos guardar la imagen. Intentá nuevamente más tarde.',
     };
   }
   if (
@@ -43,8 +40,7 @@ export function cloudinaryFailure(error) {
   ) {
     return {
       reason: 'cloud_not_recognized',
-      message:
-        'Cloudinary no reconoce el Cloud Name. Debe ser el identificador del entorno de productos, no Key Name ni el nombre de tu cuenta.',
+      message: 'No pudimos guardar la imagen. Intentá nuevamente más tarde.',
     };
   }
   if (
@@ -55,19 +51,17 @@ export function cloudinaryFailure(error) {
   ) {
     return {
       reason: 'permission_denied',
-      message:
-        'Cloudinary no permite esta operación con la clave actual. Revisá los permisos o restricciones de la clave y del entorno.',
+      message: 'No pudimos guardar la imagen. Intentá nuevamente más tarde.',
     };
   }
   if (status === 401) {
     return {
       reason: 'authentication_rejected',
-      message:
-        'Cloudinary rechazó la autenticación (401), sin una causa reconocida. No se puede determinar todavía qué variable o permiso lo provoca.',
+      message: 'No pudimos guardar la imagen. Intentá nuevamente más tarde.',
     };
   }
   return {
     reason: 'provider_error',
-    message: 'No se pudo guardar la foto en Cloudinary. Intentá nuevamente.',
+    message: 'No pudimos guardar la imagen. Intentá nuevamente más tarde.',
   };
 }

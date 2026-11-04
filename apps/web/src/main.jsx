@@ -1,3 +1,4 @@
+import { validationMessage } from '@impresion3d/shared';
 import React, {
   useState,
   useEffect,
@@ -423,7 +424,7 @@ function App() {
       auth === 'register' ? registerSchema : loginSchema
     ).safeParse(raw);
     if (!parsed.success) {
-      setError(parsed.error.issues[0].message);
+      setError(validationMessage(parsed.error.issues[0]));
       return;
     }
     setBusy(true);

@@ -17,7 +17,7 @@ async function readJson(response) {
     return await response.json();
   } catch (cause) {
     throw new Error(
-      `El servidor no devolvió una respuesta válida (HTTP ${response.status}). Actualizá la lista antes de reintentar.`,
+      'No pudimos completar la solicitud. Recargá la página y volvé a intentarlo.',
       { cause },
     );
   }
@@ -46,12 +46,8 @@ export async function api(path, options = {}) {
   if (response.status === 204) return null;
   const data = await readJson(response);
   if (!response.ok) {
-    const reference = data.code === 'EMAIL_EXISTS'
-      ? null
-      : response.headers.get('x-request-id');
     const error = new Error(
-      (data.message || 'No se pudo conectar') +
-        (reference ? ` Referencia: ${reference}.` : ''),
+      data.message || 'No pudimos completar la solicitud. Intentá nuevamente.',
     );
     error.status = response.status;
     error.code = data.code;
