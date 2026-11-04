@@ -6,7 +6,14 @@ export const loginSchema = z.object({
 });
 export const registerSchema = loginSchema.extend({
   name: z.string().trim().min(2).max(80),
-  password: z\n    .string()\n    .min(8, 'La contraseña debe tener entre 8 y 20 caracteres.')\n    .max(20, 'La contraseña debe tener entre 8 y 20 caracteres.')\n    .regex(/[A-Z]/, 'Incluí al menos una mayúscula.')\n    .regex(/[a-z]/, 'Incluí al menos una minúscula.')\n    .regex(/[0-9]/, 'Incluí al menos un número.')\n    .regex(/[^A-Za-z0-9]/, 'Incluí al menos un carácter especial.'),
+  password: z
+    .string()
+    .min(8, 'La contraseña debe tener entre 8 y 20 caracteres.')
+    .max(20, 'La contraseña debe tener entre 8 y 20 caracteres.')
+    .regex(/[A-Z]/, 'Incluí al menos una mayúscula.')
+    .regex(/[a-z]/, 'Incluí al menos una minúscula.')
+    .regex(/[0-9]/, 'Incluí al menos un número.')
+    .regex(/[^A-Za-z0-9]/, 'Incluí al menos un carácter especial.')
 });
 const productIdSchema = z
   .string()
