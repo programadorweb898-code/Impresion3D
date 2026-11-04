@@ -2076,3 +2076,9 @@ a:focus-visible,
     background: #2a3b24;
   }
 }
+
+
+.catalog-search { display:grid; grid-template-columns:minmax(12rem,2fr) repeat(3,minmax(9rem,1fr)); gap:.75rem; margin:1.25rem 0 1.75rem; }
+.catalog-search label { display:grid; gap:.35rem; color:var(--muted); font-size:.78rem; }
+.catalog-search input,.catalog-search select { min-height:2.65rem; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--text); padding:.55rem .85rem; }
+@media (max-width:600px) { .catalog-search { grid-template-columns:1fr 1fr; } .catalog-search label:first-child { grid-column:1 / -1; } }
