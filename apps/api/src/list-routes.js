@@ -25,8 +25,34 @@ export async function listProducts(req, res) {
       return res.status(400).json({ message: 'Categoría inválida' });
     filter.category = req.query.category;
   }
+  const startsWith = req.query.startsWith;
+  if (startsWith !== undefined) {
+    if (typeof startsWith !== 'string' || startsWith.length > 80)
+      return res.status(400).json({ message: 'Búsqueda inválida' });
+    const escaped = startsWith.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\  const products = await Product.find(filter)
+    .sort({ createdAt: -1, _id: -1 })');
+    if (escaped) {
+      filter.$or = [
+        { name: { $regex: '^' + escaped, $options: 'i' } },
+        { category: { $regex: '^' + escaped, $options: 'i' } },
+      ];
+    }
+  }
+  const priceMin = req.query.priceMin;
+  const priceMax = req.query.priceMax;
+  if (priceMin !== undefined || priceMax !== undefined) {
+    const min = priceMin === undefined ? undefined : Number(priceMin);
+    const max = priceMax === undefined ? undefined : Number(priceMax);
+    if ((min !== undefined && (!Number.isInteger(min) || min < 0)) || (max !== undefined && (!Number.isInteger(max) || max < 0)) || (min !== undefined && max !== undefined && min > max))
+      return res.status(400).json({ message: 'Rango de precio inválido' });
+    filter.priceCents = {};
+    if (min !== undefined) filter.priceCents.$gte = min;
+    if (max !== undefined) filter.priceCents.$lte = max;
+  }
+  const sortKey = req.query.sort || 'relevance';
+  const sort = sortKey === 'price-asc' ? { priceCents: 1, _id: 1 } : sortKey === 'price-desc' ? { priceCents: -1, _id: -1 } : { createdAt: -1, _id: -1 };
   const products = await Product.find(filter)
-    .sort({ createdAt: -1, _id: -1 })
+    .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)
     .select('-__v')
