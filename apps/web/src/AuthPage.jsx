@@ -245,8 +245,8 @@ export function AuthPage({
                 <input
                   name="password"
                   type="password"
-                  minLength={auth === 'register' ? 12 : 1}
-                  maxLength="128"
+                  minLength={auth === 'register' ? 8 : 1}
+                  maxLength={auth === 'register' ? 20 : 128}
                   autoComplete={
                     auth === 'register' ? 'new-password' : 'current-password'
                   }
