@@ -1,3 +1,4 @@
+import { PasswordInput } from './PasswordInput.jsx';
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
 const passwordChecks = [
@@ -250,9 +251,8 @@ export function AuthPage({
               </label>
               <label>
                 Contraseña
-                <input
+                <PasswordInput
                   name="password"
-                  type="password"
                   minLength={auth === 'register' ? 8 : 1}
                   maxLength={auth === 'register' ? 20 : 128}
                   autoComplete={
@@ -344,9 +344,8 @@ export function AuthPage({
               <>
                 <label>
                   Nueva contraseña
-                  <input
+                  <PasswordInput
                     name="password"
-                    type="password"
                     minLength="12"
                     maxLength="128"
                     autoComplete="new-password"
@@ -355,9 +354,8 @@ export function AuthPage({
                 </label>
                 <label>
                   Confirmar contraseña
-                  <input
+                  <PasswordInput
                     name="confirmPassword"
-                    type="password"
                     minLength="12"
                     maxLength="128"
                     autoComplete="new-password"

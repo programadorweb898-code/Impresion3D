@@ -1,3 +1,4 @@
+import { PasswordInput } from './PasswordInput.jsx';
 import { useEffect, useState, useRef } from 'react';
 import { api } from './api.js';
 export function Profile({
@@ -129,8 +130,7 @@ export function Profile({
   const proof = profile.hasPassword ? (
     <label>
       Contraseña actual
-      <input
-        type="password"
+      <PasswordInput
         name="currentPassword"
         autoComplete="current-password"
         maxLength="128"
@@ -317,9 +317,8 @@ export function Profile({
                 {proof}
                 <label>
                   Nueva contraseña
-                  <input
+                  <PasswordInput
                     name="password"
-                    type="password"
                     autoComplete="new-password"
                     minLength="12"
                     maxLength="128"
@@ -329,9 +328,8 @@ export function Profile({
                 </label>
                 <label>
                   Confirmar nueva contraseña
-                  <input
+                  <PasswordInput
                     name="confirmPassword"
-                    type="password"
                     autoComplete="new-password"
                     minLength="12"
                     maxLength="128"
