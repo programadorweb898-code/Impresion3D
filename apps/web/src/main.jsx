@@ -438,7 +438,12 @@ function App() {
       loginDestination.current = null;
       setNotice('Ya podés armar tu carrito y consultar tus pedidos.');
     } catch (e) {
-      setError(e.message);
+      // En el login usamos un mensaje genérico y no exponemos la referencia de la solicitud.
+      setError(
+        auth === 'login' && e.status === 401
+          ? 'Usuario o contraseña incorrecta'
+          : e.message,
+      );
     } finally {
       setBusy(false);
     }
