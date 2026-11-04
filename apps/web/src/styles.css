@@ -190,7 +190,7 @@ h2 {
 }
 .grid-products {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 28px;
 }
 .product-art {
@@ -840,7 +840,7 @@ select {
 }
 
 .grid-products {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: stretch;
 }
 .product-card {
