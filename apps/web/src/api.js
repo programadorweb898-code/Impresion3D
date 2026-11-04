@@ -46,7 +46,9 @@ export async function api(path, options = {}) {
   if (response.status === 204) return null;
   const data = await readJson(response);
   if (!response.ok) {
-    const reference = response.headers.get('x-request-id');
+    const reference = data.code === 'EMAIL_EXISTS'
+      ? null
+      : response.headers.get('x-request-id');
     const error = new Error(
       (data.message || 'No se pudo conectar') +
         (reference ? ` Referencia: ${reference}.` : ''),

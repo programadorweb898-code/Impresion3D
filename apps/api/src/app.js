@@ -345,6 +345,15 @@ export function createApp({
     if (err.status === 400 && err.message.startsWith('La foto no es válida'))
       return res.status(400).json({ message: err.message });
     if (err.status === 404) return res.status(404).end();
+    if (
+      err.code === 11000 &&
+      req.path === '/api/auth/register' &&
+      (err.keyPattern?.email || err.keyValue?.email)
+    )
+      return res.status(409).json({
+        code: 'EMAIL_EXISTS',
+        message: 'Ese correo ya está registrado, ingresé otro por favor',
+      });
     if (err.code === 11000)
       return res
         .status(409)
