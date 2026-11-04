@@ -187,13 +187,13 @@ function App() {
     setLoading(true);
     const query = new URLSearchParams({ page: String(catalogPage.page) });
     if (category !== 'Todos') query.set('category', category);
-    if (search.trim()) query.set('startsWith', search.trim());
-    if (priceMin !== '') query.set('priceMin', priceMin);
-    if (priceMax !== '') query.set('priceMax', priceMax);
+    if (search.trim().toLowerCase()) query.set('startsWith', search.trim().toLowerCase());
+    if (priceMin !== '') query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
+    if (priceMax !== '') query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
     if (sort !== 'relevance') query.set('sort', sort);
-    if (search.trim()) query.set('startsWith', search.trim());
-    if (priceMin !== '') query.set('priceMin', priceMin);
-    if (priceMax !== '') query.set('priceMax', priceMax);
+    if (search.trim().toLowerCase()) query.set('startsWith', search.trim().toLowerCase());
+    if (priceMin !== '') query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
+    if (priceMax !== '') query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
     if (sort !== 'relevance') query.set('sort', sort);
     api('/products?' + query)
       .then((data) => {
@@ -744,14 +744,34 @@ function App() {
                 <form className="catalog-search" onSubmit={(event) => { event.preventDefault(); setCatalogPage((current) => ({ ...current, page: 1 })); }}>
                   <label>Buscar productos<input type="search" value={search} onChange={(event) => { setSearch(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Nombre o categoría" /></label>
                   <label>Ordenar por<select value={sort} onChange={(event) => setSort(event.target.value)}><option value="relevance">Más relevantes</option><option value="price-asc">Precio: menor a mayor</option><option value="price-desc">Precio: mayor a menor</option></select></label>
-                  <label>Precio mínimo<input type="number" min="0" step="1" value={priceMin} onChange={(event) => setPriceMin(event.target.value)} placeholder="Desde" /></label>
-                  <label>Precio máximo<input type="number" min="0" step="1" value={priceMax} onChange={(event) => setPriceMax(event.target.value)} placeholder="Hasta" /></label>
+                  <label>Rango de precio
+                    <select aria-label="Rango de precio" value={Array.from({ length: 8 }, (_, i) => [String(i * 5000), String((i + 1) * 5000)]).some(([min, max]) => priceMin === min && priceMax === max) ? priceMin + ':' + priceMax : ''}
+                      onChange={(event) => {
+                        const [min, max] = event.target.value ? event.target.value.split(':') : ['', ''];
+                        setPriceMin(min);
+                        setPriceMax(max);
+                        setCatalogPage((current) => ({ ...current, page: 1 }));
+                      }}>
+                      <option value="">Todos los precios / personalizado</option>
+                      {Array.from({ length: 8 }, (_, i) => {
+                        const min = i * 5000, max = (i + 1) * 5000;
+                        return <option key={min} value={min + ':' + max}>$ {min.toLocaleString('es-AR')} – $ {max.toLocaleString('es-AR')}</option>;
+                      })}
+                    </select>
+                  </label>
+                  <label>Precio mínimo<input type="number" min="0" step="1" value={priceMin} onChange={(event) => { setPriceMin(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Desde" /></label>
+                  <label>Precio máximo<input type="number" min="0" step="1" value={priceMax} onChange={(event) => { setPriceMax(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Hasta" /></label>
                 </form>
                 {loading ? (
                   <p role="status">Cargando diseños…</p>
                 ) : !products.length ? (
-                  <div className="empty">
-                    Estamos preparando nuestros primeros diseños. Volvé pronto.
+                  <div className="empty" role="status">
+                    <strong>Sin resultados</strong>
+                    <p>No encontramos productos que coincidan con tu búsqueda y filtros.</p>
+                    <button type="button" onClick={() => {
+                      setSearch(''); setCategory('Todos'); setPriceMin(''); setPriceMax('');
+                      setCatalogPage((current) => ({ ...current, page: 1 }));
+                    }}>Limpiar filtros</button>
                   </div>
                 ) : (
                   <div className="grid-products">
