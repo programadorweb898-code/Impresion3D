@@ -1,3 +1,4 @@
+import { newPasswordSchema } from '@impresion3d/shared';
 import { PasswordInput } from './PasswordInput.jsx';
 import { useEffect, useState, useRef } from 'react';
 import { api } from './api.js';
@@ -296,7 +297,7 @@ export function Profile({
           ) : (
             <>
               <p>
-                Usá al menos 12 caracteres. Tus otras sesiones se cerrarán al
+                Usá entre 8 y 20 caracteres, con mayúscula, minúscula, número y carácter especial. Tus otras sesiones se cerrarán al
                 guardar.
               </p>
               <form
@@ -310,6 +311,12 @@ export function Profile({
                     setError('Las contraseñas no coinciden.');
                     return;
                   }
+                  const validation = newPasswordSchema.safeParse(data.password);
+                  if (!validation.success) {
+                    setMessage('');
+                    setError(validation.error.issues[0].message);
+                    return;
+                  }
                   delete data.confirmPassword;
                   update(e, '/password', data);
                 }}
@@ -320,8 +327,8 @@ export function Profile({
                   <PasswordInput
                     name="password"
                     autoComplete="new-password"
-                    minLength="12"
-                    maxLength="128"
+                    minLength="8"
+                    maxLength="20"
                     required
                     disabled={busy}
                   />
@@ -331,8 +338,8 @@ export function Profile({
                   <PasswordInput
                     name="confirmPassword"
                     autoComplete="new-password"
-                    minLength="12"
-                    maxLength="128"
+                    minLength="8"
+                    maxLength="20"
                     required
                     disabled={busy}
                   />

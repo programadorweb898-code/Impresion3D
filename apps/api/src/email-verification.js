@@ -1,3 +1,4 @@
+import { newPasswordSchema } from '@impresion3d/shared';
 import { hashPassword } from './passwords.js';
 import { Router } from 'express';
 import { randomBytes, createHash } from 'node:crypto';
@@ -66,13 +67,13 @@ export function createVerificationRouter({
     const parsed = z
       .object({
         token: z.string().regex(/^[a-f0-9]{64}$/),
-        password: z.string().min(12).max(128),
+        password: newPasswordSchema,
       })
       .safeParse(req.body);
     if (!parsed.success)
       return res.status(400).json({
         message:
-          'Enlace inválido o contraseña demasiado corta. Usá al menos 12 caracteres.',
+          parsed.error.issues[0].path.includes('password') ? parsed.error.issues[0].message : 'Enlace inválido. Solicitá uno nuevo.',
       });
     const filter = {
       verificationRequired: true,

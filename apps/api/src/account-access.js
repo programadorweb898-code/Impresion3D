@@ -1,3 +1,4 @@
+import { newPasswordSchema } from '@impresion3d/shared';
 import { createMailer } from './mail.js';
 import { hashPassword } from './passwords.js';
 import { Router } from 'express';
@@ -73,7 +74,7 @@ export function createAccountAccess({
   });
   const resetSchema = z.object({
     token: z.string().regex(/^[a-f0-9]{64}$/),
-    password: z.string().min(12).max(128),
+    password: newPasswordSchema,
   });
   router.get('/options', (_req, res) =>
     res.json({
@@ -133,7 +134,7 @@ export function createAccountAccess({
     if (!parsed.success)
       return res.status(400).json({
         message:
-          'Enlace inválido o contraseña demasiado corta. Usá al menos 12 caracteres.',
+          parsed.error.issues[0].path.includes('password') ? parsed.error.issues[0].message : 'Enlace inválido. Solicitá uno nuevo.',
       });
     const passwordHash = await hashPassword(parsed.data.password);
     const user = await User.findOneAndUpdate(

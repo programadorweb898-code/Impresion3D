@@ -1,19 +1,20 @@
 import { z } from 'zod';
 export { formatMoney } from './money.js';
-export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().pipe(z.email({ message: 'Formato de email no válido.' })),
-  password: z.string().min(1).max(128),
-});
-export const registerSchema = loginSchema.extend({
-  name: z.string().trim().min(2).max(80),
-  password: z
+export const newPasswordSchema = z
     .string()
     .min(8, 'La contraseña debe tener entre 8 y 20 caracteres.')
     .max(20, 'La contraseña debe tener entre 8 y 20 caracteres.')
     .regex(/[A-Z]/, 'Incluí al menos una mayúscula.')
     .regex(/[a-z]/, 'Incluí al menos una minúscula.')
     .regex(/[0-9]/, 'Incluí al menos un número.')
-    .regex(/[^A-Za-z0-9]/, 'Incluí al menos un carácter especial.')
+    .regex(/[^A-Za-z0-9]/, 'Incluí al menos un carácter especial.');
+export const loginSchema = z.object({
+  email: z.string().trim().toLowerCase().pipe(z.email({ message: 'Formato de email no válido.' })),
+  password: z.string().min(1).max(128),
+});
+export const registerSchema = loginSchema.extend({
+  name: z.string().trim().min(2).max(80),
+  password: newPasswordSchema,
 });
 const productIdSchema = z
   .string()

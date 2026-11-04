@@ -1,3 +1,4 @@
+import { newPasswordSchema } from '@impresion3d/shared';
 import { hashPassword } from './passwords.js';
 import { validate } from './http-validation.js';
 import { Router } from 'express';
@@ -98,7 +99,7 @@ export function createProfileRouter({
       z
         .object({
           currentPassword: z.string().max(128).optional(),
-          password: z.string().min(12, 'Usá al menos 12 caracteres').max(128),
+          password: newPasswordSchema,
         })
         .strict(),
     ),

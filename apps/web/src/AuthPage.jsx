@@ -1,3 +1,4 @@
+import { newPasswordSchema } from '@impresion3d/shared';
 import { PasswordInput } from './PasswordInput.jsx';
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
@@ -134,6 +135,13 @@ export function AuthPage({
     ) {
       setLocalError('Las contraseñas no coinciden.');
       return;
+    }
+    if (['reset', 'verify'].includes(mode)) {
+      const validation = newPasswordSchema.safeParse(form.password);
+      if (!validation.success) {
+        setLocalError(validation.error.issues[0].message);
+        return;
+      }
     }
     setWorking(true);
     setLocalError('');
@@ -328,7 +336,7 @@ export function AuthPage({
                   ? 'Te enviaremos otro enlace para confirmar tu cuenta.'
                   : mode === 'forgot'
                     ? 'Te enviaremos un enlace para elegir una nueva contraseña.'
-                    : 'Elegí una contraseña de al menos 12 caracteres.'}
+                    : 'Elegí una contraseña de 8 a 20 caracteres con mayúscula, minúscula, número y carácter especial.'}
             </p>
             {['forgot', 'resend'].includes(mode) ? (
               <label>
@@ -346,8 +354,8 @@ export function AuthPage({
                   Nueva contraseña
                   <PasswordInput
                     name="password"
-                    minLength="12"
-                    maxLength="128"
+                    minLength="8"
+                    maxLength="20"
                     autoComplete="new-password"
                     required
                   />
@@ -356,8 +364,8 @@ export function AuthPage({
                   Confirmar contraseña
                   <PasswordInput
                     name="confirmPassword"
-                    minLength="12"
-                    maxLength="128"
+                    minLength="8"
+                    maxLength="20"
                     autoComplete="new-password"
                     required
                   />
