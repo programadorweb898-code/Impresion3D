@@ -29,7 +29,7 @@ export async function listProducts(req, res) {
   if (startsWith !== undefined) {
     if (typeof startsWith !== 'string' || startsWith.length > 80)
       return res.status(400).json({ message: 'Búsqueda inválida' });
-    const escaped = startsWith.replace(/[^\\w\\s]/g, '\\$&');
+    const escaped = startsWith.replace(/[^\w\s]/g, '\$&');
     if (escaped) filter.$or = [
       { name: { $regex: '^' + escaped, $options: 'i' } },
       { category: { $regex: '^' + escaped, $options: 'i' } },
