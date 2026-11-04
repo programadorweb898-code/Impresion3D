@@ -84,7 +84,7 @@ export function AuthPage({
         : '')
     );
   });
-  const [working, setWorking] = useState(false);
+  const [working, setWorking] = useState(false);\n  const [registerPassword, setRegisterPassword] = useState('');
   useEffect(() => {
     // Keep reset secrets out of browser history, referrers, and subsequent navigations.
     if (location.hash || location.search)
