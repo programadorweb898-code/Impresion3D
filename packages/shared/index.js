@@ -1,7 +1,7 @@
 import { z } from 'zod';
 export { formatMoney } from './money.js';
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().pipe(z.email()),
+  email: z.string().trim().toLowerCase().pipe(z.email({ message: 'Formato de email no válido.' })),
   password: z.string().min(1).max(128),
 });
 export const registerSchema = loginSchema.extend({
