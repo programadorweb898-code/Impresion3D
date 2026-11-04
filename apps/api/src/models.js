@@ -59,6 +59,10 @@ export const Product = model(
       historicalSalesCount: { type: Number, default: 0, min: 0 },
       viewsCount: { type: Number, default: 0, min: 0 },
       image: { url: String, publicId: String, width: Number, height: Number },
+      gallery: {
+        angle: { url: String, publicId: String, width: Number, height: Number },
+        context: { url: String, publicId: String, width: Number, height: Number },
+      },
       model: {
         url: String,
         publicId: String,

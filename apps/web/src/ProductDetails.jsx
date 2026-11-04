@@ -1,3 +1,4 @@
+import { ProductGallery } from './ProductGallery.jsx';
 import { useEffect, useState } from 'react';
 import { formatMoney } from '@impresion3d/shared';
 import { api } from './api.js';
@@ -55,19 +56,8 @@ export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
     <section className="product-details" aria-labelledby="product-detail-title">
       <p className="eyebrow">{p.category}</p>
       <h1 id="product-detail-title">{p.name}</h1>
-      <figure className="product-detail-media">
-        {p.image?.url ? (
-          <img
-            src={p.image.url}
-            alt={p.name}
-            width="1000"
-            height="1000"
-            fetchPriority="high"
-          />
-        ) : (
-          <p>Imagen todavía no disponible.</p>
-        )}
-      </figure>
+      <ProductGallery key={p._id} product={p} />
+
       <div className="product-detail-copy">
         <h2>Descripción del producto</h2>
         <p className="product-detail-description">

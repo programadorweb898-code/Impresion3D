@@ -1,3 +1,4 @@
+import { ProductGalleryEditor } from './ProductGalleryEditor.jsx';
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { Pagination } from './Pagination.jsx';
@@ -430,6 +431,10 @@ export function Admin({ onCatalogChange, onPreview }) {
                     await Promise.all([load(data.page), onCatalogChange()]);
                   }}
                 />
+                <ProductGalleryEditor product={p} onUpdated={async () => {
+                  setNotice('Foto de la ficha guardada.');
+                  await Promise.all([load(data.page), onCatalogChange()]);
+                }} />
                 <ProductPhoto
                   product={p}
                   onSaved={async () => {
