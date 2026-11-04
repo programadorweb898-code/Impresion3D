@@ -250,11 +250,24 @@ export function AuthPage({
                   autoComplete={
                     auth === 'register' ? 'new-password' : 'current-password'
                   }
+                  onChange={(event) => {
+                    if (auth === 'register') setRegisterPassword(event.target.value);
+                  }}
                   required
                 />
               </label>
               {auth === 'register' ? (
-                <p className="small">Usá al menos 12 caracteres.</p>
+                <div className="password-checks" aria-label="Requisitos de contraseña">
+                  {passwordChecks.map(([key, label, test]) => {
+                    const valid = test(registerPassword);
+                    return (
+                      <label className={valid ? 'password-check valid' : 'password-check'} key={key}>
+                        <input type="checkbox" checked={valid} readOnly tabIndex={-1} />
+                        <span>{label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               ) : (
                 <a
                   className="forgot-link"
