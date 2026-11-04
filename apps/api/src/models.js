@@ -56,6 +56,8 @@ export const Product = model(
       currency: { type: String, default: 'ARS' },
       dimensions: { width: Number, height: Number, depth: Number },
       active: { type: Boolean, default: true },
+      historicalSalesCount: { type: Number, default: 0, min: 0 },
+      viewsCount: { type: Number, default: 0, min: 0 },
       image: { url: String, publicId: String, width: Number, height: Number },
       model: {
         url: String,
@@ -124,3 +126,4 @@ orderModel.index({ createdAt: -1 });
 orderModel.index({ 'notification.state': 1, 'notification.dueAt': 1 });
 orderModel.index({ 'notification.state': 1, 'notification.leaseUntil': 1 });
 export const Order = model('Order', orderModel);
+

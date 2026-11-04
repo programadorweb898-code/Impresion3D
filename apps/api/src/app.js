@@ -164,7 +164,11 @@ export function createApp({
   app.get('/api/products/:id', async (req, res) => {
     if (!/^[a-f0-9]{24}$/i.test(req.params.id))
       return res.status(404).json({ message: 'Producto no disponible.' });
-    const product = await Product.findOne({ _id: req.params.id, active: true })
+    const product = await Product.findOneAndUpdate(
+      { _id: req.params.id, active: true },
+      { $inc: { viewsCount: 1 } },
+      { new: true, timestamps: false },
+    )
       .select('-__v')
       .lean();
     if (!product)
@@ -360,3 +364,4 @@ export function createApp({
   });
   return app;
 }
+

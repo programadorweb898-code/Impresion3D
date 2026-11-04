@@ -1,4 +1,5 @@
 import { Product, Order } from './models.js';
+import { relevancePipeline } from './relevance.js';
 import { pageNumber, pageMetadata, pageSize as limit } from './pagination.js';
 export async function listProducts(req, res) {
   const page = pageNumber(req, res);
@@ -48,7 +49,9 @@ export async function listProducts(req, res) {
   }
   const sortKey = req.query.sort || 'relevance';
   const sort = sortKey === 'price-asc' ? { priceCents: 1, _id: 1 } : sortKey === 'price-desc' ? { priceCents: -1, _id: -1 } : { createdAt: -1, _id: -1 };
-  const products = await Product.find(filter)
+  const products = sortKey === 'relevance'
+    ? await Product.aggregate(relevancePipeline(filter, page, limit))
+    : await Product.find(filter)
     .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)
@@ -82,3 +85,4 @@ export async function listOrders(req, res) {
     ...pageMetadata(page, total),
   });
 }
+
