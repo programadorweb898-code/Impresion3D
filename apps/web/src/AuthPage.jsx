@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { api } from './api.js';\nconst passwordChecks = [\n  ['length', 'Entre 8 y 20 caracteres', (value) => value.length >= 8 && value.length <= 20],\n  ['uppercase', 'Una letra mayúscula', (value) => /[A-Z]/.test(value)],\n  ['lowercase', 'Una letra minúscula', (value) => /[a-z]/.test(value)],\n  ['number', 'Un número', (value) => /[0-9]/.test(value)],\n  ['special', 'Un carácter especial', (value) => /[^A-Za-z0-9]/.test(value)],\n];
+import { api } from './api.js';
+const passwordChecks = [
+  ['length', 'Entre 8 y 20 caracteres', (value) => value.length >= 8 && value.length <= 20],
+  ['uppercase', 'Una letra mayúscula', (value) => /[A-Z]/.test(value)],
+  ['lowercase', 'Una letra minúscula', (value) => /[a-z]/.test(value)],
+  ['number', 'Un número', (value) => /[0-9]/.test(value)],
+  ['special', 'Un carácter especial', (value) => /[^A-Za-z0-9]/.test(value)],
+];
 function ProviderLogo({ provider }) {
   return provider === 'google' ? (
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
