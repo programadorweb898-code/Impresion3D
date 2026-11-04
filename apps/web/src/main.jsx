@@ -106,6 +106,10 @@ function App() {
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [category, setCategory] = useState(() => catalogContext().category),
+    [search, setSearch] = useState(''),
+    [priceMin, setPriceMin] = useState(''),
+    [priceMax, setPriceMax] = useState(''),
+    [sort, setSort] = useState('relevance'),
     [cartNotes, setCartNotes] = useState(''),
     [viewing, setViewing] = useState(null),
     [navigationVersion, setNavigationVersion] = useState(0);
@@ -183,6 +187,14 @@ function App() {
     setLoading(true);
     const query = new URLSearchParams({ page: String(catalogPage.page) });
     if (category !== 'Todos') query.set('category', category);
+    if (search.trim()) query.set('startsWith', search.trim());
+    if (priceMin !== '') query.set('priceMin', priceMin);
+    if (priceMax !== '') query.set('priceMax', priceMax);
+    if (sort !== 'relevance') query.set('sort', sort);
+    if (search.trim()) query.set('startsWith', search.trim());
+    if (priceMin !== '') query.set('priceMin', priceMin);
+    if (priceMax !== '') query.set('priceMax', priceMax);
+    if (sort !== 'relevance') query.set('sort', sort);
     api('/products?' + query)
       .then((data) => {
         if (!active) return;
@@ -202,7 +214,7 @@ function App() {
     return () => {
       active = false;
     };
-  }, [catalogPage.page, category]);
+  }, [catalogPage.page, category, search, priceMin, priceMax, sort]);
   useEffect(() => {
     if (view === 'orders' && user?.id && !ordersLoading && !orders.length)
       history(orderPage.page);
@@ -729,6 +741,12 @@ function App() {
                     </button>
                   ))}
                 </div>
+                <form className="catalog-search" onSubmit={(event) => { event.preventDefault(); setCatalogPage((current) => ({ ...current, page: 1 })); }}>
+                  <label>Buscar productos<input type="search" value={search} onChange={(event) => { setSearch(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Nombre o categoría" /></label>
+                  <label>Ordenar por<select value={sort} onChange={(event) => setSort(event.target.value)}><option value="relevance">Más relevantes</option><option value="price-asc">Precio: menor a mayor</option><option value="price-desc">Precio: mayor a menor</option></select></label>
+                  <label>Precio mínimo<input type="number" min="0" step="1" value={priceMin} onChange={(event) => setPriceMin(event.target.value)} placeholder="Desde" /></label>
+                  <label>Precio máximo<input type="number" min="0" step="1" value={priceMax} onChange={(event) => setPriceMax(event.target.value)} placeholder="Hasta" /></label>
+                </form>
                 {loading ? (
                   <p role="status">Cargando diseños…</p>
                 ) : !products.length ? (
