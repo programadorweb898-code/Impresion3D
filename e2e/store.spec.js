@@ -692,10 +692,16 @@ test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver
   await expect(page.locator('.product-detail-dimensions')).toContainText(
     'Ancho100 mm',
   );
-  await expect(page.locator('.product-detail-media img')).toHaveAttribute(
+  await expect(page.locator('.product-gallery-stage > img')).toHaveAttribute(
     'src',
     '/images/hero-3d-studio.svg',
   );
+  await expect(page.locator('.gallery-thumbnails button')).toHaveCount(2);
+  await page.getByRole('button', { name: 'Ver foto: Girado 45°', exact: true }).click();
+  await expect(page.locator('.product-gallery-stage > img')).toHaveClass('gallery-image-rotated');
+  await expect(page.locator('.product-gallery figcaption')).toContainText('2 / 2');
+  await page.getByRole('button', { name: 'Foto siguiente', exact: true }).click();
+  await expect(page.locator('.product-gallery-stage > img')).not.toHaveClass('gallery-image-rotated');
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 844 });
     const image = await page.locator('.product-detail-media').boundingBox();
@@ -737,7 +743,7 @@ test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver
     .getByRole('link', { name: 'Volver a la página anterior', exact: true })
     .click();
   await expect(page.locator('.product-card')).toHaveCount(20);
-  for (const prefix of ['descripci%C3%B3n', 'descripction']) {
+  for (const prefix of ['descripci%C3%B3n', 'descripction', 'description']) {
     await page.goto(url.replace('descripcion', prefix));
     await expect(
       page.getByRole('heading', { name: 'Pieza 00', exact: true }),
