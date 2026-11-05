@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { registerSchema, orderSchema } from '@impresion3d/shared';
+import { registerSchema, orderSchema, newPasswordSchema } from '@impresion3d/shared';
 const app = createApp({
   sessionSecret: 'test-secret-with-at-least-32-characters',
   webOrigin: 'http://localhost:5173',
@@ -27,6 +27,10 @@ test('historial requiere autenticación', async () => {
   await request(app).get('/api/orders').expect(401);
 });
 test('validación de contraseñas y cantidades', () => {
+  assert.equal(newPasswordSchema.safeParse('PruebaSegura1!').success, true);
+  for (const value of ['corta', 'SinNumero!', 'sinmayuscula1!', 'SINMINUSCULA1!', 'SinEspecial1', 'DemasiadoLarga123456789!']) {
+    assert.equal(newPasswordSchema.safeParse(value).success, false, value);
+  }
   assert.equal(
     registerSchema.safeParse({
       name: 'Ana',

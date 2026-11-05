@@ -12,12 +12,16 @@ async function send(url, options, stage) {
     );
   }
 }
+function errorReference(response) {
+  const value = response.headers.get('x-request-id');
+  return value && /^[a-zA-Z0-9._-]{1,128}$/.test(value) ? value : null;
+}
 async function readJson(response) {
   try {
     return await response.json();
   } catch (cause) {
     throw new Error(
-      'No pudimos completar la solicitud. Recargá la página y volvé a intentarlo.',
+      `No recibimos una respuesta válida (HTTP ${response.status}). Recargá la página y volvé a intentarlo.${errorReference(response) ? ' Referencia: ' + errorReference(response) : ''}`,
       { cause },
     );
   }
@@ -47,10 +51,12 @@ export async function api(path, options = {}) {
   const data = await readJson(response);
   if (!response.ok) {
     const error = new Error(
-      data.message || 'No pudimos completar la solicitud. Intentá nuevamente.',
+      (data?.message || 'No pudimos completar la solicitud. Intentá nuevamente.') +
+        (errorReference(response) ? ' Referencia: ' + errorReference(response) : ''),
     );
     error.status = response.status;
-    error.code = data.code;
+    error.code = data?.code;
+    error.requestId = errorReference(response);
     throw error;
   }
   return data;

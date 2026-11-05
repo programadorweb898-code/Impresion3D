@@ -107,7 +107,7 @@ test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio
     page.getByRole('button', { name: 'Confirmar nuevo email', exact: true }),
   ).toBeDisabled();
   await page.screenshot({
-    path: '/tmp/mundo3d-facebook-perfil.png',
+    path: test.info().outputPath('mundo3d-facebook-perfil.png'),
     fullPage: true,
   });
   await page.unroute('**/api/profile');
@@ -171,7 +171,7 @@ async function login(page, count = 0, email = 'browser@example.com') {
   await page.getByLabel('Correo electrónico', { exact: true }).fill(email);
   await page
     .getByLabel('Contraseña', { exact: true })
-    .fill('browser-password-12345');
+    .fill('NavegadorPrueba1!');
   await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
   await expect(
     page.getByRole('button', { name: `Abrir carrito, ${count} productos` }),
@@ -210,7 +210,7 @@ test('barra fija conserva carrito y menú al scrollear sin tapar contenido ni en
       ).toBeVisible();
       expect(await page.evaluate(() => scrollY)).toBe(position);
       await page.screenshot({
-        path: '/tmp/impresion3d-fixed-navbar.png',
+        path: test.info().outputPath('impresion3d-fixed-navbar.png'),
         animations: 'disabled',
       });
       await page
@@ -270,7 +270,7 @@ test('aviso del carrito sigue visible al scrollear, reemplaza mensajes y desapar
   const after = await toast.boundingBox();
   expect(Math.abs(after.y - before.y)).toBeLessThan(2);
   await page.screenshot({
-    path: '/tmp/impresion3d-toast-mobile.png',
+    path: test.info().outputPath('impresion3d-toast-mobile.png'),
     animations: 'disabled',
   });
   await page.clock.fastForward(1800);
@@ -470,7 +470,7 @@ test('registro por correo confirma un enlace y elige una contraseña antes de in
     .fill('new-browser@example.com');
   await page
     .getByLabel('Contraseña', { exact: true })
-    .fill('initial-browser-password');
+    .fill('NavegadorInicial1!');
   await page.getByRole('button', { name: 'Crear cuenta con email' }).click();
   await expect(page.getByRole('status')).toContainText('Revisá tu correo');
   const response = await request.get('/__test/mailbox/new-browser@example.com');
@@ -482,10 +482,10 @@ test('registro por correo confirma un enlace y elige una contraseña antes de in
   await expect(page).toHaveURL('/login');
   await page
     .getByLabel('Nueva contraseña', { exact: true })
-    .fill('final-browser-password');
+    .fill('NavegadorFinal2!');
   await page
     .getByLabel('Confirmar contraseña', { exact: true })
-    .fill('final-browser-password');
+    .fill('NavegadorFinal2!');
   await page
     .getByRole('button', { name: 'Confirmar correo y contraseña' })
     .click();
@@ -495,7 +495,7 @@ test('registro por correo confirma un enlace y elige una contraseña antes de in
     .fill('new-browser@example.com');
   await page
     .getByLabel('Contraseña', { exact: true })
-    .fill('final-browser-password');
+    .fill('NavegadorFinal2!');
   await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
   await expect(
     page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
@@ -714,12 +714,12 @@ test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver
     ).toBe(false);
   }
   await page.screenshot({
-    path: '/tmp/impresion3d-description-desktop.png',
+    path: test.info().outputPath('impresion3d-description-desktop.png'),
     fullPage: true,
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
-    path: '/tmp/impresion3d-description-mobile.png',
+    path: test.info().outputPath('impresion3d-description-mobile.png'),
     fullPage: true,
   });
   await page
@@ -781,7 +781,7 @@ test('agregar desde ficha exige login, vuelve al producto y conserva carrito sin
     .fill('browser@example.com');
   await page
     .getByLabel('Contraseña', { exact: true })
-    .fill('browser-password-12345');
+    .fill('NavegadorPrueba1!');
   await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
   await expect(page).toHaveURL(url);
   await expect(
@@ -873,7 +873,7 @@ test('privacidad y condiciones se abren desde el footer sin sesión y conservan 
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
-    path: '/tmp/mundo3d-privacidad-mobile.png',
+    path: test.info().outputPath('mundo3d-privacidad-mobile.png'),
     fullPage: true,
   });
   await page
@@ -963,6 +963,10 @@ test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni 
     page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
   ).toBeVisible();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  // Let the frame recorder observe the destination before intentional scrolling.
+  await page.evaluate(() => new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve)),
+  ));
   await page.evaluate(() => scrollTo({ top: 1200, behavior: 'instant' }));
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(500);
   await page
@@ -978,12 +982,20 @@ test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni 
       .locator('footer')
       .getByRole('link', { name: 'Términos y condiciones', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
+  // Let the frame recorder observe the destination before intentional scrolling.
+  await page.evaluate(() => new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve)),
+  ));
   await page.evaluate(() => scrollTo({ top: 1400, behavior: 'instant' }));
   await page.goBack();
   await expect(
     page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
   ).toBeVisible();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  // Let the frame recorder observe the destination before intentional scrolling.
+  await page.evaluate(() => new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve)),
+  ));
   await page.evaluate(() => scrollTo({ top: 900, behavior: 'instant' }));
   await page.goBack();
   await expect(page.locator('.product-card')).toHaveCount(20);

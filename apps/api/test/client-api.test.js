@@ -71,3 +71,16 @@ test('errores HTTP conservan el mensaje y la referencia sin mostrar HTML', async
     new Response('<html>gateway</html>', { status: 502 });
   await assert.rejects(() => api('/test'), /respuesta válida \(HTTP 502\)/);
 });
+
+test('no refleja referencias inválidas ni el HTML de un proxy', async () => {
+  globalThis.fetch = async () => new Response('<html>gateway privado</html>', {
+    status: 502,
+    headers: { 'x-request-id': '<script>unsafe</script>' },
+  });
+  await assert.rejects(() => api('/test'), (error) => {
+    assert.match(error.message, /HTTP 502/);
+    assert.ok(!error.message.includes('script'));
+    assert.ok(!error.message.includes('gateway privado'));
+    return true;
+  });
+});

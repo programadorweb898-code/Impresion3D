@@ -17,13 +17,13 @@ await Promise.all([User.init(), Order.init(), SocialIdentity.init()]);
 const user = await User.create({
   name: 'Cliente navegador',
   email: 'browser@example.com',
-  passwordHash: await argon2.hash('browser-password-12345'),
+  passwordHash: await argon2.hash('NavegadorPrueba1!'),
 });
 await User.create({
   name: 'Admin navegador',
   email: 'admin-browser@example.com',
   role: 'admin',
-  passwordHash: await argon2.hash('browser-password-12345'),
+  passwordHash: await argon2.hash('NavegadorPrueba1!'),
 });
 const products = await Product.create(
   Array.from({ length: 25 }, (_, i) => ({
