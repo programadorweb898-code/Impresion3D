@@ -8,7 +8,7 @@ export function currentPage() {
     /* Invalid escapes are handled as unavailable routes. */
   }
   const detail = path.match(
-    /^\/(?:descripcion|descripción|descripction)(?:\/(.*))?$/u,
+    /^\/(?:descripcion|descripción|descripction|description)(?:\/(.*))?$/u,
   );
   if (detail)
     return { view: 'product', id: (detail[1] || '').replace(/\/$/, '') };
