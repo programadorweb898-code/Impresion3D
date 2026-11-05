@@ -29,7 +29,7 @@ async function account(email) {
     .send({
       name: 'Cliente prueba',
       email,
-      password: 'clave-larga-para-carrito',
+      password: 'CarritoPrueba1!',
     })
     .expect(201);
   return agent;

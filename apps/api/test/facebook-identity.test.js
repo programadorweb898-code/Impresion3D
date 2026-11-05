@@ -222,7 +222,7 @@ test('correo inicial requiere enlace privado; preserva identidad y revoca sesion
   const initial = (await a.get('/api/profile')).body;
   assert.equal(initial.email, null);
   assert.equal(initial.canUpdateEmail, true);
-  const password = 'password-after-email-12345';
+  const password = 'PruebaCorreo1!';
   assert.equal(
     (await post(a, '/api/profile/password', { password })).body.code,
     'EMAIL_REQUIRED',

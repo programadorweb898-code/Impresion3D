@@ -171,7 +171,7 @@ async function login(page, count = 0, email = 'browser@example.com') {
   await page.getByLabel('Correo electrónico', { exact: true }).fill(email);
   await page
     .getByLabel('Contraseña', { exact: true })
-    .fill('browser-password-12345');
+    .fill('NavegadorPrueba1!');
   await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
   await expect(
     page.getByRole('button', { name: `Abrir carrito, ${count} productos` }),
@@ -470,7 +470,7 @@ test('registro por correo confirma un enlace y elige una contraseña antes de in
     .fill('new-browser@example.com');
   await page
     .getByLabel('Contraseña', { exact: true })
-    .fill('initial-browser-password');
+    .fill('NavegadorInicial1!');
   await page.getByRole('button', { name: 'Crear cuenta con email' }).click();
   await expect(page.getByRole('status')).toContainText('Revisá tu correo');
   const response = await request.get('/__test/mailbox/new-browser@example.com');
@@ -482,10 +482,10 @@ test('registro por correo confirma un enlace y elige una contraseña antes de in
   await expect(page).toHaveURL('/login');
   await page
     .getByLabel('Nueva contraseña', { exact: true })
-    .fill('final-browser-password');
+    .fill('NavegadorFinal2!');
   await page
     .getByLabel('Confirmar contraseña', { exact: true })
-    .fill('final-browser-password');
+    .fill('NavegadorFinal2!');
   await page
     .getByRole('button', { name: 'Confirmar correo y contraseña' })
     .click();
@@ -495,7 +495,7 @@ test('registro por correo confirma un enlace y elige una contraseña antes de in
     .fill('new-browser@example.com');
   await page
     .getByLabel('Contraseña', { exact: true })
-    .fill('final-browser-password');
+    .fill('NavegadorFinal2!');
   await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
   await expect(
     page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
@@ -781,7 +781,7 @@ test('agregar desde ficha exige login, vuelve al producto y conserva carrito sin
     .fill('browser@example.com');
   await page
     .getByLabel('Contraseña', { exact: true })
-    .fill('browser-password-12345');
+    .fill('NavegadorPrueba1!');
   await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
   await expect(page).toHaveURL(url);
   await expect(

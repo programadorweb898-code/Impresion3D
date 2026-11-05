@@ -8,8 +8,8 @@ import { createAccountServices } from '../src/account-access.js';
 import { User, SocialIdentity } from '../src/models.js';
 let mongo;
 const origin = 'http://localhost:5173',
-  password = 'mi-password-inicial-seguro',
-  nextPassword = 'mi-nueva-clave-muy-segura';
+  password = 'PruebaInicial1!',
+  nextPassword = 'PruebaNueva2!';
 before(async () => {
   mongo = await MongoMemoryServer.create();
   await mongoose.connect(mongo.getUri());

@@ -7,8 +7,8 @@ import { createApp } from '../src/app.js';
 import { User } from '../src/models.js';
 let mongo;
 const origin = 'http://localhost:5173';
-const password = 'password-inicial-12345';
-const finalPassword = 'password-elegida-por-dueno';
+const password = 'PruebaInicial1!';
+const finalPassword = 'PruebaElegida2!';
 before(async () => {
   mongo = await MongoMemoryServer.create();
   await mongoose.connect(mongo.getUri());

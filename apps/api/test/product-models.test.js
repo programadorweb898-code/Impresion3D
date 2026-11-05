@@ -39,7 +39,7 @@ async function account(email, admin = false) {
     .send({
       name: 'Modelo prueba',
       email,
-      password: 'clave-larga-para-la-prueba',
+      password: 'CargaPrueba1!',
     })
     .expect(201);
   if (admin) await User.updateOne({ email }, { $set: { role: 'admin' } });

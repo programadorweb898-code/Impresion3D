@@ -8,7 +8,7 @@ import { createApp } from '../src/app.js';
 import { User, Product, Order } from '../src/models.js';
 let mongo, store, app;
 const origin = 'http://localhost:5173';
-const password = 'una-clave-larga-de-prueba';
+const password = 'Integracion1!';
 const productData = {
   name: 'Maceta de prueba',
   description: 'Producto para integración',

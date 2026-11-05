@@ -44,7 +44,7 @@ async function account(email, role = 'customer', application = app) {
     .send({
       name: 'Foto prueba',
       email,
-      password: 'clave-larga-para-la-prueba',
+      password: 'CargaPrueba1!',
     })
     .expect(201);
   if (role === 'admin')
