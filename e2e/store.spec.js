@@ -690,7 +690,7 @@ test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver
     'Producto de prueba\nDescripción completa conservada en la ficha.',
   );
   await expect(page.locator('.product-detail-dimensions')).toContainText(
-    'Ancho100 mm',
+    'Ancho10 cm',
   );
   await expect(page.locator('.product-gallery-stage > img')).toHaveAttribute(
     'src',
@@ -1246,4 +1246,24 @@ test('Facebook recupera en el mismo intento una cookie omitida en el regreso ext
   expect((await (await page.request.get('/api/auth/me')).json()).role).toBe(
     'customer',
   );
+});
+
+test('administración convierte centímetros a milímetros y conserva decimales al reabrir', async ({ page }) => {
+  await login(page, 0, 'admin-browser@example.com');
+  await menu(page, 'Administración');
+  await page.getByRole('button', { name: 'Productos', exact: true }).click();
+  const edit = page.locator('.admin-products > article').first().getByRole('button', { name: /^Editar / });
+  await edit.click();
+  await page.getByLabel('Ancho (cm)', { exact: true }).fill('17');
+  await page.getByLabel('Alto (cm)', { exact: true }).fill('12.12');
+  await page.getByLabel('Profundidad (cm)', { exact: true }).fill('5.21');
+  const saving = page.waitForResponse(r => r.request().method() === 'PUT' && r.url().includes('/api/admin/products/'));
+  await page.getByRole('button', { name: 'Guardar producto', exact: true }).click();
+  const saved = await saving;
+  expect(saved.ok()).toBeTruthy();
+  expect(saved.request().postDataJSON().dimensions).toEqual({ width: 170, height: 121.2, depth: 52.1 });
+  await edit.click();
+  await expect(page.getByLabel('Ancho (cm)', { exact: true })).toHaveValue('17');
+  await expect(page.getByLabel('Alto (cm)', { exact: true })).toHaveValue('12.12');
+  await expect(page.getByLabel('Profundidad (cm)', { exact: true })).toHaveValue('5.21');
 });

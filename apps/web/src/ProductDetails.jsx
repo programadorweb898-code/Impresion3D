@@ -2,6 +2,12 @@ import { ProductGallery } from './ProductGallery.jsx';
 import { useEffect, useState } from 'react';
 import { formatMoney } from '@impresion3d/shared';
 import { api } from './api.js';
+const formatCentimeters = (value) =>
+  Number.isFinite(value)
+    ? new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(
+        value / 10,
+      ) + ' cm'
+    : '�';
 export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
   const [state, setState] = useState({
     id,
@@ -68,15 +74,15 @@ export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
         <dl className="product-detail-dimensions">
           <div>
             <dt>Ancho</dt>
-            <dd>{p.dimensions?.width} mm</dd>
+            <dd>{formatCentimeters(p.dimensions?.width)}</dd>
           </div>
           <div>
             <dt>Alto</dt>
-            <dd>{p.dimensions?.height} mm</dd>
+            <dd>{formatCentimeters(p.dimensions?.height)}</dd>
           </div>
           <div>
             <dt>Profundidad</dt>
-            <dd>{p.dimensions?.depth} mm</dd>
+            <dd>{formatCentimeters(p.dimensions?.depth)}</dd>
           </div>
         </dl>
         <p className="product-detail-price">
