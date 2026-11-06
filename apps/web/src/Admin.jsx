@@ -385,7 +385,7 @@ export function Admin({ onCatalogChange, onPreview }) {
                       min="0.01"
                       max="200"
                       step="0.01"
-                      defaultValue={editing.dimensions[key] / 10}
+                      defaultValue={Math.round(editing.dimensions[key] * 10) / 100}
                       required
                     />
                   </label>
