@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('cuenta existente vincula Google desde perfil y después ingresa con el mismo usuario', async ({
+test('Google confirma la cuenta durante el login y después permite acceso directo', async ({
   page,
   context,
 }) => {
@@ -18,35 +18,27 @@ test('cuenta existente vincula Google desde perfil y después ingresa con el mis
   });
   await page.goto('/login');
   await page.getByRole('button', { name: 'Continuar con Google' }).click();
-  await expect(page.getByRole('alert')).toContainText(
-    'Mi perfil → Vincular Google',
-  );
-  await page
-    .getByLabel('Correo electrónico', { exact: true })
-    .fill('browser@example.com');
-  await page
-    .getByLabel('Contraseña', { exact: true })
-    .fill('NavegadorPrueba1!');
-  await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
-  await expect(page).toHaveURL('/');
-  const before = (await (await page.request.get('/api/auth/me')).json()).id;
-  await page.goto('/perfil');
-  const form = page.getByRole('form', { name: 'Vincular Google' });
-  await expect(form.locator('..')).toContainText('browser@example.com');
-  await form.getByLabel('Contraseña actual').fill('incorrecta');
-  await form.getByRole('button', { name: 'Vincular Google' }).click();
-  await expect(page.getByRole('alert')).toContainText(
-    'contraseña actual no es correcta',
-  );
-  await form.getByLabel('Contraseña actual').fill('NavegadorPrueba1!');
-  await form.getByRole('button', { name: 'Vincular Google' }).click();
-  await expect(page.getByRole('status')).toContainText('Google vinculado');
   await expect(
-    page.getByRole('button', { name: 'Vincular Google', exact: true }),
-  ).toHaveCount(0);
-  await expect(page.locator('.profile-current-email')).toContainText(
+    page.getByRole('heading', { name: 'Confirmá que sos vos' }),
+  ).toBeVisible();
+  await expect(page.locator('.auth-intro')).toContainText(
     'browser@example.com',
   );
+  await page.reload();
+  const form = page.getByRole('form', { name: 'Confirmar acceso con Google' });
+  await form.getByLabel('Contraseña de tu cuenta').fill('incorrecta');
+  await form
+    .getByRole('button', { name: 'Confirmar y continuar con Google' })
+    .click();
+  await expect(page.getByRole('alert')).toContainText(
+    'contraseña no es correcta',
+  );
+  await form.getByLabel('Contraseña de tu cuenta').fill('NavegadorPrueba1!');
+  await form
+    .getByRole('button', { name: 'Confirmar y continuar con Google' })
+    .click();
+  await expect(page).toHaveURL('/');
+  const before = (await (await page.request.get('/api/auth/me')).json()).id;
   const csrf = (await (await page.request.get('/api/csrf')).json()).token;
   await page.request.post('/api/auth/logout', {
     headers: { Origin: 'http://127.0.0.1:3100', 'x-csrf-token': csrf },

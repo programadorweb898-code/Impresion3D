@@ -11,6 +11,11 @@ import {
 } from 'node:crypto';
 import { User, SocialIdentity } from './models.js';
 import { createVerificationRouter } from './email-verification.js';
+import {
+  googleConfirmationRouter,
+  googleConfirmationUser,
+  completeGoogleSignIn,
+} from './google-signin-confirmation.js';
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 export function createAccountServices(env = {}, transport = fetch) {
   const providers = {};
@@ -60,6 +65,9 @@ export function createAccountAccess({
   save,
 }) {
   const router = Router();
+  router.use(
+    googleConfirmationRouter({ services, authLimit, regenerate, save }),
+  );
   router.use(
     createVerificationRouter({
       services,
@@ -188,6 +196,19 @@ export function createAccountAccess({
       Object.hasOwn(services.providers, provider) &&
       services.providers[provider];
     if (!config) return res.redirect('/login?authError=unavailable');
+    let googleConfirmation;
+    if (req.query.confirmGoogle === '1') {
+      const user = await googleConfirmationUser(req);
+      if (
+        provider !== 'facebook' ||
+        !user ||
+        !(await SocialIdentity.exists({ provider, userId: user._id }))
+      )
+        return res.redirect('/login?googleConfirmError=expired');
+      googleConfirmation = req.session.googleSignIn;
+    } else if (provider === 'google') {
+      delete req.session.googleSignIn;
+    }
     let linkAccount;
     if (req.query.link === '1') {
       const ticket = req.session.googleLink;
@@ -212,6 +233,7 @@ export function createAccountAccess({
       expires: Date.now() + 10 * 60000,
       attemptId: req.requestId,
       linkAccount,
+      googleConfirmation,
       popup:
         req.query.popup === '1' &&
         req.query.reauthenticate === '1' &&
@@ -261,6 +283,15 @@ export function createAccountAccess({
         );
     }
     const finish = (destination) => {
+      if (pending?.googleConfirmation && destination !== '/')
+        return res.redirect(
+          destination.startsWith('/login?googleConfirmError=')
+            ? destination
+            : '/login?googleConfirmError=' +
+                (destination.startsWith('/login?authError=cancelled')
+                  ? 'cancelled'
+                  : 'provider'),
+        );
       if (
         pending?.linkAccount &&
         !destination.startsWith('/perfil?googleLink=')
@@ -382,6 +413,23 @@ export function createAccountAccess({
       stage = 'account';
       upstreamStatus = undefined;
       const identity = await SocialIdentity.findOne({ provider, subject });
+      if (pending.googleConfirmation) {
+        const owner = await googleConfirmationUser(
+          req,
+          pending.googleConfirmation,
+        );
+        if (!owner) return finish('/login?googleConfirmError=expired');
+        if (!identity || String(identity.userId) !== String(owner._id))
+          return finish('/login?googleConfirmError=mismatch');
+        if (
+          !(await completeGoogleSignIn(req, owner, pending.googleConfirmation, {
+            regenerate,
+            save,
+          }))
+        )
+          return finish('/login?googleConfirmError=expired');
+        return finish('/');
+      }
       if (pending.linkAccount) {
         const link = pending.linkAccount;
         const owner = await User.findById(link.userId).select('+authVersion');
@@ -444,8 +492,25 @@ export function createAccountAccess({
         )
           return finish('/login?authError=email');
         // Never link by matching email: that could let a different identity take over an existing account.
-        if (parsed.success && (await User.exists({ email: parsed.data.email })))
-          return finish('/login?authError=existing');
+        const existingUser =
+          parsed.success &&
+          (await User.findOne({ email: parsed.data.email }).select(
+            '+authVersion',
+          ));
+        if (existingUser) {
+          if (provider !== 'google') return finish('/login?authError=existing');
+          await regenerate(req);
+          req.session.googleSignIn = {
+            nonce: randomBytes(32).toString('hex'),
+            userId: String(existingUser._id),
+            authVersion: existingUser.authVersion || 0,
+            email: parsed.data.email,
+            subject,
+            expires: Date.now() + 5 * 60000,
+          };
+          await save(req);
+          return finish('/login?confirmGoogle=1');
+        }
         user = await User.create({
           name:
             typeof profile.name === 'string'

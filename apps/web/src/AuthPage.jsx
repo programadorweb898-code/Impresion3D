@@ -3,7 +3,11 @@ import { PasswordInput } from './PasswordInput.jsx';
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
 const passwordChecks = [
-  ['length', 'Entre 8 y 20 caracteres', (value) => value.length >= 8 && value.length <= 20],
+  [
+    'length',
+    'Entre 8 y 20 caracteres',
+    (value) => value.length >= 8 && value.length <= 20,
+  ],
   ['uppercase', 'Una letra mayúscula', (value) => /[A-Z]/.test(value)],
   ['lowercase', 'Una letra minúscula', (value) => /[a-z]/.test(value)],
   ['number', 'Un número', (value) => /[0-9]/.test(value)],
@@ -52,7 +56,7 @@ const providerErrors = {
   facebook_email_account:
     'Podés continuar con Facebook aunque no comparta tu correo. Volvé a intentarlo.',
   existing:
-    'Ya existe una cuenta con ese correo. Ingresá con tu método habitual; después podés habilitar Google desde Mi perfil → Vincular Google.',
+    'Ya existe una cuenta con ese correo. Ingresá con tu método habitual.',
   provider:
     'No pudimos completar el acceso con el proveedor. Intentá nuevamente.',
 };
@@ -79,14 +83,43 @@ export function AuthPage({
         : 'account',
   );
   const [options, setOptions] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
   const [message, setMessage] = useState('');
   const [providerError] = useState(() =>
     new URLSearchParams(location.search).get('authError'),
   );
-  const [localError, setLocalError] = useState(() => providerErrors[providerError] || '');
+  const [localError, setLocalError] = useState(
+    () => providerErrors[providerError] || '',
+  );
   const [working, setWorking] = useState(false);
   const [registerPassword, setRegisterPassword] = useState('');
   useEffect(() => {
+    let active = true;
+    const recovery = !!location.hash;
+    const confirmationError = new URLSearchParams(location.search).get(
+      'googleConfirmError',
+    );
+    const confirmationErrors = {
+      expired: 'La solicitud venció. Volvé a elegir Continuar con Google.',
+      mismatch:
+        'Elegiste otra cuenta de Facebook. Confirmá con la cuenta que usaste originalmente.',
+      cancelled: 'No se completó la confirmación. Podés intentarlo nuevamente.',
+      provider: 'No pudimos confirmar tu cuenta. Intentá nuevamente.',
+    };
+    if (confirmationError)
+      setLocalError(
+        confirmationErrors[confirmationError] || confirmationErrors.provider,
+      );
+    api('/auth/google-confirmation')
+      .then((data) => {
+        if (active && data.pending && !recovery) {
+          setConfirmation(data);
+          setMode('confirm-google');
+        }
+      })
+      .catch((e) => {
+        if (active) setLocalError(e.message);
+      });
     // Keep reset secrets out of browser history, referrers, and subsequent navigations.
     if (location.hash || location.search)
       window.history.replaceState(window.history.state, '', '/login');
@@ -95,6 +128,9 @@ export function AuthPage({
       .catch(() =>
         setOptions({ google: false, facebook: false, recovery: false }),
       );
+    return () => {
+      active = false;
+    };
   }, []);
   useEffect(() => {
     const readResetLink = () => {
@@ -116,6 +152,43 @@ export function AuthPage({
     setLocalError('');
     setMessage('');
     clearError();
+  }
+  async function leaveConfirmation(next) {
+    setWorking(true);
+    try {
+      await api('/auth/google-confirmation', { method: 'DELETE' });
+      setConfirmation(null);
+      changeMode(next);
+      if (next === 'forgot')
+        setMessage(
+          'Recuperá tu contraseña y después volvé a elegir Continuar con Google.',
+        );
+    } catch (e) {
+      setLocalError(e.message);
+    } finally {
+      setWorking(false);
+    }
+  }
+  async function confirmGoogle(event) {
+    event.preventDefault();
+    const password = new FormData(event.currentTarget).get('password');
+    setWorking(true);
+    setLocalError('');
+    try {
+      await api('/auth/google-confirmation', {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+      });
+      window.location.assign('/');
+    } catch (e) {
+      setLocalError(e.message);
+      if (e.code === 'GOOGLE_CONFIRMATION_EXPIRED') {
+        setConfirmation(null);
+        setMode('account');
+      }
+    } finally {
+      setWorking(false);
+    }
   }
   async function recover(event) {
     event.preventDefault();
@@ -174,17 +247,19 @@ export function AuthPage({
           <span aria-hidden="true">✳</span> Mundo <span>3D</span>
         </p>
         <h1 id="login-title">
-          {mode === 'verify'
-            ? 'Confirmá tu correo'
-            : mode === 'resend'
-              ? 'Reenviar confirmación'
-              : mode === 'forgot'
-                ? 'Recuperá tu cuenta'
-                : mode === 'reset'
-                  ? 'Tu nueva contraseña'
-                  : auth === 'register'
-                    ? 'Creá tu cuenta'
-                    : 'Qué bueno verte'}
+          {mode === 'confirm-google'
+            ? 'Confirmá que sos vos'
+            : mode === 'verify'
+              ? 'Confirmá tu correo'
+              : mode === 'resend'
+                ? 'Reenviar confirmación'
+                : mode === 'forgot'
+                  ? 'Recuperá tu cuenta'
+                  : mode === 'reset'
+                    ? 'Tu nueva contraseña'
+                    : auth === 'register'
+                      ? 'Creá tu cuenta'
+                      : 'Qué bueno verte'}
         </h1>
         {(localError || error) && (
           <p role="alert" className="error">
@@ -196,7 +271,79 @@ export function AuthPage({
             {message || accountMessage}
           </p>
         )}
-        {mode === 'account' ? (
+        {mode === 'confirm-google' && confirmation ? (
+          <>
+            <p className="auth-intro">
+              Ya tenés una cuenta con <strong>{confirmation.email}</strong>.
+              Confirmá tu acceso habitual una sola vez. Después podrás ingresar
+              directamente con Google o seguir usando tu otro método.
+            </p>
+            {confirmation.hasPassword && (
+              <form
+                onSubmit={confirmGoogle}
+                aria-label="Confirmar acceso con Google"
+              >
+                <input
+                  type="email"
+                  name="username"
+                  value={confirmation.email}
+                  autoComplete="username"
+                  readOnly
+                  hidden
+                />
+                <label>
+                  Contraseña de tu cuenta
+                  <PasswordInput
+                    name="password"
+                    autoComplete="current-password"
+                    maxLength="128"
+                    required
+                  />
+                </label>
+                <button className="primary" disabled={disabled}>
+                  {working
+                    ? 'Confirmando…'
+                    : 'Confirmar y continuar con Google'}
+                </button>
+              </form>
+            )}
+            {confirmation.facebook && (
+              <button
+                className="social-button"
+                disabled={disabled}
+                onClick={() =>
+                  window.location.assign(
+                    '/api/auth/facebook/start?confirmGoogle=1',
+                  )
+                }
+              >
+                <ProviderLogo provider="facebook" />
+                Confirmar con Facebook
+              </button>
+            )}
+            {!confirmation.hasPassword && !confirmation.facebook && (
+              <p role="status">
+                No hay un método disponible para confirmar esta cuenta.
+                Contactanos para recuperar el acceso.
+              </p>
+            )}
+            {confirmation.hasPassword && options?.recovery && (
+              <button
+                className="forgot-link"
+                disabled={disabled}
+                onClick={() => leaveConfirmation('forgot')}
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            )}
+            <button
+              disabled={disabled}
+              onClick={() => leaveConfirmation('account')}
+            >
+              Usar otra cuenta
+            </button>
+          </>
+        ) : mode === 'account' ? (
           <>
             <p className="auth-intro">
               {auth === 'register'
@@ -258,18 +405,32 @@ export function AuthPage({
                     auth === 'register' ? 'new-password' : 'current-password'
                   }
                   onChange={(event) => {
-                    if (auth === 'register') setRegisterPassword(event.target.value);
+                    if (auth === 'register')
+                      setRegisterPassword(event.target.value);
                   }}
                   required
                 />
               </label>
               {auth === 'register' ? (
-                <div className="password-checks" aria-label="Requisitos de contraseña">
+                <div
+                  className="password-checks"
+                  aria-label="Requisitos de contraseña"
+                >
                   {passwordChecks.map(([key, label, test]) => {
                     const valid = test(registerPassword);
                     return (
-                      <label className={valid ? 'password-check valid' : 'password-check'} key={key}>
-                        <input type="checkbox" checked={valid} readOnly tabIndex={-1} />
+                      <label
+                        className={
+                          valid ? 'password-check valid' : 'password-check'
+                        }
+                        key={key}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={valid}
+                          readOnly
+                          tabIndex={-1}
+                        />
                         <span>{label}</span>
                       </label>
                     );
