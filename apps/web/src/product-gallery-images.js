@@ -9,7 +9,6 @@ export function productGalleryImages(product) {
     (scene?.source === original ? scene.url : null);
   return [
     original && { id: 'principal', url: original, label: 'Principal' },
-    original && { id: 'rotated', url: original, label: 'Girado 45°', rotated: true },
     context && { id: 'context', url: context, label: 'En uso' },
   ].filter(Boolean);
 }

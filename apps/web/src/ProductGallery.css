@@ -7,6 +7,5 @@
 .gallery-thumbnails > button { width:90px; padding:4px; border:2px solid transparent; background:transparent; color:inherit; border-radius:8px; font-size:11px; }
 .gallery-thumbnails > button[aria-pressed=true] { border-color:#9bc47c; }
 .product-gallery .gallery-thumbnails img { width:100%; height:64px; object-fit:contain; background:white; border-radius:4px; }
-.gallery-image-rotated { transform:rotate(45deg) scale(.69); }
 .gallery-thumbnail-image { display:block; overflow:hidden; background:white; border-radius:4px; }
 .product-gallery-stage > button:focus-visible, .gallery-thumbnails > button:focus-visible, .product-gallery:focus-visible { outline:3px solid #587636; outline-offset:3px; }

@@ -16,7 +16,7 @@ export function ProductGallery({ product }) {
     onTouchCancel={() => { touch.current = null; }}
     onTouchEnd={(e) => { if (touch.current !== null && Math.abs(e.changedTouches[0].clientX - touch.current) > 50) move(e.changedTouches[0].clientX < touch.current ? 1 : -1); touch.current = null; }}>
     <div className="product-gallery-stage">
-      <img key={current.id} className={current.rotated ? 'gallery-image-rotated' : undefined} src={current.url} alt={product.name + ' — ' + current.label} width="1000" height="1000" fetchPriority={activeIndex === 0 ? 'high' : 'auto'} />
+      <img key={current.id} src={current.url} alt={product.name + ' — ' + current.label} width="1000" height="1000" fetchPriority={activeIndex === 0 ? 'high' : 'auto'} />
       {images.length > 1 && <>
         <button className="gallery-prev" type="button" aria-label="Foto anterior" onClick={() => move(-1)}>‹</button>
         <button className="gallery-next" type="button" aria-label="Foto siguiente" onClick={() => move(1)}>›</button>
@@ -26,7 +26,7 @@ export function ProductGallery({ product }) {
       <p className="small" aria-live="polite">{activeIndex + 1} / {images.length} · {current.label}</p>
       <div className="gallery-thumbnails">
         {images.map((image, i) => <button type="button" key={image.id} aria-label={'Ver foto: ' + image.label} aria-pressed={activeIndex === i} onClick={() => setIndex(i)}>
-          <span className="gallery-thumbnail-image"><img className={image.rotated ? 'gallery-image-rotated' : undefined} src={image.url} alt="" loading="lazy" /></span><span>{image.label}</span>
+          <span className="gallery-thumbnail-image"><img src={image.url} alt="" loading="lazy" /></span><span>{image.label}</span>
         </button>)}
       </div>
     </figcaption>}
