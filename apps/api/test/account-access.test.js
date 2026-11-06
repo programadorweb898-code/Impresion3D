@@ -248,7 +248,7 @@ test('Google no vincula por email ni acepta email sin verificar y rechaza state 
   assert.equal(
     (await callback(agent, 'google', url.searchParams.get('state'))).headers
       .location,
-    '/login?authError=existing',
+    '/login?confirmGoogle=1',
   );
   assert.equal(
     await SocialIdentity.countDocuments({ subject: 'wrong-identity' }),
@@ -700,4 +700,269 @@ test('regreso sin cookie no reemplaza la sesión; comprobación del mismo origen
     .expect(302);
   assert.match(invalid.headers.location, /authError=cancelled/);
   assert.equal(services.calls.length, count);
+});
+
+test('Google confirma contraseña en el login sin cambiar usuario ni anular el acceso original', async () => {
+  const email = 'inline-password@example.com';
+  const instance = app(
+    socialServices('google', {
+      sub: 'inline-password',
+      email,
+      email_verified: true,
+    }),
+  );
+  const owner = request.agent(instance),
+    agent = request.agent(instance),
+    stranger = request.agent(instance);
+  await register(owner, email);
+  const id = (await owner.get('/api/auth/me')).body.id;
+  await User.updateOne({ email }, { $set: { role: 'admin' } });
+  const url = await start(agent, 'google');
+  assert.equal(
+    (await callback(agent, 'google', url.searchParams.get('state'))).headers
+      .location,
+    '/login?confirmGoogle=1',
+  );
+  await agent.get('/api/auth/me').expect(401);
+  assert.deepEqual((await agent.get('/api/auth/google-confirmation')).body, {
+    pending: true,
+    email,
+    hasPassword: true,
+    facebook: false,
+  });
+  assert.equal(
+    (await post(stranger, 'google-confirmation', { password })).status,
+    409,
+  );
+  await agent
+    .post('/api/auth/google-confirmation')
+    .send({ password })
+    .expect(403);
+  assert.equal(
+    (
+      await post(agent, 'google-confirmation', {
+        password,
+        email: 'other@example.com',
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (await post(agent, 'google-confirmation', { password: 'wrong' })).status,
+    400,
+  );
+  assert.equal(
+    await SocialIdentity.countDocuments({ subject: 'inline-password' }),
+    0,
+  );
+  assert.equal(
+    (await post(agent, 'google-confirmation', { password })).status,
+    200,
+  );
+  const me = await agent.get('/api/auth/me').expect(200);
+  assert.equal(me.body.id, id);
+  assert.equal(me.body.role, 'admin');
+  assert.equal(
+    (await post(agent, 'google-confirmation', { password })).status,
+    409,
+  );
+  assert.equal((await post(owner, 'login', { email, password })).status, 200);
+  await post(agent, 'logout', {});
+  const direct = await start(agent, 'google');
+  assert.equal(
+    (await callback(agent, 'google', direct.searchParams.get('state'))).headers
+      .location,
+    '/',
+  );
+  assert.equal((await agent.get('/api/auth/me')).body.id, id);
+});
+
+test('confirmación Google se invalida al cambiar contraseña, cancelar o cerrar sesión', async () => {
+  const email = 'inline-invalid@example.com';
+  const instance = app(
+    socialServices('google', {
+      sub: 'inline-invalid',
+      email,
+      email_verified: true,
+    }),
+  );
+  const owner = request.agent(instance),
+    agent = request.agent(instance);
+  await register(owner, email);
+  async function pending() {
+    const url = await start(agent, 'google');
+    await callback(agent, 'google', url.searchParams.get('state'));
+  }
+  await pending();
+  await User.updateOne({ email }, { $inc: { authVersion: 1 } });
+  assert.equal(
+    (await post(agent, 'google-confirmation', { password })).status,
+    409,
+  );
+  await pending();
+  const csrf = (await agent.get('/api/csrf')).body.token;
+  await agent
+    .delete('/api/auth/google-confirmation')
+    .set('Origin', origin)
+    .set('x-csrf-token', csrf)
+    .expect(200);
+  assert.equal(
+    (await post(agent, 'google-confirmation', { password })).status,
+    409,
+  );
+  await pending();
+  await post(agent, 'logout', {});
+  assert.equal(
+    (await post(agent, 'google-confirmation', { password })).status,
+    409,
+  );
+  assert.equal(
+    await SocialIdentity.countDocuments({ subject: 'inline-invalid' }),
+    0,
+  );
+});
+
+test('Facebook confirma únicamente la identidad original para habilitar Google', async () => {
+  const email = 'inline-facebook@example.com';
+  const google = { sub: 'inline-facebook-google', email, email_verified: true };
+  const facebook = { id: 'inline-facebook-owner', name: 'Original' };
+  const services = socialServices('google', google);
+  services.providers.facebook = { clientId: 'fb', clientSecret: 'secret' };
+  services.fetch = async (url) => ({
+    ok: true,
+    json: async () =>
+      url.includes('/token') || url.includes('/oauth/access_token')
+        ? { access_token: 'secret' }
+        : url.includes('googleapis')
+          ? google
+          : facebook,
+  });
+  const instance = app(services),
+    owner = request.agent(instance),
+    agent = request.agent(instance);
+  await register(owner, email);
+  const user = await User.findOne({ email });
+  await SocialIdentity.create({
+    provider: 'facebook',
+    subject: facebook.id,
+    userId: user._id,
+  });
+  const url = await start(agent, 'google');
+  await callback(agent, 'google', url.searchParams.get('state'));
+  assert.equal(
+    (await agent.get('/api/auth/google-confirmation')).body.facebook,
+    true,
+  );
+  async function facebookStart() {
+    return new URL(
+      (await agent.get('/api/auth/facebook/start?confirmGoogle=1')).headers
+        .location,
+    ).searchParams.get('state');
+  }
+  let state = await facebookStart();
+  facebook.id = 'unrelated-facebook';
+  assert.equal(
+    (await callback(agent, 'facebook', state)).headers.location,
+    '/login?googleConfirmError=mismatch',
+  );
+  await agent.get('/api/auth/me').expect(401);
+  assert.equal(
+    await SocialIdentity.countDocuments({ subject: 'unrelated-facebook' }),
+    0,
+  );
+  facebook.id = 'inline-facebook-owner';
+  state = await facebookStart();
+  assert.equal(
+    (await callback(agent, 'facebook', state)).headers.location,
+    '/',
+  );
+  assert.equal((await agent.get('/api/auth/me')).body.id, String(user._id));
+  assert.equal(await SocialIdentity.countDocuments({ userId: user._id }), 2);
+});
+
+test('confirmación Google vence, detecta email cambiado y rechaza comprobación Facebook de un intento anterior', async () => {
+  const email = 'inline-expiration@example.com';
+  const store = new session.MemoryStore();
+  const profile = { sub: 'inline-expiration', email, email_verified: true };
+  const services = socialServices('google', profile);
+  services.providers.facebook = { clientId: 'fb', clientSecret: 'secret' };
+  services.fetch = async (url) => ({
+    ok: true,
+    json: async () =>
+      url.includes('/token') || url.includes('/oauth/access_token')
+        ? { access_token: 'secret' }
+        : url.includes('googleapis')
+          ? profile
+          : { id: 'inline-expiration-fb' },
+  });
+  const instance = createApp({
+    sessionSecret: 'inline-expiry-test-secret-at-least-32-characters',
+    webOrigin: origin,
+    accountServices: services,
+    sessionStore: store,
+  });
+  const owner = request.agent(instance),
+    agent = request.agent(instance);
+  await register(owner, email);
+  const user = await User.findOne({ email });
+  await SocialIdentity.create({
+    provider: 'facebook',
+    subject: 'inline-expiration-fb',
+    userId: user._id,
+  });
+  async function pending() {
+    const url = await start(agent, 'google');
+    await callback(agent, 'google', url.searchParams.get('state'));
+  }
+  async function mutate(fn) {
+    const sessions = await new Promise((resolve, reject) =>
+      store.all((e, v) => (e ? reject(e) : resolve(v))),
+    );
+    for (const [id, value] of Object.entries(sessions)) {
+      if (!value.googleSignIn) continue;
+      fn(value);
+      await new Promise((resolve, reject) =>
+        store.set(id, value, (e) => (e ? reject(e) : resolve())),
+      );
+    }
+  }
+  await pending();
+  await mutate((value) => {
+    value.googleSignIn.expires = 0;
+  });
+  assert.deepEqual((await agent.get('/api/auth/google-confirmation')).body, {
+    pending: false,
+  });
+  assert.equal(
+    (await post(agent, 'google-confirmation', { password })).status,
+    409,
+  );
+  await pending();
+  await User.updateOne(
+    { _id: user._id },
+    { $set: { email: 'changed-inline@example.com' } },
+  );
+  assert.equal(
+    (await post(agent, 'google-confirmation', { password })).status,
+    409,
+  );
+  await User.updateOne({ _id: user._id }, { $set: { email } });
+  await pending();
+  const fb = new URL(
+    (await agent.get('/api/auth/facebook/start?confirmGoogle=1')).headers
+      .location,
+  );
+  await mutate((value) => {
+    value.googleSignIn.nonce = 'different-attempt';
+  });
+  assert.equal(
+    (await callback(agent, 'facebook', fb.searchParams.get('state'))).headers
+      .location,
+    '/login?googleConfirmError=expired',
+  );
+  await agent.get('/api/auth/me').expect(401);
+  assert.equal(
+    await SocialIdentity.countDocuments({ subject: profile.sub }),
+    0,
+  );
 });
