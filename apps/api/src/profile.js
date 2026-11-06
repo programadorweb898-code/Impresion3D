@@ -22,6 +22,7 @@ export function createProfileRouter({
     name: user.name,
     email: user.email || null,
     canUpdateEmail: !!services.sendEmailChange,
+    canLinkGoogle: !!services.providers.google && !!user.email,
     role: user.role,
     hasPassword: !!user.passwordHash,
     providers: (
@@ -90,6 +91,36 @@ export function createProfileRouter({
           .json({ message: 'Tu cuenta cambió. Volvé a iniciar sesión.' });
       }
       res.json(await summary(user));
+    },
+  );
+  router.post(
+    '/google-link',
+    authLimit,
+    validate(
+      z.object({ currentPassword: z.string().max(128).optional() }).strict(),
+    ),
+    confirmIdentity,
+    async (req, res) => {
+      if (!services.providers.google || !req.profileUser.email)
+        return res
+          .status(400)
+          .json({ message: 'Google requiere un correo agregado a tu cuenta.' });
+      if (
+        await SocialIdentity.exists({
+          userId: req.user._id,
+          provider: 'google',
+        })
+      )
+        return res
+          .status(409)
+          .json({ message: 'Tu cuenta ya tiene Google vinculado.' });
+      req.session.googleLink = {
+        userId: String(req.profileUser._id),
+        authVersion: req.profileUser.authVersion || 0,
+        expires: Date.now() + 5 * 60000,
+      };
+      await save(req);
+      res.json({ url: '/api/auth/google/start?link=1' });
     },
   );
   router.post(

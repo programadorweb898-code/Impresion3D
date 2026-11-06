@@ -96,6 +96,10 @@ host.use(
     staticDirectory: resolve('apps/web/dist'),
     accountServices: {
       providers: {
+        google: {
+          clientId: 'google-browser-id',
+          clientSecret: 'google-browser-secret',
+        },
         facebook: {
           clientId: 'browser-test-id',
           clientSecret: 'browser-test-secret',
@@ -106,12 +110,20 @@ host.use(
       fetch: async (url) => ({
         ok: true,
         json: async () =>
-          url.includes('/oauth/access_token')
+          url.includes('/oauth/access_token') ||
+          url.includes('oauth2.googleapis.com/token')
             ? { access_token: 'browser-test-token' }
-            : {
-                id: 'facebook-browser-no-email',
-                name: 'Cliente Facebook navegador',
-              },
+            : url.includes('openidconnect.googleapis.com')
+              ? {
+                  sub: 'google-browser-linked',
+                  email: 'browser@example.com',
+                  email_verified: true,
+                  name: 'Cliente Google',
+                }
+              : {
+                  id: 'facebook-browser-no-email',
+                  name: 'Cliente Facebook navegador',
+                },
       }),
       sendVerification: async (message) => mailbox.set(message.email, message),
       sendEmailChange: async (message) => mailbox.set(message.email, message),

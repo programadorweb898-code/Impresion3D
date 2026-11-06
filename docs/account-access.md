@@ -74,7 +74,9 @@ existan varias cuentas sin correo.
 
 ## Identidades y cuentas existentes
 
-La colección `socialidentities` mantiene un índice único de proveedor e identificador. Los pedidos y roles siguen asociados a `users`. No hay vinculación automática por coincidencia de email: si ya existe otra cuenta con ese correo, hay que usar su método original. La vinculación explícita de múltiples métodos desde una cuenta autenticada queda fuera de esta entrega. Las cuentas sociales nuevas siempre tienen rol `customer`.
+La colección `socialidentities` mantiene un índice único de proveedor e identificador. Los pedidos y roles siguen asociados a `users`. No hay vinculación automática por coincidencia de email: si ya existe una cuenta con ese correo, hay que usar su método original. Desde **Mi perfil → Vincular Google** se puede habilitar Google para esa misma cuenta después de confirmar la contraseña actual o de reautenticar el proveedor ya vinculado. Las cuentas sociales nuevas siempre tienen rol `customer`.
+
+La vinculación se inicia mediante un POST autenticado con CSRF y prueba del método original. Genera una autorización de un uso en la sesión, válida cinco minutos, ligada al usuario y su versión de autenticación. El inicio OAuth consume esa autorización; el callback valida state, vencimiento, sesión y versión vigente en base de datos, y exige que Google comparta el mismo correo verificado del perfil. No acepta otra identidad ya vinculada a un usuario distinto, no mezcla cuentas ni cambia contraseñas, roles o pedidos. Cancelar o fallar conserva el método original. Los accesos posteriores identifican la cuenta por el `sub` de Google, nunca por email únicamente.
 
 El acceso continúa usando las sesiones HttpOnly del sitio. Las mutaciones de recuperación conservan las comprobaciones de Origin y CSRF. Las credenciales opcionales nuevas no afectan el arranque de los despliegues existentes.
 

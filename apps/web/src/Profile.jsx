@@ -2,6 +2,17 @@ import { newPasswordSchema } from '@impresion3d/shared';
 import { PasswordInput } from './PasswordInput.jsx';
 import { useEffect, useState, useRef } from 'react';
 import { api } from './api.js';
+const googleLinkErrors = {
+  cancelled: 'Cancelaste la vinculación. Tu cuenta sigue igual.',
+  mismatch:
+    'Elegí la cuenta de Google con el mismo correo que figura en tu perfil.',
+  conflict:
+    'Esa identidad de Google ya está vinculada. No se modificó ninguna cuenta.',
+  expired:
+    'La confirmación venció o tu sesión cambió. Volvé a confirmar tu identidad.',
+  error:
+    'No pudimos vincular Google. Tu cuenta sigue igual; podés intentarlo nuevamente.',
+};
 export function Profile({
   user,
   onUser,
@@ -11,12 +22,42 @@ export function Profile({
   onConfirmed,
 }) {
   const [profile, setProfile] = useState(null),
-    [error, setError] = useState(''),
-    [message, setMessage] = useState(''),
+    [error, setError] = useState(
+      () =>
+        googleLinkErrors[
+          new URLSearchParams(location.search).get('googleLink')
+        ] || '',
+    ),
+    [message, setMessage] = useState(() =>
+      new URLSearchParams(location.search).get('googleLink') === 'linked'
+        ? 'Google vinculado. Ya podés ingresar con Google o con tu método habitual.'
+        : '',
+    ),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true);
   const popupPoll = useRef(null);
   const [now, setNow] = useState(Date.now());
+  async function linkGoogle(event) {
+    event.preventDefault();
+    const currentPassword = new FormData(event.currentTarget).get(
+      'currentPassword',
+    );
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      const result = await api('/profile/google-link', {
+        method: 'POST',
+        body: JSON.stringify(currentPassword ? { currentPassword } : {}),
+      });
+      if (result.url !== '/api/auth/google/start?link=1')
+        throw new Error('No pudimos iniciar la vinculación.');
+      window.location.assign(result.url);
+    } catch (e) {
+      setError(e.message);
+      setBusy(false);
+    }
+  }
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 10000);
     return () => {
@@ -143,7 +184,7 @@ export function Profile({
     <p className="small">
       {profile.reauthenticatedUntil > now
         ? 'Tu identidad está confirmada para realizar este cambio.'
-        : 'Usá Confirmar identidad antes de cambiar el email o crear una contraseña.'}
+        : 'Usá Confirmar identidad antes de cambiar el email, crear una contraseña o vincular Google.'}
     </p>
   );
   return (
@@ -170,6 +211,27 @@ export function Profile({
         <p className="auth-message" role="status">
           {message}
         </p>
+      )}
+      {profile.canLinkGoogle && !profile.providers.includes('google') && (
+        <section className="profile-panel">
+          <h2>Vincular Google</h2>
+          <p>
+            Habilitá Google para esta misma cuenta, conservando tus pedidos y tu
+            método habitual. Elegí en Google el correo {profile.email}.
+          </p>
+          <form aria-label="Vincular Google" onSubmit={linkGoogle}>
+            {proof}
+            <button
+              className="primary"
+              disabled={
+                busy ||
+                (!profile.hasPassword && !(profile.reauthenticatedUntil > now))
+              }
+            >
+              Vincular Google
+            </button>
+          </form>
+        </section>
       )}
       {confirmationToken && (
         <section className="profile-panel email-confirm">
@@ -297,8 +359,8 @@ export function Profile({
           ) : (
             <>
               <p>
-                Usá entre 8 y 20 caracteres, con mayúscula, minúscula, número y carácter especial. Tus otras sesiones se cerrarán al
-                guardar.
+                Usá entre 8 y 20 caracteres, con mayúscula, minúscula, número y
+                carácter especial. Tus otras sesiones se cerrarán al guardar.
               </p>
               <form
                 onSubmit={(e) => {

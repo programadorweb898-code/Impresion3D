@@ -133,8 +133,9 @@ export function createAccountAccess({
     const parsed = resetSchema.safeParse(req.body);
     if (!parsed.success)
       return res.status(400).json({
-        message:
-          parsed.error.issues[0].path.includes('password') ? parsed.error.issues[0].message : 'Enlace inválido. Solicitá uno nuevo.',
+        message: parsed.error.issues[0].path.includes('password')
+          ? parsed.error.issues[0].message
+          : 'Enlace inválido. Solicitá uno nuevo.',
       });
     const passwordHash = await hashPassword(parsed.data.password);
     const user = await User.findOneAndUpdate(
@@ -187,6 +188,21 @@ export function createAccountAccess({
       Object.hasOwn(services.providers, provider) &&
       services.providers[provider];
     if (!config) return res.redirect('/login?authError=unavailable');
+    let linkAccount;
+    if (req.query.link === '1') {
+      const ticket = req.session.googleLink;
+      delete req.session.googleLink;
+      await save(req);
+      if (
+        provider !== 'google' ||
+        !ticket ||
+        ticket.expires < Date.now() ||
+        ticket.userId !== req.session.userId ||
+        ticket.authVersion !== (req.session.authVersion || 0)
+      )
+        return res.redirect('/perfil?googleLink=expired');
+      linkAccount = ticket;
+    }
     const state = randomBytes(32).toString('hex'),
       verifier = randomBytes(32).toString('base64url');
     req.session.oauth = {
@@ -195,6 +211,7 @@ export function createAccountAccess({
       verifier,
       expires: Date.now() + 10 * 60000,
       attemptId: req.requestId,
+      linkAccount,
       popup:
         req.query.popup === '1' &&
         req.query.reauthenticate === '1' &&
@@ -221,6 +238,7 @@ export function createAccountAccess({
     if (provider === 'facebook' && req.query.rerequest === '1')
       url.searchParams.set('auth_type', 'rerequest');
     if (provider === 'google') {
+      if (linkAccount) url.searchParams.set('prompt', 'select_account');
       url.searchParams.set(
         'code_challenge',
         createHash('sha256').update(verifier).digest('base64url'),
@@ -243,6 +261,16 @@ export function createAccountAccess({
         );
     }
     const finish = (destination) => {
+      if (
+        pending?.linkAccount &&
+        !destination.startsWith('/perfil?googleLink=')
+      )
+        return res.redirect(
+          '/perfil?googleLink=' +
+            (destination.startsWith('/login?authError=cancelled')
+              ? 'cancelled'
+              : 'error'),
+        );
       if (!pending?.popup)
         return res.redirect(
           ['/login?authError=provider', '/login?authError=cancelled'].includes(
@@ -354,6 +382,55 @@ export function createAccountAccess({
       stage = 'account';
       upstreamStatus = undefined;
       const identity = await SocialIdentity.findOne({ provider, subject });
+      if (pending.linkAccount) {
+        const link = pending.linkAccount;
+        const owner = await User.findById(link.userId).select('+authVersion');
+        if (
+          provider !== 'google' ||
+          !owner ||
+          link.expires < Date.now() ||
+          req.session.userId !== link.userId ||
+          (req.session.authVersion || 0) !== link.authVersion ||
+          (owner.authVersion || 0) !== link.authVersion
+        )
+          return finish('/perfil?googleLink=expired');
+        const parsed = emailSchema.safeParse({ email: profile.email });
+        if (
+          !parsed.success ||
+          profile.email_verified !== true ||
+          parsed.data.email !== owner.email
+        )
+          return finish('/perfil?googleLink=mismatch');
+        if (
+          (identity && String(identity.userId) !== link.userId) ||
+          (await SocialIdentity.exists({
+            userId: owner._id,
+            provider: 'google',
+            subject: { $ne: subject },
+          }))
+        )
+          return finish('/perfil?googleLink=conflict');
+        try {
+          if (!identity)
+            await SocialIdentity.create({
+              provider,
+              subject,
+              userId: owner._id,
+            });
+        } catch (error) {
+          if (error.code === 11000)
+            return finish('/perfil?googleLink=conflict');
+          throw error;
+        }
+        // Explicit linking proves the existing account first, then Google. It
+        // never merges accounts, changes roles, or uses email alone as proof.
+        await regenerate(req);
+        req.session.userId = String(owner._id);
+        req.session.authVersion = owner.authVersion || 0;
+        req.session.reauthenticatedAt = Date.now();
+        await save(req);
+        return finish('/perfil?googleLink=linked');
+      }
       let user =
         identity &&
         (await User.findById(identity.userId).select('+authVersion'));
