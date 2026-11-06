@@ -37,6 +37,7 @@ const products = await Product.create(
             width: 1000,
             height: 1000,
           },
+          gallery: { context: { url: '/images/hero-3d-studio.svg?context' } },
         }
       : {}),
     category: i === 0 ? 'Especial' : 'Hogar',

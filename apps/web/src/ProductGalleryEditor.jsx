@@ -16,8 +16,8 @@ export function ProductGalleryEditor({ product, onUpdated }) {
   }
   return <section aria-label={'Fotos adicionales de ' + product.name}>
     <h4>Fotos de la ficha</h4>
-    <p className="small">La foto principal sigue siendo la del catálogo. Agregá estas dos para completar el carrusel.</p>
-    {[['angle', 'Otro ángulo'], ['context', 'En uso']].map(([slot, label]) => <label key={slot}>
+    <p className="small">El carrusel muestra la foto principal del catálogo y una foto en uso. Usá un encuadre abierto, con el producto entero y espacio para ver su entorno.</p>
+    {[['context', 'En uso']].map(([slot, label]) => <label key={slot}>
       {label}
       {product.gallery?.[slot]?.url && <img src={product.gallery[slot].url} alt={label} width="80" height="80" style={{objectFit:'contain',background:'white'}} />}
       <input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(e) => upload(e, slot)} />
