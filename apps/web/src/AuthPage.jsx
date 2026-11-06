@@ -52,7 +52,7 @@ const providerErrors = {
   facebook_email_account:
     'Podés continuar con Facebook aunque no comparta tu correo. Volvé a intentarlo.',
   existing:
-    'Ya existe una cuenta con ese correo. Ingresá usando el método con el que la creaste.',
+    'Ya existe una cuenta con ese correo. Ingresá con tu método habitual; después podés habilitar Google desde Mi perfil → Vincular Google.',
   provider:
     'No pudimos completar el acceso con el proveedor. Intentá nuevamente.',
 };

@@ -1,6 +1,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
+import session from 'express-session';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { createApp } from '../src/app.js';
@@ -270,6 +271,281 @@ test('Google no vincula por email ni acepta email sin verificar y rechaza state 
     '/login?authError=cancelled',
   );
 });
+async function authorizeGoogleLink(
+  agent,
+  body = { currentPassword: password },
+) {
+  const csrf = await agent.get('/api/csrf');
+  return agent
+    .post('/api/profile/google-link')
+    .set('Origin', origin)
+    .set('x-csrf-token', csrf.body.token)
+    .send(body);
+}
+
+test('vincular Google exige cuenta autenticada, CSRF y prueba del método original', async () => {
+  const instance = app(socialServices('google', {}));
+  const agent = request.agent(instance);
+  await authorizeGoogleLink(agent).then((r) => assert.equal(r.status, 401));
+  await register(agent, 'link-proof@example.com');
+  await agent
+    .post('/api/profile/google-link')
+    .send({ currentPassword: password })
+    .expect(403);
+  assert.equal((await authorizeGoogleLink(agent, {})).status, 400);
+  assert.equal(
+    (await authorizeGoogleLink(agent, { currentPassword: 'incorrecta' }))
+      .status,
+    400,
+  );
+  assert.equal(
+    (await agent.get('/api/auth/google/start?link=1')).headers.location,
+    '/perfil?googleLink=expired',
+  );
+  assert.equal(
+    await SocialIdentity.countDocuments({
+      provider: 'google',
+      userId: (await User.findOne({ email: 'link-proof@example.com' }))._id,
+    }),
+    0,
+  );
+});
+
+test('vincula Google a la misma cuenta y conserva contraseña, rol y usuario; siguientes ingresos usan Google', async () => {
+  const email = 'link-owner@gmail.com';
+  const services = socialServices('google', {
+    sub: 'link-owner-google',
+    email,
+    email_verified: true,
+    name: 'Nombre Google diferente',
+  });
+  const instance = app(services),
+    agent = request.agent(instance);
+  await register(agent, email);
+  const original = await User.findOneAndUpdate(
+    { email },
+    { $set: { role: 'admin' } },
+    { new: true },
+  ).select('+passwordHash');
+  const proof = await authorizeGoogleLink(agent);
+  assert.equal(proof.status, 200);
+  assert.equal(proof.body.url, '/api/auth/google/start?link=1');
+  const url = new URL((await agent.get(proof.body.url)).headers.location);
+  assert.equal(url.searchParams.get('prompt'), 'select_account');
+  const state = url.searchParams.get('state');
+  assert.equal(
+    (await callback(agent, 'google', state)).headers.location,
+    '/perfil?googleLink=linked',
+  );
+  const linked = await SocialIdentity.findOne({
+    provider: 'google',
+    subject: 'link-owner-google',
+  });
+  assert.equal(String(linked.userId), String(original._id));
+  const unchanged = await User.findById(original._id).select('+passwordHash');
+  assert.equal(unchanged.passwordHash, original.passwordHash);
+  assert.equal(unchanged.role, 'admin');
+  assert.equal(unchanged.name, original.name);
+  assert.equal(await User.countDocuments({ email }), 1);
+  const nextAgent = request.agent(instance),
+    nextStart = await start(nextAgent, 'google');
+  await callback(nextAgent, 'google', nextStart.searchParams.get('state'));
+  assert.equal(
+    (await nextAgent.get('/api/auth/me')).body.id,
+    String(original._id),
+  );
+  assert.equal((await nextAgent.get('/api/auth/me')).body.role, 'admin');
+  assert.equal((await authorizeGoogleLink(agent)).status, 409);
+  assert.match(
+    (await callback(agent, 'google', state)).headers.location,
+    /authError=cancelled/,
+  );
+  assert.equal(
+    (await agent.get('/api/auth/google/start?link=1')).headers.location,
+    '/perfil?googleLink=expired',
+  );
+});
+
+test('vincular Google rechaza otra dirección, correo no verificado e identidad ya usada sin cambiar la sesión', async () => {
+  const email = 'link-mismatch@example.com';
+  const profile = {
+    sub: 'link-wrong-google',
+    email: 'other@example.com',
+    email_verified: true,
+  };
+  const agent = request.agent(app(socialServices('google', profile)));
+  await register(agent, email);
+  const owner = (await agent.get('/api/auth/me')).body.id;
+  async function attempt() {
+    const proof = await authorizeGoogleLink(agent);
+    const url = new URL((await agent.get(proof.body.url)).headers.location);
+    return (await callback(agent, 'google', url.searchParams.get('state')))
+      .headers.location;
+  }
+  assert.equal(await attempt(), '/perfil?googleLink=mismatch');
+  profile.email = email;
+  profile.email_verified = false;
+  assert.equal(await attempt(), '/perfil?googleLink=mismatch');
+  profile.email_verified = true;
+  const other = await User.create({
+    name: 'Otra cuenta',
+    email: 'link-conflict@example.com',
+  });
+  await SocialIdentity.create({
+    provider: 'google',
+    subject: profile.sub,
+    userId: other._id,
+  });
+  assert.equal(await attempt(), '/perfil?googleLink=conflict');
+  assert.equal((await agent.get('/api/auth/me')).body.id, owner);
+  assert.equal(await SocialIdentity.countDocuments({ userId: owner }), 0);
+});
+
+test('vincular Google invalida la prueba al cambiar contraseña o cerrar sesión y rechaza callback cancelado', async () => {
+  const email = 'link-expired@example.com';
+  const services = socialServices('google', {
+    sub: 'link-expired-google',
+    email,
+    email_verified: true,
+  });
+  const instance = app(services),
+    agent = request.agent(instance);
+  await register(agent, email);
+  await authorizeGoogleLink(agent);
+  let url = new URL(
+    (await agent.get('/api/auth/google/start?link=1')).headers.location,
+  );
+  await User.updateOne({ email }, { $inc: { authVersion: 1 } });
+  assert.equal(
+    (await callback(agent, 'google', url.searchParams.get('state'))).headers
+      .location,
+    '/perfil?googleLink=expired',
+  );
+  await post(agent, 'login', { email, password });
+  await authorizeGoogleLink(agent);
+  url = new URL(
+    (await agent.get('/api/auth/google/start?link=1')).headers.location,
+  );
+  assert.equal(
+    (
+      await agent
+        .get('/api/auth/google/callback')
+        .query({ state: url.searchParams.get('state'), error: 'access_denied' })
+    ).headers.location,
+    '/perfil?googleLink=cancelled',
+  );
+  await authorizeGoogleLink(agent);
+  url = new URL(
+    (await agent.get('/api/auth/google/start?link=1')).headers.location,
+  );
+  await post(agent, 'logout', {});
+  assert.match(
+    (await callback(agent, 'google', url.searchParams.get('state'))).headers
+      .location,
+    /authError=cancelled/,
+  );
+  assert.equal(
+    await SocialIdentity.countDocuments({ subject: 'link-expired-google' }),
+    0,
+  );
+});
+
+test('cuenta social exige reautenticación reciente y rechaza autorizaciones de vinculación vencidas', async () => {
+  const email = 'link-social@example.com',
+    store = new session.MemoryStore();
+  const user = await User.create({ name: 'Cuenta Facebook', email });
+  await SocialIdentity.create({
+    provider: 'facebook',
+    subject: 'link-social-facebook',
+    userId: user._id,
+  });
+  const services = {
+    providers: {
+      google: { clientId: 'google-client', clientSecret: 'google-secret' },
+      facebook: {
+        clientId: 'facebook-client',
+        clientSecret: 'facebook-secret',
+      },
+    },
+    facebookVersion: 'v23.0',
+    fetch: async (url) => ({
+      ok: true,
+      json: async () =>
+        url.includes('/token') || url.includes('/oauth/access_token')
+          ? { access_token: 'test-token' }
+          : url.includes('openidconnect.googleapis.com')
+            ? { sub: 'link-social-google', email, email_verified: true }
+            : { id: 'link-social-facebook', email, name: 'Cuenta Facebook' },
+    }),
+  };
+  const agent = request.agent(
+    createApp({
+      sessionStore: store,
+      sessionSecret: 'social-link-test-secret-long-enough',
+      webOrigin: origin,
+      accountServices: services,
+    }),
+  );
+  let url = await start(agent, 'facebook');
+  await callback(agent, 'facebook', url.searchParams.get('state'));
+  async function changeSession(change) {
+    const sessions = await new Promise((resolve, reject) =>
+      store.all((e, v) => (e ? reject(e) : resolve(v))),
+    );
+    for (const [id, value] of Object.entries(sessions)) {
+      change(value);
+      await new Promise((resolve, reject) =>
+        store.set(id, value, (e) => (e ? reject(e) : resolve())),
+      );
+    }
+  }
+  await changeSession((value) => {
+    value.reauthenticatedAt = 1;
+  });
+  assert.equal((await authorizeGoogleLink(agent, {})).status, 403);
+  url = new URL(
+    (await agent.get('/api/auth/facebook/start?reauthenticate=1')).headers
+      .location,
+  );
+  await callback(agent, 'facebook', url.searchParams.get('state'));
+  assert.equal((await authorizeGoogleLink(agent, {})).status, 200);
+  await changeSession((value) => {
+    value.googleLink.expires = 1;
+  });
+  assert.equal(
+    (await agent.get('/api/auth/google/start?link=1')).headers.location,
+    '/perfil?googleLink=expired',
+  );
+  await authorizeGoogleLink(agent, {});
+  url = new URL(
+    (await agent.get('/api/auth/google/start?link=1')).headers.location,
+  );
+  await changeSession((value) => {
+    value.oauth.linkAccount.expires = 1;
+  });
+  assert.equal(
+    (await callback(agent, 'google', url.searchParams.get('state'))).headers
+      .location,
+    '/perfil?googleLink=expired',
+  );
+  assert.equal(
+    await SocialIdentity.countDocuments({
+      provider: 'google',
+      userId: user._id,
+    }),
+    0,
+  );
+  await authorizeGoogleLink(agent, {});
+  url = new URL(
+    (await agent.get('/api/auth/google/start?link=1')).headers.location,
+  );
+  assert.equal(
+    (await callback(agent, 'google', url.searchParams.get('state'))).headers
+      .location,
+    '/perfil?googleLink=linked',
+  );
+});
+
 test('Facebook solicita email y usa appsecret_proof sin exponer el token en URL', async () => {
   const services = socialServices('facebook', {
       id: 'facebook-123',
