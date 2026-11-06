@@ -159,9 +159,9 @@ export function Admin({ onCatalogChange, onPreview }) {
       priceCents: Math.round(Number(values.price) * 100),
       currency: 'ARS',
       dimensions: {
-        width: Number(values.width),
-        height: Number(values.height),
-        depth: Number(values.depth),
+        width: Math.round(Number(values.width) * 100) / 10,
+        height: Math.round(Number(values.height) * 100) / 10,
+        depth: Math.round(Number(values.depth) * 100) / 10,
       },
       active: values.active === 'on',
     });
@@ -378,14 +378,14 @@ export function Admin({ onCatalogChange, onPreview }) {
                   ['depth', 'Profundidad'],
                 ].map(([key, label]) => (
                   <label key={key}>
-                    {label} (mm)
+                    {label} (cm)
                     <input
                       name={key}
                       type="number"
-                      min="0.1"
-                      max="2000"
-                      step="0.1"
-                      defaultValue={editing.dimensions[key]}
+                      min="0.01"
+                      max="200"
+                      step="0.01"
+                      defaultValue={Math.round(editing.dimensions[key] * 10) / 100}
                       required
                     />
                   </label>
@@ -431,10 +431,13 @@ export function Admin({ onCatalogChange, onPreview }) {
                     await Promise.all([load(data.page), onCatalogChange()]);
                   }}
                 />
-                <ProductGalleryEditor product={p} onUpdated={async () => {
-                  setNotice('Foto de la ficha guardada.');
-                  await Promise.all([load(data.page), onCatalogChange()]);
-                }} />
+                <ProductGalleryEditor
+                  product={p}
+                  onUpdated={async () => {
+                    setNotice('Foto de la ficha guardada.');
+                    await Promise.all([load(data.page), onCatalogChange()]);
+                  }}
+                />
                 <ProductPhoto
                   product={p}
                   onSaved={async () => {
