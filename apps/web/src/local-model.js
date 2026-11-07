@@ -249,6 +249,38 @@ function threeMf(buffer) {
   group.rotation.x = -Math.PI / 2;
   return group;
 }
+// STL has no object list: weld identical positions to identify disconnected shells.
+function stlComponentCount(geometry) {
+  const positions = geometry.getAttribute('position');
+  const count = Math.floor(positions.count / 3);
+  const parents = new Uint32Array(count);
+  const vertices = new Map();
+  let components = count;
+  for (let i = 0; i < count; i++) parents[i] = i;
+  function find(i) {
+    while (parents[i] !== i) {
+      parents[i] = parents[parents[i]];
+      i = parents[i];
+    }
+    return i;
+  }
+  for (let i = 0; i < positions.count; i++) {
+    const triangle = Math.floor(i / 3);
+    const key =
+      positions.getX(i) + ',' + positions.getY(i) + ',' + positions.getZ(i);
+    if (!vertices.has(key)) vertices.set(key, triangle);
+    else {
+      const a = find(triangle),
+        b = find(vertices.get(key));
+      if (a !== b) {
+        parents[a] = b;
+        components--;
+      }
+    }
+  }
+  return components;
+}
+
 export async function parseLocalModel(buffer, format) {
   if (format === '3mf') return threeMf(buffer);
   if (format === 'stl') {
@@ -261,6 +293,7 @@ export async function parseLocalModel(buffer, format) {
     geometry.computeVertexNormals();
     const root = new THREE.Group();
     root.add(new THREE.Mesh(geometry, material()));
+    root.userData.componentCount = stlComponentCount(geometry);
     root.rotation.x = -Math.PI / 2;
     return root;
   }
