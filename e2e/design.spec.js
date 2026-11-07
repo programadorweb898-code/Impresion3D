@@ -238,13 +238,11 @@ test('GLB reports each named instance without including gaps in part dimensions'
       { name: 'Tapa', mesh: 0, translation: [10, 0, 0], scale: [2, 3, 4] },
     ],
   }));
-  await page
-    .getByLabel('Archivo de diseño 3D')
-    .setInputFiles({
-      name: 'partes.glb',
-      mimeType: 'application/octet-stream',
-      buffer,
-    });
+  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
+    name: 'partes.glb',
+    mimeType: 'application/octet-stream',
+    buffer,
+  });
   await expect(page.locator('.design-parts-table tbody tr')).toHaveCount(2);
   await expect(
     page.locator('.design-parts-table tbody tr').nth(0),
@@ -264,4 +262,33 @@ test('GLB reports each named instance without including gaps in part dimensions'
       exact: true,
     }),
   ).toBeVisible();
+});
+
+test('part names are displayed in Spanish with neutral fallbacks', async ({
+  page,
+}) => {
+  const buffer = tetraGlb((doc) => ({
+    ...doc,
+    scenes: [{ nodes: [0, 1, 2, 3] }],
+    nodes: [
+      { name: 'Main Component.stl', mesh: 0 },
+      { name: 'Start Component.stl', mesh: 0, translation: [2, 0, 0] },
+      { name: 'End Component.stl', mesh: 0, translation: [4, 0, 0] },
+      { name: 'UnknownGeometry987', mesh: 0, translation: [6, 0, 0] },
+    ],
+  }));
+  await page.goto('/disenar');
+  await page
+    .getByLabel('Archivo de diseño 3D')
+    .setInputFiles({
+      name: 'piezas.glb',
+      mimeType: 'application/octet-stream',
+      buffer,
+    });
+  await expect(page.locator('.design-parts-table tbody th')).toHaveText([
+    '1. Componente central',
+    '2. Componente inicial',
+    '3. Componente final',
+    'Pieza 4',
+  ]);
 });
