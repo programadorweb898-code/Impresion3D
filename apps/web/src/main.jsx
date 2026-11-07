@@ -831,11 +831,7 @@ function App() {
                           </div>
                           <strong>{money(p.priceCents, p.currency)}</strong>
                         </div>
-                        <p className="description">{p.description}</p>
-                        <p className="small">
-                          {p.dimensions?.width} × {p.dimensions?.height} ×{' '}
-                          {p.dimensions?.depth} mm
-                        </p>
+                        <p className="description">{p.shortDescription || p.name}</p>
                         <div className="card-actions">
                           <button
                             className="model-button"

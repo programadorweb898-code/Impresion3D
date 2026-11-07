@@ -50,6 +50,7 @@ export const Product = model(
     {
       name: { type: String, required: true },
       description: String,
+      shortDescription: String,
       category: String,
       color: String,
       priceCents: { type: Number, required: true, min: 0 },

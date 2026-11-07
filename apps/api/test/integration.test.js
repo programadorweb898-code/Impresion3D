@@ -6,6 +6,8 @@ import MongoStore from 'connect-mongo';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { createApp } from '../src/app.js';
 import { User, Product, Order } from '../src/models.js';
+import { migrateCatalogCopy } from '../src/catalog-copy.js';
+import catalogCopy from '../src/catalog-copy-20261107.json' with { type: 'json' };
 let mongo, store, app;
 const origin = 'http://localhost:5173';
 const password = 'Integracion1!';
@@ -314,4 +316,46 @@ test('ficha pública muestra descripción y medidas sin sesión; ocultos e IDs i
     .get('/api/products/' + new mongoose.Types.ObjectId())
     .expect(404);
   await request(app).get('/api/products/invalid-id').expect(404);
+});
+
+test('catalog copy migration separates summary and detail without overwriting later edits', async () => {
+  const original = catalogCopy[0];
+  const edited = catalogCopy[1];
+  await Product.create([
+    {
+      ...productData,
+      _id: original.id,
+      description: original.previousDescription,
+    },
+    {
+      ...productData,
+      _id: edited.id,
+      description: 'Descripción editada por administración',
+    },
+  ]);
+  await migrateCatalogCopy();
+  let product = await Product.findById(original.id).lean();
+  assert.equal(product.shortDescription, original.shortDescription);
+  assert.equal(product.description, original.description);
+  assert.deepEqual(product.dimensions, productData.dimensions);
+  const detail = await request(app)
+    .get('/api/products/' + original.id)
+    .expect(200);
+  assert.equal(detail.body.shortDescription, original.shortDescription);
+  assert.equal(detail.body.description, original.description);
+  assert.equal(
+    (await Product.findById(edited.id)).description,
+    'Descripción editada por administración',
+  );
+  await Product.updateOne(
+    { _id: original.id },
+    {
+      $set: { description: 'Detalle nuevo', shortDescription: 'Resumen nuevo' },
+    },
+  );
+  await migrateCatalogCopy();
+  product = await Product.findById(original.id).lean();
+  assert.equal(product.shortDescription, 'Resumen nuevo');
+  assert.equal(product.description, 'Detalle nuevo');
+  await Product.deleteMany({ _id: { $in: [original.id, edited.id] } });
 });

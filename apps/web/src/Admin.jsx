@@ -13,6 +13,7 @@ import {
 const emptyProduct = {
   name: '',
   description: '',
+  shortDescription: '',
   category: 'Hogar',
   color: 'terracotta',
   priceCents: 0,
@@ -154,6 +155,7 @@ export function Admin({ onCatalogChange, onPreview }) {
     const parsed = productSchema.safeParse({
       name: values.name,
       description: values.description,
+      shortDescription: values.shortDescription,
       category: values.category,
       color: values.color,
       priceCents: Math.round(Number(values.price) * 100),
@@ -326,7 +328,20 @@ export function Admin({ onCatalogChange, onPreview }) {
                 />
               </label>
               <label>
-                Descripción
+                Descripción breve de la tarjeta
+                <textarea
+                  name="shortDescription"
+                  defaultValue={editing.shortDescription || ''}
+                  maxLength="180"
+                  aria-describedby="short-description-help"
+                />
+              </label>
+              <p id="short-description-help" className="small">
+                Una frase sobre el producto, sin medidas. El detalle y las
+                medidas se muestran en su ficha.
+              </p>
+              <label>
+                Descripción detallada de la ficha
                 <textarea
                   name="description"
                   defaultValue={editing.description}
@@ -385,7 +400,9 @@ export function Admin({ onCatalogChange, onPreview }) {
                       min="0.01"
                       max="200"
                       step="0.01"
-                      defaultValue={Math.round(editing.dimensions[key] * 10) / 100}
+                      defaultValue={
+                        Math.round(editing.dimensions[key] * 10) / 100
+                      }
                       required
                     />
                   </label>
