@@ -18,7 +18,11 @@ function release(object) {
     }
   });
 }
-export default function ProductViewer({ product }) {
+export default function ProductViewer({
+  product,
+  onMeasurements,
+  onLoadError,
+}) {
   const host = useRef(null),
     actions = useRef({});
   const [status, setStatus] = useState('loading'),
@@ -129,28 +133,36 @@ export default function ProductViewer({ product }) {
         }
       });
       (async () => {
-        const response = await fetch(product.model.url, {
-          signal: abort.signal,
-          credentials: 'omit',
-        });
-        if (!response.ok) throw new Error('No se pudo descargar el modelo');
-        const buffer = await response.arrayBuffer();
-        if (product.model.format === 'stl') {
-          const geometry = new STLLoader().parse(buffer);
-          geometry.computeVertexNormals();
-          root = new THREE.Group();
-          root.add(
-            new THREE.Mesh(
-              geometry,
-              new THREE.MeshStandardMaterial({
-                color: '#b9b8b0',
-                roughness: 0.65,
-                metalness: 0,
-              }),
-            ),
+        if (product.model.buffer) {
+          const { parseLocalModel } = await import('./local-model.js');
+          root = await parseLocalModel(
+            product.model.buffer,
+            product.model.format,
           );
         } else {
-          root = (await new GLTFLoader().parseAsync(buffer, '')).scene;
+          const response = await fetch(product.model.url, {
+            signal: abort.signal,
+            credentials: 'omit',
+          });
+          if (!response.ok) throw new Error('No se pudo descargar el modelo');
+          const buffer = await response.arrayBuffer();
+          if (product.model.format === 'stl') {
+            const geometry = new STLLoader().parse(buffer);
+            geometry.computeVertexNormals();
+            root = new THREE.Group();
+            root.add(
+              new THREE.Mesh(
+                geometry,
+                new THREE.MeshStandardMaterial({
+                  color: '#b9b8b0',
+                  roughness: 0.65,
+                  metalness: 0,
+                }),
+              ),
+            );
+          } else {
+            root = (await new GLTFLoader().parseAsync(buffer, '')).scene;
+          }
         }
         // These previews represent solid printed parts, including white PLA.
         // Balanced lights retain color and relief; imported alpha must not ghost the shell.
@@ -189,6 +201,7 @@ export default function ProductViewer({ product }) {
           size.length() === 0
         )
           throw new Error('Modelo vacío');
+        onMeasurements?.({ width: size.x, height: size.y, depth: size.z });
         const center = box.getCenter(new THREE.Vector3());
         root.position.sub(center);
         radius = size.length() / 2;
@@ -199,12 +212,17 @@ export default function ProductViewer({ product }) {
       })().catch((e) => {
         if (!disposed && e.name !== 'AbortError') {
           setStatus('error');
-          setError(
-            'No se pudo mostrar el modelo 3D. Intentá abrirlo nuevamente o consultanos por esta pieza.',
-          );
+          const message = product.model.buffer
+            ? e.message || 'No se pudo leer el archivo 3D.'
+            : 'No se pudo mostrar el modelo 3D. Intentá abrirlo nuevamente o consultanos por esta pieza.';
+          setError(message);
+          onLoadError?.(message);
         }
       });
     } catch {
+      onLoadError?.(
+        'Tu navegador no pudo iniciar el visor 3D. Probá con un navegador actualizado.',
+      );
       setStatus('error');
       setError(
         'Tu navegador no pudo iniciar el visor 3D. Probá con un navegador actualizado; podés seguir viendo la foto del producto.',
@@ -221,7 +239,14 @@ export default function ProductViewer({ product }) {
       node.replaceChildren();
       actions.current = {};
     };
-  }, [product.model.url, product.model.format, product.model.publicId]);
+  }, [
+    product.model.url,
+    product.model.format,
+    product.model.publicId,
+    product.model.buffer,
+    onMeasurements,
+    onLoadError,
+  ]);
   return (
     <div className="product-viewer">
       <div

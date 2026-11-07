@@ -47,6 +47,7 @@ const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
 );
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
+const DesignUpload = lazy(() => import('./DesignUpload.jsx'));
 function Modal({ children, onClose, wide = false }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -324,6 +325,15 @@ function App() {
   function requestLogout() {
     setLogoutError('');
     setLogoutPrompt(true);
+  }
+  function openDesign() {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    navigatePage('design', '/disenar');
+    setView('design');
+    setError('');
+    setNotice('');
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
   }
   function openLegal(key) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
@@ -606,6 +616,7 @@ function App() {
           authReady={authReady}
           view={view}
           onCatalog={showCatalog}
+          onDesign={openDesign}
           onCart={openCart}
           onOrders={() => history()}
           onAdmin={openAdmin}
@@ -635,6 +646,10 @@ function App() {
           )}
           {legalPages[view] ? (
             <LegalPage pageKey={view} />
+          ) : view === 'design' ? (
+            <Suspense fallback={<p role="status">Cargando tu espacio de diseño…</p>}>
+              <DesignUpload />
+            </Suspense>
           ) : view === 'product' ? (
             <ProductDetails
               id={detailId || ''}
