@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import ProductViewer from './ProductViewer.jsx';
+import { pieceNameInSpanish } from './piece-names.js';
 
 const maxBytes = 50 * 1024 * 1024;
 const centimeters = (mm) =>
@@ -188,7 +189,7 @@ export default function DesignUpload() {
                         {dimensions.parts.map((part, index) => (
                           <tr key={index}>
                             <th scope="row">
-                              {index + 1}. {part.name}
+                              {pieceNameInSpanish(part.name, index + 1)}
                             </th>
                             <td>{centimeters(part.width)}</td>
                             <td>{centimeters(part.height)}</td>

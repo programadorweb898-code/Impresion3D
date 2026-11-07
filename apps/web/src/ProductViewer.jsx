@@ -227,7 +227,7 @@ export default function ProductViewer({
             root.traverse((child) => {
               if (child.isMesh)
                 measure(
-                  child.name,
+                  child.userData.name || child.name,
                   new THREE.Box3().setFromObject(child, true),
                 );
             });
