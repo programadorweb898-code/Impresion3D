@@ -77,6 +77,15 @@ test('local design route, STL/GLB/3MF measurements, replacement and drop without
   expect(writes).toEqual([]);
   for (const width of [390, 1280]) {
     await page.setViewportSize({ width, height: 844 });
+    if (width === 1280) {
+      const stage = await page
+        .locator('.design-preview .model-stage')
+        .boundingBox();
+      const measures = await page.locator('.design-measurements').boundingBox();
+      expect(Math.abs(stage.y - measures.y)).toBeLessThan(1);
+      expect(Math.abs(stage.height - measures.height)).toBeLessThan(1);
+    }
+
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -105,13 +114,11 @@ test('3MF resolves packaged Bambu components, units and repeated mesh transforms
       '</object></resources></model>',
   });
   await page.goto('/disenar');
-  await page
-    .getByLabel('Archivo de diseño 3D')
-    .setInputFiles({
-      name: 'componentes.3mf',
-      mimeType: 'application/octet-stream',
-      buffer,
-    });
+  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
+    name: 'componentes.3mf',
+    mimeType: 'application/octet-stream',
+    buffer,
+  });
   await expect(page.locator('.design-measurements dl')).toContainText(
     'Ancho11 cm',
   );
@@ -132,33 +139,26 @@ test('rejects external GLB resources and cyclic 3MF components', async ({
     if (request.url().includes('outside.example')) external.push(request.url());
   });
   await page.goto('/disenar');
-  await page
-    .getByLabel('Archivo de diseño 3D')
-    .setInputFiles({
-      name: 'externo.glb',
-      mimeType: 'application/octet-stream',
-      buffer: tetraGlb((doc) => ({
-        ...doc,
-        buffers: [{ uri: 'https://outside.example/model.bin', byteLength: 72 }],
-      })),
-    });
+  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
+    name: 'externo.glb',
+    mimeType: 'application/octet-stream',
+    buffer: tetraGlb((doc) => ({
+      ...doc,
+      buffers: [{ uri: 'https://outside.example/model.bin', byteLength: 72 }],
+    })),
+  });
   await expect(page.locator('.design-page > .error')).toContainText(
     'incluir todos sus recursos',
   );
   expect(external).toEqual([]);
-  await page
-    .getByLabel('Archivo de diseño 3D')
-    .setInputFiles({
-      name: 'ciclo.3mf',
-      mimeType: 'application/octet-stream',
-      buffer: coloredThreeMf({
-        transformXml: (xml) =>
-          xml.replace(
-            '<component objectid="1"/>',
-            '<component objectid="10"/>',
-          ),
-      }),
-    });
+  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
+    name: 'ciclo.3mf',
+    mimeType: 'application/octet-stream',
+    buffer: coloredThreeMf({
+      transformXml: (xml) =>
+        xml.replace('<component objectid="1"/>', '<component objectid="10"/>'),
+    }),
+  });
   await expect(page.locator('.design-page > .error')).toContainText(
     'referencias circulares',
   );

@@ -113,43 +113,47 @@ export default function DesignUpload() {
         </p>
       )}
       {product ? (
-        <div className="design-layout">
-          <div className="design-preview">
-            <h2>Vista 3D</h2>
-            <ProductViewer
-              key={product.model.url}
-              product={product}
-              onMeasurements={measured}
-              onLoadError={failed}
-            />
+        <div className="design-section">
+          <h2>Vista 3D</h2>
+          <div className="design-layout">
+            <div className="design-preview">
+              <ProductViewer
+                key={product.model.url}
+                product={product}
+                onMeasurements={measured}
+                onLoadError={failed}
+              />
+            </div>
+            <aside
+              className="design-measurements"
+              aria-label="Información del modelo"
+            >
+              <p className="eyebrow">TU MODELO</p>
+              <h2>{product.name}</h2>
+              <p className="small">
+                Formato {product.model.format.toUpperCase()}
+              </p>
+              <h3>Medidas del modelo</h3>
+              {dimensions ? (
+                <dl className="product-detail-dimensions">
+                  {['width', 'height', 'depth'].map((key, index) => (
+                    <div key={key}>
+                      <dt>{['Ancho', 'Alto', 'Profundidad'][index]}</dt>
+                      <dd>{centimeters(dimensions[key])}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : (
+                <p>
+                  {error ? 'Medidas no disponibles.' : 'Calculando medidas…'}
+                </p>
+              )}
+              <p className="small">
+                Las medidas corresponden al conjunto y a la orientación del
+                archivo. En STL se interpretan las unidades como milímetros.
+              </p>
+            </aside>
           </div>
-          <aside
-            className="design-measurements"
-            aria-label="Información del modelo"
-          >
-            <p className="eyebrow">TU MODELO</p>
-            <h2>{product.name}</h2>
-            <p className="small">
-              Formato {product.model.format.toUpperCase()}
-            </p>
-            <h3>Medidas del modelo</h3>
-            {dimensions ? (
-              <dl className="product-detail-dimensions">
-                {['width', 'height', 'depth'].map((key, index) => (
-                  <div key={key}>
-                    <dt>{['Ancho', 'Alto', 'Profundidad'][index]}</dt>
-                    <dd>{centimeters(dimensions[key])}</dd>
-                  </div>
-                ))}
-              </dl>
-            ) : (
-              <p>{error ? 'Medidas no disponibles.' : 'Calculando medidas…'}</p>
-            )}
-            <p className="small">
-              Las medidas corresponden al conjunto y a la orientación del
-              archivo. En STL se interpretan las unidades como milímetros.
-            </p>
-          </aside>
         </div>
       ) : (
         !loading &&
