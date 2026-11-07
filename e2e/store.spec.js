@@ -681,6 +681,11 @@ test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver
     exact: true,
   });
   await expect(link).toBeVisible();
+  const card = page.locator('.product-card').filter({ has: link });
+  await expect(card.locator('.description')).toHaveText(
+    'Una pieza decorativa para tu espacio.',
+  );
+  await expect(card).not.toContainText(/100 × 100 × 100|\bmm\b|Descripción completa/);
   const url = await link.getAttribute('href');
   await link.click();
   await expect(page).toHaveURL(new RegExp('/descripcion/[a-f0-9]{24}$'));

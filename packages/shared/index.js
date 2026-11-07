@@ -61,6 +61,7 @@ export const orderSchema = z.union([
 export const productSchema = z.strictObject({
   name: z.string().trim().min(2).max(120),
   description: z.string().trim().max(1500),
+  shortDescription: z.string().trim().max(180).optional(),
   category: z.string().trim().min(1).max(60),
   color: z.enum(['terracotta', 'sage', 'sand']),
   priceCents: z.number().int().min(0).max(100000000),

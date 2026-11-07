@@ -28,6 +28,7 @@ await User.create({
 const products = await Product.create(
   Array.from({ length: 25 }, (_, i) => ({
     name: 'Pieza ' + String(i).padStart(2, '0'),
+    shortDescription: 'Una pieza decorativa para tu espacio.',
     description:
       'Producto de prueba\nDescripción completa conservada en la ficha.',
     ...(i === 0
