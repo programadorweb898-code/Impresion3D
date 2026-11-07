@@ -38,17 +38,19 @@ export default function ProductViewer({ product }) {
       renderer.setPixelRatio(
         Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2),
       );
-      renderer.setClearColor('#f0eee8');
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.setClearColor('#252b33');
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.NeutralToneMapping;
+      renderer.toneMappingExposure = 0.9;
       node.appendChild(renderer.domElement);
       renderer.domElement.setAttribute('aria-hidden', 'true');
       const scene = new THREE.Scene(),
         camera = new THREE.PerspectiveCamera(40, 1, 0.01, 1000);
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x726c62, 2.5));
-      const light = new THREE.DirectionalLight(0xffffff, 3);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x39424f, 0.7));
+      const light = new THREE.DirectionalLight(0xffffff, 2);
       light.position.set(3, 5, 4);
       scene.add(light);
-      const fill = new THREE.DirectionalLight(0xffffff, 1.5);
+      const fill = new THREE.DirectionalLight(0xffffff, 0.35);
       fill.position.set(-3, 1, -2);
       scene.add(fill);
       controls = new OrbitControls(camera, renderer.domElement);
@@ -149,6 +151,23 @@ export default function ProductViewer({ product }) {
         } else {
           root = (await new GLTFLoader().parseAsync(buffer, '')).scene;
         }
+        // These previews represent solid printed parts, including white PLA.
+        // Balanced lights retain color and relief; imported alpha must not ghost the shell.
+        root.traverse((child) => {
+          if (!child.isMesh) return;
+          if (!child.geometry.getAttribute('normal'))
+            child.geometry.computeVertexNormals();
+          for (const material of Array.isArray(child.material)
+            ? child.material
+            : [child.material]) {
+            if (!material) continue;
+            material.transparent = false;
+            material.opacity = 1;
+            material.depthWrite = true;
+            if ('transmission' in material) material.transmission = 0;
+            material.needsUpdate = true;
+          }
+        });
         if (disposed) {
           release(root);
           return;
