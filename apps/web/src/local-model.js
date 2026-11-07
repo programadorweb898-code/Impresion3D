@@ -218,7 +218,18 @@ function threeMf(buffer) {
       geometry.computeVertexNormals();
       const m = material('#ffffff');
       m.vertexColors = true;
-      group.add(new THREE.Mesh(geometry, m));
+      const piece = new THREE.Mesh(geometry, m);
+      const label = children(part, 'metadata')
+        .find((entry) => entry.getAttribute('key') === 'name')
+        ?.getAttribute('value');
+      piece.name =
+        label ||
+        data.getAttribute('name') ||
+        children(setting, 'metadata')
+          .find((entry) => entry.getAttribute('key') === 'name')
+          ?.getAttribute('value') ||
+        '';
+      group.add(piece);
       cache.set(cacheKey, group.clone());
     } else {
       for (const c of children(child(data, 'components'), 'component')) {
@@ -250,12 +261,11 @@ function threeMf(buffer) {
   return group;
 }
 // STL has no object list: weld identical positions to identify disconnected shells.
-function stlComponentCount(geometry) {
+function stlComponents(geometry) {
   const positions = geometry.getAttribute('position');
   const count = Math.floor(positions.count / 3);
   const parents = new Uint32Array(count);
   const vertices = new Map();
-  let components = count;
   for (let i = 0; i < count; i++) parents[i] = i;
   function find(i) {
     while (parents[i] !== i) {
@@ -274,11 +284,25 @@ function stlComponentCount(geometry) {
         b = find(vertices.get(key));
       if (a !== b) {
         parents[a] = b;
-        components--;
       }
     }
   }
-  return components;
+  const bounds = new Map();
+  const point = new THREE.Vector3();
+  for (let i = 0; i < positions.count; i++) {
+    const id = find(Math.floor(i / 3));
+    if (!bounds.has(id)) bounds.set(id, new THREE.Box3());
+    bounds
+      .get(id)
+      .expandByPoint(
+        point.set(positions.getX(i), positions.getY(i), positions.getZ(i)),
+      );
+  }
+  return Array.from(bounds.values(), (box, i) => ({
+    name: 'Pieza ' + (i + 1),
+    min: box.min.toArray(),
+    max: box.max.toArray(),
+  }));
 }
 
 export async function parseLocalModel(buffer, format) {
@@ -293,7 +317,7 @@ export async function parseLocalModel(buffer, format) {
     geometry.computeVertexNormals();
     const root = new THREE.Group();
     root.add(new THREE.Mesh(geometry, material()));
-    root.userData.componentCount = stlComponentCount(geometry);
+    root.userData.partBounds = stlComponents(geometry);
     root.rotation.x = -Math.PI / 2;
     return root;
   }

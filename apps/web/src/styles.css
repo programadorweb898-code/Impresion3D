@@ -2173,3 +2173,10 @@ a:focus-visible,
 @media (max-width:700px) { .design-layout { grid-template-columns:1fr; } .design-preview .model-stage { height:360px; min-height:0; } .design-measurements { grid-column:1; grid-row:auto; } .design-dropzone { padding:1.5rem 1rem; } }
 
 .design-parts-notice { margin:0 0 1.25rem; padding:1rem 1.25rem; border:1px solid #ba974a; border-left:4px solid #d7ae55; border-radius:.75rem; background:#5f491b26; line-height:1.6; }
+
+.design-parts-table-wrap { max-height:20rem; overflow:auto; margin-top:1rem; }
+.design-parts-table { width:100%; border-collapse:collapse; font-size:.8rem; }
+.design-parts-table caption { text-align:left; color:var(--muted); margin-bottom:.75rem; }
+.design-parts-table th,.design-parts-table td { text-align:left; padding:.65rem .35rem; border-bottom:1px solid var(--line); }
+.design-parts-table tbody th { font-weight:400; overflow-wrap:anywhere; max-width:9rem; }
+.design-parts-table td { white-space:nowrap; }

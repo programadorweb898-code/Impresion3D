@@ -143,6 +143,12 @@ test('3MF resolves packaged Bambu components, units and repeated mesh transforms
     'Profundidad2 cm',
   );
   await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(page.locator('.design-parts-table tbody tr')).toHaveCount(2);
+  for (const row of await page.locator('.design-parts-table tbody tr').all()) {
+    await expect(row).toContainText('1 cm');
+    await expect(row).toContainText('3 cm');
+    await expect(row).toContainText('2 cm');
+  }
 });
 
 test('rejects external GLB resources and cyclic 3MF components', async ({
@@ -205,6 +211,10 @@ test('STL disconnected shells show the multi-part notice and replacement clears 
   await expect(page.locator('.design-measurements dl')).toContainText(
     'Ancho1,1 cm',
   );
+  await expect(page.locator('.design-parts-table tbody tr')).toHaveCount(2);
+  for (const row of await page.locator('.design-parts-table tbody tr').all()) {
+    await expect(row.locator('td')).toHaveText(['0,1 cm', '0,1 cm', '0,1 cm']);
+  }
   await page.getByLabel('Archivo de diseño 3D').setInputFiles({
     name: 'una-pieza.stl',
     mimeType: 'application/octet-stream',
@@ -214,4 +224,44 @@ test('STL disconnected shells show the multi-part notice and replacement clears 
     page.getByRole('button', { name: 'Restablecer vista', exact: true }),
   ).toBeVisible();
   await expect(page.locator('.design-parts-notice')).toHaveCount(0);
+});
+
+test('GLB reports each named instance without including gaps in part dimensions', async ({
+  page,
+}) => {
+  await page.goto('/disenar');
+  const buffer = tetraGlb((doc) => ({
+    ...doc,
+    scenes: [{ nodes: [0, 1] }],
+    nodes: [
+      { name: 'Base', mesh: 0 },
+      { name: 'Tapa', mesh: 0, translation: [10, 0, 0], scale: [2, 3, 4] },
+    ],
+  }));
+  await page
+    .getByLabel('Archivo de diseño 3D')
+    .setInputFiles({
+      name: 'partes.glb',
+      mimeType: 'application/octet-stream',
+      buffer,
+    });
+  await expect(page.locator('.design-parts-table tbody tr')).toHaveCount(2);
+  await expect(
+    page.locator('.design-parts-table tbody tr').nth(0),
+  ).toContainText('Base');
+  await expect(
+    page.locator('.design-parts-table tbody tr').nth(0).locator('td'),
+  ).toHaveText(['100 cm', '100 cm', '100 cm']);
+  await expect(
+    page.locator('.design-parts-table tbody tr').nth(1),
+  ).toContainText('Tapa');
+  await expect(
+    page.locator('.design-parts-table tbody tr').nth(1).locator('td'),
+  ).toHaveText(['200 cm', '300 cm', '400 cm']);
+  await expect(
+    page.getByRole('heading', {
+      name: 'Medidas del conjunto del archivo',
+      exact: true,
+    }),
+  ).toBeVisible();
 });

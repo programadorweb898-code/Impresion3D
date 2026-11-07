@@ -119,6 +119,9 @@ export default function DesignUpload() {
               <strong>Este archivo contiene varias piezas.</strong> Se muestran
               en las posiciones originales del archivo. Si aparecen separadas,
               subí una versión ensamblada para visualizar el producto completo.
+              Las medidas del conjunto incluyen los espacios entre piezas y no
+              representan necesariamente el tamaño final ensamblado. Más abajo
+              podés consultar las medidas de cada pieza.
             </div>
           )}
           <h2>Vista 3D</h2>
@@ -140,7 +143,11 @@ export default function DesignUpload() {
               <p className="small">
                 Formato {product.model.format.toUpperCase()}
               </p>
-              <h3>Medidas del modelo</h3>
+              <h3>
+                {dimensions?.componentCount > 1
+                  ? 'Medidas del conjunto del archivo'
+                  : 'Medidas del modelo'}
+              </h3>
               {dimensions ? (
                 <dl className="product-detail-dimensions">
                   {['width', 'height', 'depth'].map((key, index) => (
@@ -154,6 +161,49 @@ export default function DesignUpload() {
                 <p>
                   {error ? 'Medidas no disponibles.' : 'Calculando medidas…'}
                 </p>
+              )}
+              {dimensions?.parts.length > 1 && (
+                <div className="design-parts">
+                  <h3>Medidas de cada pieza</h3>
+                  <div
+                    className="design-parts-table-wrap"
+                    tabIndex="0"
+                    role="region"
+                    aria-label="Medidas de cada pieza"
+                  >
+                    <table className="design-parts-table">
+                      <caption>
+                        {dimensions.parts.length} piezas · Medidas en
+                        centímetros
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">Pieza</th>
+                          <th scope="col">Ancho</th>
+                          <th scope="col">Alto</th>
+                          <th scope="col">Prof.</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dimensions.parts.map((part, index) => (
+                          <tr key={index}>
+                            <th scope="row">
+                              {index + 1}. {part.name}
+                            </th>
+                            <td>{centimeters(part.width)}</td>
+                            <td>{centimeters(part.height)}</td>
+                            <td>{centimeters(part.depth)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="small">
+                    Cada pieza se mide por separado, sin incluir la distancia a
+                    las demás. Estas medidas no determinan el tamaño final
+                    ensamblado.
+                  </p>
+                </div>
               )}
               <p className="small">
                 Las medidas corresponden al conjunto y a la orientación del
