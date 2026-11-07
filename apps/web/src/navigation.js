@@ -14,6 +14,7 @@ export function currentPage() {
     return { view: 'product', id: (detail[1] || '').replace(/\/$/, '') };
   const legal = legalPageFromPath(path);
   if (legal) return { view: legal, id: null };
+  if (/^\/disenar\/?$/.test(path)) return { view: 'design', id: null };
   if (path === '/perfil') return { view: 'profile', id: null };
   if (path === '/login') return { view: 'catalog', id: null };
   const saved = history.state?.[key]?.view;

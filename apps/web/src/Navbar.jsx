@@ -12,6 +12,7 @@ export function Navbar({
   onLogin,
   onLogout,
   onHowItWorks,
+  onDesign,
   cartButtonRef,
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -104,6 +105,24 @@ export function Navbar({
             >
               Catálogo
             </button>
+            <a
+              href="/disenar"
+              aria-current={view === 'design' ? 'page' : undefined}
+              onClick={(event) => {
+                if (
+                  event.button === 0 &&
+                  !event.metaKey &&
+                  !event.ctrlKey &&
+                  !event.shiftKey &&
+                  !event.altKey
+                ) {
+                  event.preventDefault();
+                  choose(onDesign);
+                }
+              }}
+            >
+              Subí tu diseño
+            </a>
             <a
               href="/#proceso"
               aria-current={showingProcess ? 'location' : undefined}
