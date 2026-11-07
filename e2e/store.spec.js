@@ -446,6 +446,7 @@ test('visor WebGL carga geometría y permite cerrarlo y volver a abrirlo', async
   await expect(
     page.getByRole('button', { name: 'Restablecer vista' }),
   ).toBeVisible();
+  await expect(page.locator('.model-stage')).toHaveCSS('background-color', 'rgb(37, 43, 51)');
   await page.getByRole('button', { name: 'Vista superior' }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Cerrar visor 3D' }).click();
