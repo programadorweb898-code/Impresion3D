@@ -82,12 +82,22 @@ test('local design route, STL/GLB/3MF measurements, replacement and drop without
   for (const width of [390, 1280]) {
     await page.setViewportSize({ width, height: 844 });
     if (width === 1280) {
-      const stage = await page
-        .locator('.design-preview .model-stage')
-        .boundingBox();
-      const measures = await page.locator('.design-measurements').boundingBox();
-      expect(Math.abs(stage.y - measures.y)).toBeLessThan(1);
-      expect(Math.abs(stage.height - measures.height)).toBeLessThan(1);
+      await expect
+        .poll(() =>
+          page.evaluate(() => {
+            const stage = document
+              .querySelector('.design-preview .model-stage')
+              .getBoundingClientRect();
+            const measures = document
+              .querySelector('.design-measurements')
+              .getBoundingClientRect();
+            return Math.max(
+              Math.abs(stage.y - measures.y),
+              Math.abs(stage.height - measures.height),
+            );
+          }),
+        )
+        .toBeLessThan(1);
     }
 
     expect(
@@ -181,13 +191,11 @@ test('STL disconnected shells show the multi-part notice and replacement clears 
   const merged = Buffer.concat([first, second.subarray(84)]);
   merged.writeUInt32LE(8, 80);
   await page.goto('/disenar');
-  await page
-    .getByLabel('Archivo de diseño 3D')
-    .setInputFiles({
-      name: 'dos-piezas.stl',
-      mimeType: 'application/octet-stream',
-      buffer: merged,
-    });
+  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
+    name: 'dos-piezas.stl',
+    mimeType: 'application/octet-stream',
+    buffer: merged,
+  });
   await expect(page.locator('.design-parts-notice')).toContainText(
     'Este archivo contiene varias piezas.',
   );
@@ -197,13 +205,11 @@ test('STL disconnected shells show the multi-part notice and replacement clears 
   await expect(page.locator('.design-measurements dl')).toContainText(
     'Ancho1,1 cm',
   );
-  await page
-    .getByLabel('Archivo de diseño 3D')
-    .setInputFiles({
-      name: 'una-pieza.stl',
-      mimeType: 'application/octet-stream',
-      buffer: first,
-    });
+  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
+    name: 'una-pieza.stl',
+    mimeType: 'application/octet-stream',
+    buffer: first,
+  });
   await expect(
     page.getByRole('button', { name: 'Restablecer vista', exact: true }),
   ).toBeVisible();
