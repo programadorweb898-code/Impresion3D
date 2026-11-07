@@ -41,6 +41,9 @@ test('local design route, STL/GLB/3MF measurements, replacement and drop without
       page.locator('.design-measurements dl > div').first(),
     ).toHaveText('Ancho' + expectedWidth);
     await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(page.locator('.design-parts-notice')).toHaveCount(
+      name.endsWith('.3mf') ? 1 : 0,
+    );
   }
   await input.setInputFiles({
     name: 'error.txt',
@@ -74,6 +77,7 @@ test('local design route, STL/GLB/3MF measurements, replacement and drop without
   await expect(
     page.getByRole('button', { name: 'Restablecer vista', exact: true }),
   ).toBeVisible();
+  await expect(page.locator('.design-parts-notice')).toHaveCount(0);
   expect(writes).toEqual([]);
   for (const width of [390, 1280]) {
     await page.setViewportSize({ width, height: 844 });
@@ -162,4 +166,46 @@ test('rejects external GLB resources and cyclic 3MF components', async ({
   await expect(page.locator('.design-page > .error')).toContainText(
     'referencias circulares',
   );
+});
+
+test('STL disconnected shells show the multi-part notice and replacement clears it', async ({
+  page,
+}) => {
+  const first = tetraStl();
+  const second = tetraStl();
+  for (let t = 0; t < 4; t++)
+    for (let corner = 0; corner < 3; corner++) {
+      const offset = 84 + t * 50 + 12 + corner * 12;
+      second.writeFloatLE(second.readFloatLE(offset) + 10, offset);
+    }
+  const merged = Buffer.concat([first, second.subarray(84)]);
+  merged.writeUInt32LE(8, 80);
+  await page.goto('/disenar');
+  await page
+    .getByLabel('Archivo de diseño 3D')
+    .setInputFiles({
+      name: 'dos-piezas.stl',
+      mimeType: 'application/octet-stream',
+      buffer: merged,
+    });
+  await expect(page.locator('.design-parts-notice')).toContainText(
+    'Este archivo contiene varias piezas.',
+  );
+  await expect(page.locator('.design-parts-notice')).toContainText(
+    'subí una versión ensamblada',
+  );
+  await expect(page.locator('.design-measurements dl')).toContainText(
+    'Ancho1,1 cm',
+  );
+  await page
+    .getByLabel('Archivo de diseño 3D')
+    .setInputFiles({
+      name: 'una-pieza.stl',
+      mimeType: 'application/octet-stream',
+      buffer: first,
+    });
+  await expect(
+    page.getByRole('button', { name: 'Restablecer vista', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.design-parts-notice')).toHaveCount(0);
 });

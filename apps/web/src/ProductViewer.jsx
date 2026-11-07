@@ -201,7 +201,19 @@ export default function ProductViewer({
           size.length() === 0
         )
           throw new Error('Modelo vacío');
-        onMeasurements?.({ width: size.x, height: size.y, depth: size.z });
+        let componentCount = root.userData.componentCount;
+        if (componentCount === undefined) {
+          componentCount = 0;
+          root.traverse((child) => {
+            if (child.isMesh) componentCount++;
+          });
+        }
+        onMeasurements?.({
+          width: size.x,
+          height: size.y,
+          depth: size.z,
+          componentCount,
+        });
         const center = box.getCenter(new THREE.Vector3());
         root.position.sub(center);
         radius = size.length() / 2;

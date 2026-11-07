@@ -114,6 +114,13 @@ export default function DesignUpload() {
       )}
       {product ? (
         <div className="design-section">
+          {dimensions?.componentCount > 1 && (
+            <div className="design-parts-notice" role="status">
+              <strong>Este archivo contiene varias piezas.</strong> Se muestran
+              en las posiciones originales del archivo. Si aparecen separadas,
+              subí una versión ensamblada para visualizar el producto completo.
+            </div>
+          )}
           <h2>Vista 3D</h2>
           <div className="design-layout">
             <div className="design-preview">
