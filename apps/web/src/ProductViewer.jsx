@@ -1,3 +1,4 @@
+import { legacySrgbPreviewIds } from './legacy-preview-colors.js';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -153,6 +154,7 @@ export default function ProductViewer({ product }) {
         }
         // These previews represent solid printed parts, including white PLA.
         // Balanced lights retain color and relief; imported alpha must not ghost the shell.
+        const correctedMaterials = new WeakSet();
         root.traverse((child) => {
           if (!child.isMesh) return;
           if (!child.geometry.getAttribute('normal'))
@@ -161,6 +163,13 @@ export default function ProductViewer({ product }) {
             ? child.material
             : [child.material]) {
             if (!material) continue;
+            if (
+              legacySrgbPreviewIds.has(product.model.publicId) &&
+              !correctedMaterials.has(material)
+            ) {
+              material.color?.convertSRGBToLinear();
+              correctedMaterials.add(material);
+            }
             material.transparent = false;
             material.opacity = 1;
             material.depthWrite = true;
@@ -212,7 +221,7 @@ export default function ProductViewer({ product }) {
       node.replaceChildren();
       actions.current = {};
     };
-  }, [product.model.url, product.model.format]);
+  }, [product.model.url, product.model.format, product.model.publicId]);
   return (
     <div className="product-viewer">
       <div
