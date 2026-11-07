@@ -201,18 +201,44 @@ export default function ProductViewer({
           size.length() === 0
         )
           throw new Error('Modelo vacío');
-        let componentCount = root.userData.componentCount;
-        if (componentCount === undefined) {
-          componentCount = 0;
-          root.traverse((child) => {
-            if (child.isMesh) componentCount++;
-          });
+        let parts = [];
+        if (onMeasurements) {
+          root.updateMatrixWorld(true);
+          const measure = (name, box) => {
+            const size = box.getSize(new THREE.Vector3());
+            if (!box.isEmpty() && Number.isFinite(size.length()))
+              parts.push({
+                name: name || 'Pieza ' + (parts.length + 1),
+                width: size.x,
+                height: size.y,
+                depth: size.z,
+              });
+          };
+          if (root.userData.partBounds) {
+            for (const part of root.userData.partBounds)
+              measure(
+                part.name,
+                new THREE.Box3(
+                  new THREE.Vector3(...part.min),
+                  new THREE.Vector3(...part.max),
+                ).applyMatrix4(root.matrixWorld),
+              );
+          } else {
+            root.traverse((child) => {
+              if (child.isMesh)
+                measure(
+                  child.name,
+                  new THREE.Box3().setFromObject(child, true),
+                );
+            });
+          }
         }
         onMeasurements?.({
           width: size.x,
           height: size.y,
           depth: size.z,
-          componentCount,
+          componentCount: parts.length,
+          parts,
         });
         const center = box.getCenter(new THREE.Vector3());
         root.position.sub(center);
