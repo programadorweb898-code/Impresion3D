@@ -141,13 +141,28 @@ export function Navbar({
                 <a
                   className="profile-link"
                   href="/perfil"
+                  aria-label="Mi perfil"
                   aria-current={view === 'profile' ? 'page' : undefined}
                   onClick={(e) => {
                     e.preventDefault();
                     choose(onProfile);
                   }}
                 >
-                  <span aria-hidden="true">◉</span> Mi perfil
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="8" r="3.6" />
+                    <path d="M4.5 20.5c0-3.9 3.4-6.5 7.5-6.5s7.5 2.6 7.5 6.5" />
+                  </svg>
+                  <span className="profile-label">Perfil</span>
                 </a>
                 <button className="nav-logout" onClick={() => choose(onLogout)}>
                   Cerrar sesión

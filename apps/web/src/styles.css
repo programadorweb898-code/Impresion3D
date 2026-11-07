@@ -1206,6 +1206,73 @@ header > nav {
   color: white;
   border-color: #303d30;
 }
+/* Profile pill: icon only until the pointer or the keyboard reaches it. */
+.profile-label {
+  display: inline-block;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  /* Cancels the pill's 8px gap while the label is hidden, so the icon stays centred. */
+  margin-left: -8px;
+  transition:
+    max-width 220ms ease,
+    opacity 150ms ease,
+    margin-left 220ms ease;
+}
+@media (hover: hover) {
+  .profile-link:hover .profile-label {
+    max-width: 6rem;
+    opacity: 1;
+    margin-left: 0;
+  }
+  .profile-link:hover {
+    background: var(--surface-raised);
+    border-color: #87a97a;
+  }
+}
+.profile-link:focus-visible .profile-label {
+  max-width: 6rem;
+  opacity: 1;
+  margin-left: 0;
+}
+@media (max-width: 575.98px) {
+  .profile-label {
+    max-width: none;
+    opacity: 1;
+    margin-left: 0;
+  }
+}
+
+/* Navigation tabs light up while the pointer is over them. */
+.site-nav > button,
+.site-nav > a:not(.profile-link) {
+  border-radius: 9px;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+@media (min-width: 576px) {
+  .site-nav > button,
+  .site-nav > a:not(.profile-link) {
+    /* Equal padding and negative margin: the highlight gets room without moving the row. */
+    margin: -6px -10px;
+    padding: 6px 10px;
+  }
+}
+@media (hover: hover) {
+  .site-nav > button:hover,
+  .site-nav > a:not(.profile-link):hover {
+    background: #2a3b24;
+    color: #d4efc3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-nav > button,
+  .site-nav > a:not(.profile-link),
+  .profile-label {
+    transition: none;
+  }
+}
 .profile-page {
   padding: 50px 5% 70px;
   min-height: 65vh;
