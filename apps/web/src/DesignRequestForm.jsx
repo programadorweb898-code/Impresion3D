@@ -40,8 +40,7 @@ export default function DesignRequestForm({ file, dimensions }) {
     requestId.current = crypto.randomUUID();
     dialog.current?.close();
   }, [file]);
-  const ready =
-    file && dimensions && !editing && Number.isFinite(scale) && scale > 0;
+  const ready = file && dimensions && Number.isFinite(scale) && scale > 0;
   const colorStatus = dimensions?.colorStatus || 'unknown';
   const changed = () => {
     setSent(null);

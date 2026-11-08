@@ -26,6 +26,7 @@ test('solicitud privada: proporciones, cancelar sin enviar, original descargable
   await expect(
     page.getByLabel('Profundidad (cm)', { exact: true }),
   ).toHaveValue('0.2');
+  await page.getByLabel('Profundidad (cm)', { exact: true }).fill('0.2');
   await page
     .getByRole('button', { name: 'Solicitar presupuesto', exact: true })
     .click();
