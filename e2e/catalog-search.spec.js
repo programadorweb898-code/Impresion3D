@@ -69,3 +69,28 @@ test('las pestañas reutilizan la búsqueda dinámica y permiten volver a buscar
     !url.searchParams.has('category'),
   )).toBe(true);
 });
+
+
+test('Halloween y Cuencos pueden compartir productos sin duplicarlos', async ({ page }) => {
+  const bowlIds = ['6ae3b624b8011b76f2019acd', '6ae4d6f4fdc56973a99397e6'];
+  const products = [
+    { _id: bowlIds[0], name: 'Cuenco de calabaza', category: 'Halloween', categories: ['Halloween', 'Cuencos'], priceCents: 300000, active: true },
+    { _id: bowlIds[1], name: 'Cuenco de Mayers', category: 'Cuencos', categories: ['Halloween', 'Cuencos'], priceCents: 300000, active: true },
+  ];
+  await page.route('**/api/products?*', async (route) => {
+    const url = new URL(route.request().url());
+    const search = (url.searchParams.get('startsWith') || '').toLowerCase();
+    const matching = products.filter((p) => !search || p.name.toLowerCase().startsWith(search)
+      || p.category.toLowerCase().startsWith(search)
+      || p.categories.some((c) => c.toLowerCase().startsWith(search)));
+    await route.fulfill({
+      json: { products: matching, page: 1, pages: 1, total: matching.length, categories: ['Cuencos', 'Halloween'] },
+    });
+  });
+  await page.goto('/');
+  for (const category of ['Halloween', 'Cuencos']) {
+    await page.locator('.filters').getByRole('button', { name: category, exact: true }).click();
+    await expect(page.locator('.product-card')).toHaveCount(2);
+    await expect(page.getByRole('heading', { name: 'Cuenco de Mayers', exact: true })).toBeVisible();
+  }
+});

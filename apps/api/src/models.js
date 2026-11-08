@@ -52,6 +52,7 @@ export const Product = model(
       description: String,
       shortDescription: String,
       category: String,
+      categories: { type: [String], default: undefined },
       color: String,
       priceCents: { type: Number, required: true, min: 0 },
       currency: { type: String, default: 'ARS' },
