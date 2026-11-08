@@ -1,3 +1,4 @@
+import { RequestSlicing } from './SlicingControls.jsx';
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { Pagination } from './Pagination.jsx';
@@ -11,7 +12,7 @@ const money = (n) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(
     n / 100,
   );
-function RequestRow({ row, admin, onSave }) {
+function RequestRow({ row, admin, onSave, onRefresh, workers }) {
   const [status, setStatus] = useState(row.status),
     [price, setPrice] = useState(
       row.priceCents === null ? '' : String(row.priceCents / 100),
@@ -69,6 +70,17 @@ function RequestRow({ row, admin, onSave }) {
         Descargar archivo original
       </a>
       {admin && (
+        <RequestSlicing
+          row={row}
+          availableWorkers={workers}
+          onRefresh={onRefresh}
+          onEstimate={(value) => {
+            setPrice(String(value));
+            setStatus('presupuestado');
+          }}
+        />
+      )}
+      {admin && (
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -121,15 +133,21 @@ function RequestRow({ row, admin, onSave }) {
 }
 export default function DesignRequests({ admin = false, refresh = 0 }) {
   const [data, setData] = useState({ requests: [], page: 1, pages: 1 }),
+    [workers, setWorkers] = useState([]),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
   async function load(page = 1) {
     setBusy(true);
     setError('');
     try {
-      setData(
-        await api((admin ? '/admin' : '') + '/design-requests?page=' + page),
-      );
+      const [requests, connection] = await Promise.all([
+        api((admin ? '/admin' : '') + '/design-requests?page=' + page),
+        admin
+          ? api('/admin/slicing/workers')
+          : Promise.resolve({ workers: [] }),
+      ]);
+      setData(requests);
+      setWorkers(connection.workers);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -181,6 +199,8 @@ export default function DesignRequests({ admin = false, refresh = 0 }) {
             row={row}
             admin={admin}
             onSave={save}
+            onRefresh={() => load(data.page)}
+            workers={workers}
           />
         ))}
       </fieldset>

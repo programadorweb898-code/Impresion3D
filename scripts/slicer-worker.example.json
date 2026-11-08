@@ -1,0 +1,17 @@
+{
+  "profiles": [
+    {
+      "id": "pla-a1-020",
+      "name": "A1 · PLA · 0,20 mm",
+      "material": "PLA",
+      "machine": "C:/Mundo3D/perfiles/a1-maquina-completo.json",
+      "process": "C:/Mundo3D/perfiles/a1-proceso-completo.json",
+      "filaments": [
+        "C:/Mundo3D/perfiles/pla-slot1-completo.json",
+        "C:/Mundo3D/perfiles/pla-slot2-completo.json",
+        "C:/Mundo3D/perfiles/pla-slot3-completo.json",
+        "C:/Mundo3D/perfiles/pla-slot4-completo.json"
+      ]
+    }
+  ]
+}
