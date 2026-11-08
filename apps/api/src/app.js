@@ -1,3 +1,4 @@
+import { slicerWorkerRouter, adminSlicingRouter } from './slicing.js';
 import {
   designRequestsRouter,
   adminDesignRequestsRouter,
@@ -115,15 +116,14 @@ export function createApp({
     req.session.csrf ||= randomBytes(32).toString('hex');
     res.json({ token: req.session.csrf });
   });
+  app.use('/api/slicer-worker', slicerWorkerRouter());
   app.use('/api', (req, res, next) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
     if (req.get('origin') !== webOrigin)
-      return res
-        .status(403)
-        .json({
-          message:
-            'No pudimos verificar la solicitud. Recargá la página y volvé a intentarlo.',
-        });
+      return res.status(403).json({
+        message:
+          'No pudimos verificar la solicitud. Recargá la página y volvé a intentarlo.',
+      });
     const supplied = req.get('x-csrf-token') || '';
     const expected = req.session.csrf || '';
     if (
@@ -308,6 +308,7 @@ export function createApp({
     validate(orderSchema),
     submitCatalogOrder,
   );
+  app.use('/api/admin/slicing', authenticated, adminSlicingRouter());
   app.use('/api/design-requests', designRequestsRouter(authenticated));
   app.use(
     '/api/admin/design-requests',
@@ -353,14 +354,12 @@ export function createApp({
   }
   app.use((err, req, res, _next) => {
     if (err.name === 'MulterError' && req.designUpload)
-      return res
-        .status(400)
-        .json({
-          message:
-            err.code === 'LIMIT_FILE_SIZE'
-              ? 'El archivo supera los 50 MiB.'
-              : 'Enviá un modelo y los datos de la solicitud.',
-        });
+      return res.status(400).json({
+        message:
+          err.code === 'LIMIT_FILE_SIZE'
+            ? 'El archivo supera los 50 MiB.'
+            : 'Enviá un modelo y los datos de la solicitud.',
+      });
     if (err.publicModelError)
       return res.status(400).json({ message: err.message });
     if (err.name === 'MulterError' && req.productModelUpload)
@@ -396,12 +395,10 @@ export function createApp({
         .status(409)
         .json({ message: 'No se pudo crear la cuenta con esos datos' });
     if (err.type === 'entity.parse.failed')
-      return res
-        .status(400)
-        .json({
-          message:
-            'No pudimos leer los datos enviados. Recargá la página y volvé a intentarlo.',
-        });
+      return res.status(400).json({
+        message:
+          'No pudimos leer los datos enviados. Recargá la página y volvé a intentarlo.',
+      });
     if (err.status === 413)
       return res.status(413).json({ message: 'Solicitud demasiado grande' });
     console.error(

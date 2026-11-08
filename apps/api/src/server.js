@@ -1,4 +1,4 @@
-import { DesignRequest } from './models.js';
+import { DesignRequest, SlicerWorker, SlicingJob } from './models.js';
 import mongoose from 'mongoose';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
@@ -53,6 +53,8 @@ await Promise.all([
   ensureUserEmailIndex(),
   SocialIdentity.init(),
   DesignRequest.init(),
+  SlicerWorker.init(),
+  SlicingJob.init(),
 ]);
 await migrateCatalogCopy();
 const store = MongoStore.create({

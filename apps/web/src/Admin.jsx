@@ -1,3 +1,4 @@
+import { WorkerConnections } from './SlicingControls.jsx';
 import DesignQuote from './DesignQuote.jsx';
 import DesignRequests from './DesignRequests.jsx';
 import { ProductGalleryEditor } from './ProductGalleryEditor.jsx';
@@ -247,6 +248,7 @@ export function Admin({ onCatalogChange, onPreview }) {
         <p role="status">Cargando taller…</p>
       ) : tab === 'designs' ? (
         <>
+          <WorkerConnections />
           <DesignRequests admin />
           <DesignQuote />
         </>

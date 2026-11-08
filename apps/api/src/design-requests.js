@@ -7,7 +7,8 @@ import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 import yauzl from 'yauzl';
 import { z } from 'zod';
-import { DesignRequest } from './models.js';
+import { publicSlice } from './slicing.js';
+import { DesignRequest, SlicingJob } from './models.js';
 import { pageNumber, pageMetadata } from './pagination.js';
 const limit = 50 * 1024 * 1024;
 const metadataSchema = z
@@ -143,8 +144,17 @@ export function designRequestsRouter(authenticated) {
         .lean(),
       DesignRequest.countDocuments(filter),
     ]);
+    const jobs = await SlicingJob.find({
+      requestId: { $in: rows.map((r) => r._id) },
+    }).lean();
+    const byRequest = new Map(jobs.map((j) => [String(j.requestId), j]));
     res.json({
-      requests: rows.map(publicRequest),
+      requests: rows.map((row) => ({
+        ...publicRequest(row),
+        ...(req.user.role === 'admin'
+          ? { slicing: publicSlice(byRequest.get(String(row._id))) }
+          : {}),
+      })),
       ...pageMetadata(page, total),
     });
   });
@@ -299,8 +309,17 @@ export function adminDesignRequestsRouter() {
         .lean(),
       DesignRequest.countDocuments(),
     ]);
+    const jobs = await SlicingJob.find({
+      requestId: { $in: rows.map((r) => r._id) },
+    }).lean();
+    const byRequest = new Map(jobs.map((j) => [String(j.requestId), j]));
     res.json({
-      requests: rows.map(publicRequest),
+      requests: rows.map((row) => ({
+        ...publicRequest(row),
+        ...(req.user.role === 'admin'
+          ? { slicing: publicSlice(byRequest.get(String(row._id))) }
+          : {}),
+      })),
       ...pageMetadata(page, total),
     });
   });

@@ -165,3 +165,53 @@ designRequestSchema.index({ userId: 1, requestId: 1 }, { unique: true });
 designRequestSchema.index({ userId: 1, createdAt: -1 });
 designRequestSchema.index({ createdAt: -1 });
 export const DesignRequest = model('DesignRequest', designRequestSchema);
+
+const slicerWorkerSchema = new Schema(
+  {
+    ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    authVersion: { type: Number, default: 0 },
+    name: { type: String, default: 'Mi PC' },
+    tokenHash: { type: String, select: false },
+    pairingHash: { type: String, select: false },
+    pairingExpiresAt: Date,
+    revokedAt: Date,
+    lastSeenAt: Date,
+    profiles: [{ _id: false, id: String, name: String, material: String }],
+  },
+  { timestamps: true },
+);
+slicerWorkerSchema.index({ tokenHash: 1 }, { unique: true, sparse: true });
+slicerWorkerSchema.index({ pairingHash: 1 }, { unique: true, sparse: true });
+export const SlicerWorker = model('SlicerWorker', slicerWorkerSchema);
+const slicingJobSchema = new Schema(
+  {
+    requestId: {
+      type: Schema.Types.ObjectId,
+      ref: 'DesignRequest',
+      required: true,
+    },
+    workerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'SlicerWorker',
+      required: true,
+    },
+    profileId: String,
+    profileName: String,
+    material: String,
+    state: {
+      type: String,
+      enum: ['queued', 'processing', 'complete', 'failed'],
+      default: 'queued',
+    },
+    leaseHash: { type: String, select: false },
+    leaseUntil: Date,
+    attempts: { type: Number, default: 0 },
+    result: { grams: Number, seconds: Number, plates: Number },
+    error: String,
+    finishedAt: Date,
+  },
+  { timestamps: true },
+);
+slicingJobSchema.index({ requestId: 1 }, { unique: true });
+slicingJobSchema.index({ workerId: 1, state: 1, leaseUntil: 1 });
+export const SlicingJob = model('SlicingJob', slicingJobSchema);

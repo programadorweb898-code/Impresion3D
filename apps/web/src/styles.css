@@ -3154,3 +3154,61 @@ footer,
 .color-warning .quote-options {
   margin-bottom: 0;
 }
+
+.slicer-connections,
+.request-slicing {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.slicer-connections p,
+.request-slicing p {
+  line-height: 1.7;
+}
+.slicer-connections details {
+  margin: 1rem 0;
+}
+.slicer-connections summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0.5rem 0;
+}
+.slicer-connections ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+}
+.slicer-connections form,
+.request-slicing label {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.slicer-connections input,
+.request-slicing select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+.slicer-connections li {
+  margin-top: 1rem;
+  overflow-wrap: anywhere;
+}
+.slicer-connections code {
+  overflow-wrap: anywhere;
+  font-size: 0.85em;
+}
+.pairing-code {
+  display: inline-block;
+  letter-spacing: 1px;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.request-slicing h4 {
+  font-weight: 650;
+}

@@ -25,7 +25,7 @@ export const legalPages = {
         id: 'datos',
         title: '2. Datos que se tratan',
         items: [
-          'Solicitudes de presupuesto 3D: archivo original, nombre del archivo, cantidad, escala y medidas solicitadas, uso indicado, estado de revisión de colores y aceptación de continuar con colores pendientes. La vista previa se procesa localmente; el archivo se guarda solo al enviar la solicitud y su descarga requiere la cuenta del solicitante o acceso de administración.',
+          'Solicitudes de presupuesto 3D: archivo original, nombre del archivo, cantidad, escala y medidas solicitadas, uso indicado, estado de revisión de colores y aceptación de continuar con colores pendientes. La vista previa se procesa localmente; el archivo se guarda solo al enviar la solicitud y su descarga requiere la cuenta del solicitante o acceso de administración. Para preparar el presupuesto, el responsable puede procesar una copia temporal en su PC vinculada con el sitio.',
           'Datos de cuenta: nombre, correo electrónico, identificador interno y estado de la cuenta. Si elegís email y contraseña, se conserva una representación protegida de la contraseña mediante hash, no su texto original.',
           'Acceso social: nombre, correo e identificador que proporciona Google o, cuando esté habilitado, Facebook. Google no comparte tu contraseña con Mundo 3D. No solicitamos acceso a Gmail, Drive, contactos ni al contenido privado de esas cuentas.',
           'Pedidos y consultas: productos, cantidades, importes, comentarios, estados y datos que nos comuniques para coordinar la fabricación o entrega. El sitio no procesa pagos online ni solicita números de tarjeta.',
