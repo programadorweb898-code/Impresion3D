@@ -2,7 +2,7 @@ import { unzipSync, strFromU8 } from 'three/addons/libs/fflate.module.js';
 export const filamentPrices = { PLA: 23000, PETG: 22000, TPU: 22000 };
 export function estimateQuote(grams, hours, material = 'PLA') {
   if (!Object.hasOwn(filamentPrices, material))
-    throw new Error('Eleg� un material disponible.');
+    throw new Error('Elegí un material disponible.');
   if (
     !Number.isFinite(grams) ||
     !Number.isFinite(hours) ||
