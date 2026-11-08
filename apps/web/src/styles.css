@@ -2052,6 +2052,13 @@ summary:focus-visible {
   font-weight: 500;
   gap: 24px;
 }
+.site-header .site-nav > * {
+  margin: 0;
+}
+/* The outline utility must not draw an unfocused ring outside scroll containers. */
+.outline {
+  outline-style: none;
+}
 .site-nav [aria-current='page'],
 .site-nav [aria-current='location'],
 .footer-legal a[aria-current='page'] {
