@@ -3212,3 +3212,60 @@ footer,
 .request-slicing h4 {
   font-weight: 650;
 }
+
+
+/* Black storefront palette. Keep admin, forms and white product photography readable. */
+body {
+  background: #000;
+}
+.site-header {
+  --text: #f5f5f5;
+  --muted: #b7b7b7;
+  --border: #343434;
+  background: #000;
+}
+.storefront-dark {
+  --text: #f5f5f5;
+  --muted: #b7b7b7;
+  --border: #343434;
+  --line: #343434;
+  --surface: #171717;
+  --surface-raised: #252525;
+  background: #000;
+  color: var(--text);
+}
+.storefront-dark .process {
+  background: #111;
+}
+.storefront-dark .hero-art-caption {
+  color: #202323;
+}
+.storefront-dark .catalog-search input,
+.storefront-dark .catalog-search select {
+  color: #202323;
+  background: #fff;
+}
+.storefront-dark .filters button.active,
+.storefront-dark .card-actions .product-button {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.storefront-dark .card-actions button:disabled {
+  background: #343434;
+  color: #b7b7b7;
+  border-color: #555;
+}
+.storefront-dark .catalog-feedback button {
+  color: #9db0ff;
+}
+footer {
+  --text: #f5f5f5;
+  --muted: #b7b7b7;
+  --border: #343434;
+  background: #000;
+  color: var(--text);
+}
+footer .footer-legal a {
+  color: #aabbff;
+}
