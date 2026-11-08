@@ -231,7 +231,13 @@ function App() {
   }, [view, user?.id]);
   async function reloadCatalog() {
     const query = new URLSearchParams({ page: String(catalogPage.page) });
-    if (category !== 'Todos') query.set('category', category);
+    const searchTerm = search.trim() || (category === 'Todos' ? '' : category);
+    if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
+    if (priceMin !== '')
+      query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
+    if (priceMax !== '')
+      query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
+    if (sort !== 'relevance') query.set('sort', sort);
     const data = await api('/products?' + query);
     setProducts(data.products);
     setCatalogPage({
