@@ -1,5 +1,8 @@
 import { unzipSync, strFromU8 } from 'three/addons/libs/fflate.module.js';
-export function estimateQuote(grams, hours) {
+export const filamentPrices = { PLA: 23000, PETG: 22000, TPU: 22000 };
+export function estimateQuote(grams, hours, material = 'PLA') {
+  if (!Object.hasOwn(filamentPrices, material))
+    throw new Error('Eleg� un material disponible.');
   if (
     !Number.isFinite(grams) ||
     !Number.isFinite(hours) ||
@@ -15,7 +18,12 @@ export function estimateQuote(grams, hours) {
   // electricity 100/h, 30 minutes labor at 5000/h, packaging 500,
   // 10% contingency and 75% markup on total cost.
   return (
-    Math.ceil(((grams * 23 + hours * 900 + 3000) * 1.1 * 1.75) / 100) * 100
+    Math.ceil(
+      ((grams * (filamentPrices[material] / 1000) + hours * 900 + 3000) *
+        1.1 *
+        1.75) /
+        100,
+    ) * 100
   );
 }
 export function readSlicedQuote(buffer) {
