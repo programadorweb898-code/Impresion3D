@@ -10,6 +10,7 @@ import { createAccountServices } from './account-access.js';
 import { SocialIdentity } from './models.js';
 import { ensureUserEmailIndex } from './user-email-index.js';
 import { migrateCatalogCopy } from './catalog-copy.js';
+import { migrateSeasonalCuencos } from './seasonal-cuencos.js';
 import {
   createOrderNotifier,
   startOrderNotifications,
@@ -57,6 +58,7 @@ await Promise.all([
   SlicingJob.init(),
 ]);
 await migrateCatalogCopy();
+await migrateSeasonalCuencos();
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,
