@@ -647,7 +647,7 @@ function App() {
         <BackLink onBack={goBack} disabled={busy || loggingOut} />
       )}
       {!loginPage && (
-        <main id="contenido">
+        <main id="contenido" className={view === 'catalog' ? 'storefront-dark' : undefined}>
           {notice && (
             <div role="status" className="notice">
               {notice}
