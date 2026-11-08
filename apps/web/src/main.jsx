@@ -189,9 +189,9 @@ function App() {
     let active = true;
     setLoading(true);
     const query = new URLSearchParams({ page: String(catalogPage.page) });
-    if (category !== 'Todos') query.set('category', category);
-    if (search.trim().toLowerCase())
-      query.set('startsWith', search.trim().toLowerCase());
+    // Category tabs and text search share the same dynamic search endpoint.
+    const searchTerm = search.trim() || (category === 'Todos' ? '' : category);
+    if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
     if (priceMin !== '')
       query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
     if (priceMax !== '')
@@ -770,6 +770,7 @@ function App() {
                       className={category === c ? 'active' : ''}
                       onClick={() => {
                         setCategory(c);
+                        setSearch('');
                         setCatalogPage((current) => ({ ...current, page: 1 }));
                       }}
                     >
@@ -791,6 +792,7 @@ function App() {
                       value={search}
                       onChange={(event) => {
                         setSearch(event.target.value);
+                        setCategory('Todos');
                         setCatalogPage((current) => ({ ...current, page: 1 }));
                       }}
                       placeholder="Nombre o categoría"
