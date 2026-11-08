@@ -31,6 +31,9 @@ test('solicitud privada: proporciones, cancelar sin enviar, original descargable
     .click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Hay partes sin color asignado');
+  const warningBox = await dialog.boundingBox();
+  expect(warningBox.y).toBeGreaterThan(0);
+  expect(warningBox.height).toBeLessThan(800);
   await page.screenshot({
     path: '/workspace/scratch/b47d4206c37c/solicitud-aviso-color.png',
     fullPage: false,

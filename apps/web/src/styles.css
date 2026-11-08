@@ -3137,3 +3137,20 @@ footer,
 .design-request-row h3 {
   overflow-wrap: anywhere;
 }
+.design-request-form dialog[open] {
+  display: block;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+  min-height: 0;
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  box-sizing: border-box;
+}
+.color-warning h2 {
+  font-size: 26px;
+  letter-spacing: -0.6px;
+}
+.color-warning .quote-options {
+  margin-bottom: 0;
+}
