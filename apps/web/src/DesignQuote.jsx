@@ -144,6 +144,7 @@ export default function DesignQuote() {
           <label>
             Tipo de filamento
             <select
+              aria-label="Tipo de filamento"
               value={material}
               onChange={(e) => {
                 setMaterial(e.target.value);
