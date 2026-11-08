@@ -1,5 +1,9 @@
 import { useRef, useState } from 'react';
-import { estimateQuote, readSlicedQuote } from './quote-estimate.js';
+import {
+  estimateQuote,
+  readSlicedQuote,
+  filamentPrices,
+} from './quote-estimate.js';
 const money = (value) =>
   new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -8,6 +12,7 @@ const money = (value) =>
   }).format(value);
 export default function DesignQuote() {
   const [mode, setMode] = useState('file');
+  const [material, setMaterial] = useState('PLA');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -119,7 +124,12 @@ export default function DesignQuote() {
               hours =
                 Number(data.get('hours')) + Number(data.get('minutes')) / 60;
             try {
-              setResult({ grams, hours, price: estimateQuote(grams, hours) });
+              setResult({
+                grams,
+                hours,
+                material,
+                price: estimateQuote(grams, hours, material),
+              });
             } catch (e) {
               setError(e.message);
             }
@@ -130,6 +140,28 @@ export default function DesignQuote() {
             Incluí el material de las piezas, soportes, purgas y torre. Sumá el
             tiempo y los gramos de todas las placas; no multipliques nuevamente
             por la cantidad de piezas.
+          </p>
+          <label>
+            Tipo de filamento
+            <select
+              aria-label="Tipo de filamento"
+              value={material}
+              onChange={(e) => {
+                setMaterial(e.target.value);
+                setResult(null);
+                setError('');
+              }}
+            >
+              <option value="PLA">PLA — Decoración y uso general</option>
+              <option value="PETG">
+                PETG — Piezas funcionales y ambientes húmedos
+              </option>
+              <option value="TPU">TPU — Flexible</option>
+            </select>
+          </label>
+          <p className="small">
+            Material seleccionado: {money(filamentPrices[material])}/kg. El
+            tiempo debe corresponder al laminado con ese material.
           </p>
           <div className="quote-inputs">
             <label>
@@ -189,7 +221,8 @@ export default function DesignQuote() {
               : ''}
           </p>
           <p className="small">
-            Estimación para PLA con material promedio de $23.000/kg. Incluye una
+            Estimación para {result.material || 'PLA'} con material promedio de{' '}
+            {money(filamentPrices[result.material || 'PLA'])}/kg. Incluye una
             preparación estándar de 30 minutos y embalaje básico. Sujeta a
             revisión de impresión, colores y terminación; no incluye envío ni
             componentes adicionales como luces o herrajes.
