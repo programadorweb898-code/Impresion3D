@@ -62,7 +62,12 @@ export const Product = model(
       image: { url: String, publicId: String, width: Number, height: Number },
       gallery: {
         angle: { url: String, publicId: String, width: Number, height: Number },
-        context: { url: String, publicId: String, width: Number, height: Number },
+        context: {
+          url: String,
+          publicId: String,
+          width: Number,
+          height: Number,
+        },
       },
       model: {
         url: String,
@@ -132,3 +137,31 @@ orderModel.index({ 'notification.state': 1, 'notification.dueAt': 1 });
 orderModel.index({ 'notification.state': 1, 'notification.leaseUntil': 1 });
 export const Order = model('Order', orderModel);
 
+const designRequestSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    fileId: { type: Schema.Types.ObjectId, required: true },
+    filename: String,
+    format: String,
+    requestId: { type: String, required: true },
+    requestHash: { type: String, required: true, select: false },
+    quantity: Number,
+    scale: Number,
+    dimensions: { width: Number, height: Number, depth: Number },
+    colorStatus: { type: String, enum: ['complete', 'missing', 'unknown'] },
+    acceptedMissingColor: Boolean,
+    usage: String,
+    status: {
+      type: String,
+      enum: ['recibido', 'en_revision', 'presupuestado', 'cerrado'],
+      default: 'recibido',
+    },
+    priceCents: { type: Number, default: null },
+    response: { type: String, default: '' },
+  },
+  { timestamps: true },
+);
+designRequestSchema.index({ userId: 1, requestId: 1 }, { unique: true });
+designRequestSchema.index({ userId: 1, createdAt: -1 });
+designRequestSchema.index({ createdAt: -1 });
+export const DesignRequest = model('DesignRequest', designRequestSchema);

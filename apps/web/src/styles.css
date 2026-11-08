@@ -3073,3 +3073,67 @@ footer,
   letter-spacing: 1.6px;
   align-self: center;
 }
+
+.design-request-form {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+.design-request-form form,
+.design-request-row form {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.design-request-form fieldset,
+.design-request-list fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.design-request-form form > fieldset {
+  display: grid;
+  gap: 1rem;
+}
+.design-request-form label,
+.design-request-row label {
+  display: grid;
+  gap: 0.5rem;
+}
+.design-request-form input,
+.design-request-form textarea,
+.design-request-row input,
+.design-request-row textarea,
+.design-request-row select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+.design-request-form dialog {
+  max-width: min(520px, calc(100vw - 32px));
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 24px;
+  color: var(--text);
+  background: var(--surface);
+}
+.design-request-form dialog::backdrop {
+  background: #15192388;
+}
+.color-warning p,
+.request-response {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.design-request-list {
+  margin-top: 3rem;
+}
+.design-request-row h3 {
+  overflow-wrap: anywhere;
+}
