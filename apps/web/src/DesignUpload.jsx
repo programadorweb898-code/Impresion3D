@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import ProductViewer from './ProductViewer.jsx';
+import DesignQuote from './DesignQuote.jsx';
 import { pieceNameInSpanish } from './piece-names.js';
 
 const maxBytes = 50 * 1024 * 1024;
@@ -221,6 +222,7 @@ export default function DesignUpload() {
           </p>
         )
       )}
+      <DesignQuote />
     </section>
   );
 }
