@@ -146,3 +146,62 @@ test('blanco explícito no es falta de color; color parcialmente ausente y forma
     'No pudimos verificar todos los colores',
   );
 });
+
+test('una respuesta tardía no marca un archivo nuevo como enviado', async ({
+  page,
+}) => {
+  await loginDesign(page);
+  await page.goto('/disenar');
+  let release;
+  let received;
+  const seen = new Promise((resolve) => {
+    received = resolve;
+  });
+  await page.route('**/api/design-requests', async (route) => {
+    if (route.request().method() !== 'POST') return route.continue();
+    const pending = new Promise((resolve) => {
+      release = resolve;
+    });
+    received();
+    await pending;
+    await route.fulfill({
+      status: 201,
+      contentType: 'application/json',
+      body: JSON.stringify({ _id: '1234567890abcdef12345678' }),
+    });
+  });
+  const input = page.getByLabel('Archivo de diseño 3D');
+  await input.setInputFiles({
+    name: 'anterior.stl',
+    mimeType: 'application/octet-stream',
+    buffer: tetraStl(),
+  });
+  await expect(page.getByLabel('Ancho (cm)', { exact: true })).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Solicitar presupuesto', exact: true })
+    .click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Enviar', exact: true })
+    .click();
+  await seen;
+  await input.setInputFiles({
+    name: 'nuevo.3mf',
+    mimeType: 'application/octet-stream',
+    buffer: coloredThreeMf(),
+  });
+  await expect(page.locator('.design-measurements h2')).toHaveText('nuevo.3mf');
+  const response = page.waitForResponse(
+    (r) =>
+      r.url().endsWith('/api/design-requests') &&
+      r.request().method() === 'POST',
+  );
+  release();
+  await response;
+  await expect(
+    page.getByRole('button', { name: 'Solicitar presupuesto', exact: true }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ }),
+  ).toHaveCount(0);
+});

@@ -12,6 +12,8 @@ export default function DesignRequestForm({ file, dimensions }) {
     [refresh, setRefresh] = useState(0),
     [editing, setEditing] = useState(null),
     [draft, setDraft] = useState('');
+  const currentFile = useRef(file);
+  currentFile.current = file;
   const dialog = useRef(null),
     submit = useRef(null),
     requestId = useRef(crypto.randomUUID());
@@ -34,6 +36,7 @@ export default function DesignRequestForm({ file, dimensions }) {
   }, []);
   useEffect(() => {
     setScale(1);
+    setBusy(false);
     setSent(null);
     setError('');
     setEditing(null);
@@ -49,6 +52,7 @@ export default function DesignRequestForm({ file, dimensions }) {
   async function send(acceptedMissingColor = false) {
     dialog.current?.close();
     if (!ready || busy || sent) return;
+    const submittedFile = file;
     setBusy(true);
     setError('');
     const body = new FormData();
@@ -69,13 +73,14 @@ export default function DesignRequestForm({ file, dimensions }) {
     );
     try {
       const result = await api('/design-requests', { method: 'POST', body });
-      setSent(result);
+      if (currentFile.current === submittedFile) setSent(result);
       setRefresh((v) => v + 1);
     } catch (e) {
+      if (currentFile.current !== submittedFile) return;
       if (e.status === 401) setAccount(null);
       setError(e.message);
     } finally {
-      setBusy(false);
+      if (currentFile.current === submittedFile) setBusy(false);
     }
   }
   return (
