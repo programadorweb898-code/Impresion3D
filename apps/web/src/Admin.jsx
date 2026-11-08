@@ -1,3 +1,5 @@
+import DesignQuote from './DesignQuote.jsx';
+import DesignRequests from './DesignRequests.jsx';
 import { ProductGalleryEditor } from './ProductGalleryEditor.jsx';
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
@@ -208,6 +210,13 @@ export function Admin({ onCatalogChange, onPreview }) {
           Productos
         </button>
         <button
+          aria-pressed={tab === 'designs'}
+          className={tab === 'designs' ? 'active' : ''}
+          onClick={() => setTab('designs')}
+        >
+          Presupuestos 3D
+        </button>
+        <button
           aria-pressed={tab === 'operations'}
           className={tab === 'operations' ? 'active' : ''}
           onClick={() => setTab('operations')}
@@ -236,6 +245,11 @@ export function Admin({ onCatalogChange, onPreview }) {
       )}
       {loading ? (
         <p role="status">Cargando taller…</p>
+      ) : tab === 'designs' ? (
+        <>
+          <DesignRequests admin />
+          <DesignQuote />
+        </>
       ) : tab === 'operations' ? (
         <section>
           <h2>Estado del servicio</h2>

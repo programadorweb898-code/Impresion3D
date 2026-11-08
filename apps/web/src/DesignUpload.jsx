@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import ProductViewer from './ProductViewer.jsx';
-import DesignQuote from './DesignQuote.jsx';
+import DesignRequestForm from './DesignRequestForm.jsx';
 import { pieceNameInSpanish } from './piece-names.js';
 
 const maxBytes = 50 * 1024 * 1024;
@@ -11,6 +11,7 @@ const centimeters = (mm) =>
 export default function DesignUpload() {
   const input = useRef(null);
   const selection = useRef(0);
+  const [originalFile, setOriginalFile] = useState(null);
   const [product, setProduct] = useState(null);
   const [dimensions, setDimensions] = useState(null);
   const [error, setError] = useState('');
@@ -22,6 +23,7 @@ export default function DesignUpload() {
   async function select(files) {
     const version = ++selection.current;
     setProduct(null);
+    setOriginalFile(null);
     setDimensions(null);
     setError('');
     setLoading(false);
@@ -43,6 +45,7 @@ export default function DesignUpload() {
     try {
       const buffer = await file.arrayBuffer();
       if (version !== selection.current) return;
+      setOriginalFile(file);
       setProduct({
         name: file.name,
         model: { url: 'local:' + version, format, buffer },
@@ -105,8 +108,8 @@ export default function DesignUpload() {
         <p className="small">3MF, STL o GLB · Hasta 50 MiB</p>
       </div>
       <p className="small">
-        El archivo se abre en tu navegador y no se envía ni se guarda en el
-        sitio.
+        La vista previa se procesa en tu navegador. El archivo solo se guarda
+        cuando enviás una solicitud de presupuesto.
       </p>
       {loading && <p role="status">Leyendo archivo…</p>}
       {error && (
@@ -222,7 +225,10 @@ export default function DesignUpload() {
           </p>
         )
       )}
-      <DesignQuote />
+      <DesignRequestForm
+        file={originalFile}
+        dimensions={error ? null : dimensions}
+      />
     </section>
   );
 }

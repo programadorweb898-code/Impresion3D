@@ -177,16 +177,19 @@ function threeMf(buffer) {
         throw invalid();
       const positions = new Float32Array(faces.length * 9);
       const colors = new Float32Array(faces.length * 9);
+      const propertyTables = new Map(
+        Array.from(resources.children).map((p) => [p.getAttribute('id'), p]),
+      );
+      let missing = false,
+        unknown = false;
       faces.forEach((face, index) => {
         const paint = { 8: 2, '0C': 3, '1C': 4 }[
           face.getAttribute('paint_color')
         ];
         let color = palette[(paint || slot) - 1];
         const pid = face.getAttribute('pid') || data.getAttribute('pid');
-        if (!color && pid) {
-          const props = Array.from(resources.children).find(
-            (p) => p.getAttribute('id') === pid,
-          );
+        if (pid) {
+          const props = propertyTables.get(pid);
           const item =
             props?.children[
               Number(
@@ -196,13 +199,55 @@ function threeMf(buffer) {
           color =
             item?.getAttribute('displaycolor') || item?.getAttribute('color');
         }
+        const hasPaint =
+          face.hasAttribute('paint_color') ||
+          face.hasAttribute('mmu_segmentation');
+        if (hasPaint && !paint) unknown = true;
+        else if (pid) {
+          const props = propertyTables.get(pid);
+          const p1 =
+            face.getAttribute('p1') ?? data.getAttribute('pindex') ?? '0';
+          for (const property of [
+            p1,
+            face.getAttribute('p2') ?? p1,
+            face.getAttribute('p3') ?? p1,
+          ]) {
+            const item = props?.children[Number(property)];
+            if (
+              !/^#[a-f0-9]{6}(?:[a-f0-9]{2})?$/i.test(
+                item?.getAttribute('displaycolor') ||
+                  item?.getAttribute('color') ||
+                  '',
+              )
+            )
+              unknown = true;
+          }
+        } else if (!/^#[a-f0-9]{6}(?:[a-f0-9]{2})?$/i.test(color || '')) {
+          if (hasPaint || palette.length) unknown = true;
+          else missing = true;
+        }
         const colorKey = /^#[a-f0-9]{6}(?:[a-f0-9]{2})?$/i.test(color || '')
           ? color.slice(0, 7)
           : '#c4c4bc';
         if (!colorCache.has(colorKey))
           colorCache.set(colorKey, new THREE.Color(colorKey));
-        const c = colorCache.get(colorKey);
         ['v1', 'v2', 'v3'].forEach((key, corner) => {
+          const p1 =
+            face.getAttribute('p1') ?? data.getAttribute('pindex') ?? '0';
+          const item =
+            propertyTables.get(pid)?.children[
+              Number(face.getAttribute('p' + (corner + 1)) ?? p1)
+            ];
+          const cornerColor =
+            item?.getAttribute('displaycolor') || item?.getAttribute('color');
+          const vertexColorKey = /^#[a-f0-9]{6}(?:[a-f0-9]{2})?$/i.test(
+            cornerColor || '',
+          )
+            ? cornerColor.slice(0, 7)
+            : colorKey;
+          if (!colorCache.has(vertexColorKey))
+            colorCache.set(vertexColorKey, new THREE.Color(vertexColorKey));
+          const c = colorCache.get(vertexColorKey);
           const v = vertices[Number(face.getAttribute(key))];
           if (!v) throw invalid();
           positions.set(v, index * 9 + corner * 3);
@@ -219,6 +264,11 @@ function threeMf(buffer) {
       const m = material('#ffffff');
       m.vertexColors = true;
       const piece = new THREE.Mesh(geometry, m);
+      piece.userData.colorStatus = missing
+        ? 'missing'
+        : unknown
+          ? 'unknown'
+          : 'complete';
       const label = children(part, 'metadata')
         .find((entry) => entry.getAttribute('key') === 'name')
         ?.getAttribute('value');
@@ -256,6 +306,15 @@ function threeMf(buffer) {
     part.applyMatrix4(transform(item));
     group.add(part);
   }
+  const colorStates = [];
+  group.traverse((part) => {
+    if (part.isMesh) colorStates.push(part.userData.colorStatus);
+  });
+  group.userData.colorStatus = colorStates.includes('missing')
+    ? 'missing'
+    : colorStates.includes('unknown')
+      ? 'unknown'
+      : 'complete';
   group.scale.setScalar(unit);
   group.rotation.x = -Math.PI / 2;
   return group;
@@ -316,7 +375,10 @@ export async function parseLocalModel(buffer, format) {
       throw invalid();
     geometry.computeVertexNormals();
     const root = new THREE.Group();
-    root.add(new THREE.Mesh(geometry, material()));
+    const m = material(geometry.hasColors ? '#ffffff' : undefined);
+    m.vertexColors = !!geometry.hasColors;
+    root.add(new THREE.Mesh(geometry, m));
+    root.userData.colorStatus = geometry.hasColors ? 'complete' : 'missing';
     root.userData.partBounds = stlComponents(geometry);
     root.rotation.x = -Math.PI / 2;
     return root;
@@ -350,6 +412,26 @@ export async function parseLocalModel(buffer, format) {
   )
     throw invalid('El modelo es demasiado complejo para esta vista.');
   const root = (await new GLTFLoader().parseAsync(buffer, '')).scene;
+  const colorStates = [];
+  for (const mesh of doc.meshes || [])
+    for (const primitive of mesh.primitives || []) {
+      const m = doc.materials?.[primitive.material];
+      const pbr = m?.pbrMetallicRoughness;
+      colorStates.push(
+        primitive.attributes?.COLOR_0 !== undefined ||
+          pbr?.baseColorFactor !== undefined ||
+          pbr?.baseColorTexture !== undefined
+          ? 'complete'
+          : m?.extensions
+            ? 'unknown'
+            : 'missing',
+      );
+    }
+  root.userData.colorStatus = colorStates.includes('missing')
+    ? 'missing'
+    : colorStates.includes('unknown')
+      ? 'unknown'
+      : 'complete';
   root.scale.multiplyScalar(1000); // glTF uses meters; all local measurements use millimeters.
   return root;
 }

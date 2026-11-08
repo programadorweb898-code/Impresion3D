@@ -237,6 +237,7 @@ export default function ProductViewer({
           width: size.x,
           height: size.y,
           depth: size.z,
+          colorStatus: root.userData.colorStatus || 'unknown',
           componentCount: parts.length,
           parts,
         });

@@ -1,3 +1,4 @@
+import { DesignRequest } from './models.js';
 import mongoose from 'mongoose';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
@@ -48,7 +49,11 @@ const staticDirectory =
 if (staticDirectory && !existsSync(staticDirectory + 'index.html'))
   throw new Error('Primero ejecutá npm run build');
 await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
-await Promise.all([ensureUserEmailIndex(), SocialIdentity.init()]);
+await Promise.all([
+  ensureUserEmailIndex(),
+  SocialIdentity.init(),
+  DesignRequest.init(),
+]);
 await migrateCatalogCopy();
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
