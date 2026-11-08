@@ -1,3 +1,4 @@
+import { Brand } from './Brand.jsx';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 export function Navbar({
   user,
@@ -73,14 +74,14 @@ export function Navbar({
       <header className="site-header" ref={headerRef}>
         <a
           className="brand"
+          aria-label="Mundo 3D, inicio"
           href="/"
           onClick={(e) => {
             e.preventDefault();
             choose(onCatalog);
           }}
         >
-          <span className="brand-icon">✳</span> Mundo{' '}
-          <span className="text-orange-600">3D</span>
+          <Brand />
         </a>
         <div className={'nav-collapse' + (expanded ? ' is-expanded' : '')}>
           <nav

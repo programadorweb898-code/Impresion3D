@@ -1,3 +1,4 @@
+import { Brand, BrandMark } from './Brand.jsx';
 import { validationMessage } from '@impresion3d/shared';
 import React, {
   useState,
@@ -189,32 +190,39 @@ function App() {
     setLoading(true);
     const query = new URLSearchParams({ page: String(catalogPage.page) });
     if (category !== 'Todos') query.set('category', category);
-    if (search.trim().toLowerCase()) query.set('startsWith', search.trim().toLowerCase());
-    if (priceMin !== '') query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
-    if (priceMax !== '') query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
+    if (search.trim().toLowerCase())
+      query.set('startsWith', search.trim().toLowerCase());
+    if (priceMin !== '')
+      query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
+    if (priceMax !== '')
+      query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
     if (sort !== 'relevance') query.set('sort', sort);
-    if (search.trim().toLowerCase()) query.set('startsWith', search.trim().toLowerCase());
-    if (priceMin !== '') query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
-    if (priceMax !== '') query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
-    if (sort !== 'relevance') query.set('sort', sort);
-    api('/products?' + query)
-      .then((data) => {
-        if (!active) return;
-        setProducts(data.products);
-        setCatalogPage((current) => ({
-          ...current,
-          pages: data.pages,
-          categories: data.categories,
-        }));
-      })
-      .catch((e) => {
-        if (active) setError(e.message);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    const controller = new AbortController();
+    const timer = setTimeout(
+      () =>
+        api('/products?' + query, { signal: controller.signal })
+          .then((data) => {
+            if (!active) return;
+            setProducts(data.products);
+            setCatalogPage((current) => ({
+              ...current,
+              pages: data.pages,
+              total: data.total,
+              categories: data.categories,
+            }));
+          })
+          .catch((e) => {
+            if (active) setError(e.message);
+          })
+          .finally(() => {
+            if (active) setLoading(false);
+          }),
+      search || priceMin || priceMax ? 250 : 0,
+    );
     return () => {
       active = false;
+      clearTimeout(timer);
+      controller.abort();
     };
   }, [catalogPage.page, category, search, priceMin, priceMax, sort]);
   useEffect(() => {
@@ -608,6 +616,9 @@ function App() {
   }
   return (
     <>
+      <a className="skip-link" href="#contenido">
+        Ir al contenido
+      </a>
       {!loginPage && (
         <Navbar
           cartButtonRef={cartButtonRef}
@@ -630,7 +641,7 @@ function App() {
         <BackLink onBack={goBack} disabled={busy || loggingOut} />
       )}
       {!loginPage && (
-        <main>
+        <main id="contenido">
           {notice && (
             <div role="status" className="notice">
               {notice}
@@ -647,7 +658,9 @@ function App() {
           {legalPages[view] ? (
             <LegalPage pageKey={view} />
           ) : view === 'design' ? (
-            <Suspense fallback={<p role="status">Cargando tu espacio de diseño…</p>}>
+            <Suspense
+              fallback={<p role="status">Cargando tu espacio de diseño…</p>}
+            >
               <DesignUpload />
             </Suspense>
           ) : view === 'product' ? (
@@ -684,16 +697,16 @@ function App() {
             <>
               <section className="hero">
                 <div>
-                  <p className="eyebrow">
-                    DISEÑADO CON INTENCIÓN · IMPRESO EN 3D
-                  </p>
+                  <p className="eyebrow">DISEÑO QUE TOMA FORMA</p>
                   <h1>
-                    De una idea,
-                    <br />a tu <em>mundo.</em>
+                    Otra forma
+                    <br />
+                    de hacer <em>lo cotidiano.</em>
                   </h1>
                   <p className="hero-copy">
-                    Objetos que hacen tu día un poco más tuyo. Descubrí diseños
-                    únicos y contanos cómo los imaginás.
+                    Piezas para ordenar, decorar y regalar. Elegí un diseño de
+                    nuestro catálogo o traé tu propia idea: la imprimimos para
+                    vos.
                   </p>
                   <a
                     className="primary"
@@ -711,36 +724,43 @@ function App() {
                       }
                     }}
                   >
-                    Explorar diseños <span>↗</span>
+                    Explorar catálogo <span aria-hidden="true">↗</span>
                   </a>
                   <p className="small mt-6">
-                    Hecho por encargo · Atención personal · Sin pagos online
+                    Hecho a pedido. Coordinamos pago y entrega con vos.
                   </p>
                 </div>
                 <figure className="hero-art">
                   <p className="hero-art-heading">
-                    01 / OBJETOS CON PERSONALIDAD
+                    EN CASA, CADA DETALLE CUENTA
                   </p>
                   <img
                     className="hero-photo"
-                    src="/images/hero-3d-studio.svg"
-                    width="1000"
-                    height="1000"
+                    src="/images/hero-organizador-1000.webp"
+                    srcSet="/images/hero-organizador-640.webp 640w, /images/hero-organizador-1000.webp 1000w"
+                    sizes="(max-width: 575px) 90vw, 45vw"
+                    width="1254"
+                    height="1254"
                     fetchPriority="high"
-                    alt="Visualización realista de una maceta geométrica terracota con textura de impresión 3D"
+                    alt="Organizador de platos negro de Mundo 3D en una cocina, con platos blancos"
                   />
                   <figcaption className="hero-art-caption">
-                    De la pantalla a tus manos.
+                    <span>Organización, con otra forma.</span>
+                    <span className="hero-caption-category">HOGAR</span>
                   </figcaption>
                 </figure>
               </section>
               <section id="catalogo" className="catalog">
                 <div className="section-top">
                   <div>
-                    <p className="eyebrow">PEQUEÑOS DETALLES, GRANDES IDEAS</p>
-                    <h2>Encontrá tu próxima pieza.</h2>
+                    <p className="eyebrow">LA COLECCIÓN</p>
+                    <h2>
+                      Diseños para tu mundo<span className="accent-dot">.</span>
+                    </h2>
                   </div>
-                  <span className="small">Hechas a pedido, para vos.</span>
+                  <span className="small">
+                    Explorá los detalles. Elegí tu próxima pieza.
+                  </span>
                 </div>
                 <div className="filters" aria-label="Filtrar productos">
                   {['Todos', ...catalogPage.categories].map((c) => (
@@ -757,40 +777,165 @@ function App() {
                     </button>
                   ))}
                 </div>
-                <form className="catalog-search" onSubmit={(event) => { event.preventDefault(); setCatalogPage((current) => ({ ...current, page: 1 })); }}>
-                  <label>Buscar productos<input type="search" value={search} onChange={(event) => { setSearch(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Nombre o categoría" /></label>
-                  <label>Ordenar por<select value={sort} onChange={(event) => setSort(event.target.value)}><option value="relevance">Más relevantes</option><option value="price-asc">Precio: menor a mayor</option><option value="price-desc">Precio: mayor a menor</option></select></label>
-                  <label>Rango de precio
-                    <select aria-label="Rango de precio" value={Array.from({ length: 8 }, (_, i) => [String(i * 5000), String((i + 1) * 5000)]).some(([min, max]) => priceMin === min && priceMax === max) ? priceMin + ':' + priceMax : ''}
+                <form
+                  className="catalog-search"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    setCatalogPage((current) => ({ ...current, page: 1 }));
+                  }}
+                >
+                  <label>
+                    Buscar productos
+                    <input
+                      type="search"
+                      value={search}
                       onChange={(event) => {
-                        const [min, max] = event.target.value ? event.target.value.split(':') : ['', ''];
-                        setPriceMin(min);
-                        setPriceMax(max);
+                        setSearch(event.target.value);
                         setCatalogPage((current) => ({ ...current, page: 1 }));
-                      }}>
-                      <option value="">Todos los precios / personalizado</option>
-                      {Array.from({ length: 8 }, (_, i) => {
-                        const min = i * 5000, max = (i + 1) * 5000;
-                        return <option key={min} value={min + ':' + max}>$ {min.toLocaleString('es-AR')} – $ {max.toLocaleString('es-AR')}</option>;
-                      })}
+                      }}
+                      placeholder="Nombre o categoría"
+                    />
+                  </label>
+                  <label>
+                    Ordenar por
+                    <select
+                      value={sort}
+                      onChange={(event) => {
+                        setSort(event.target.value);
+                        setCatalogPage((current) => ({ ...current, page: 1 }));
+                      }}
+                    >
+                      <option value="relevance">Más relevantes</option>
+                      <option value="price-asc">Precio: menor a mayor</option>
+                      <option value="price-desc">Precio: mayor a menor</option>
                     </select>
                   </label>
-                  <label>Precio mínimo<input type="number" min="0" step="1" value={priceMin} onChange={(event) => { setPriceMin(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Desde" /></label>
-                  <label>Precio máximo<input type="number" min="0" step="1" value={priceMax} onChange={(event) => { setPriceMax(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Hasta" /></label>
+                  <details className="price-filters">
+                    <summary>Filtrar por precio</summary>
+                    <div className="price-fields">
+                      <label>
+                        Rango de precio
+                        <select
+                          aria-label="Rango de precio"
+                          value={
+                            Array.from({ length: 8 }, (_, i) => [
+                              String(i * 5000),
+                              String((i + 1) * 5000),
+                            ]).some(
+                              ([min, max]) =>
+                                priceMin === min && priceMax === max,
+                            )
+                              ? priceMin + ':' + priceMax
+                              : ''
+                          }
+                          onChange={(event) => {
+                            const [min, max] = event.target.value
+                              ? event.target.value.split(':')
+                              : ['', ''];
+                            setPriceMin(min);
+                            setPriceMax(max);
+                            setCatalogPage((current) => ({
+                              ...current,
+                              page: 1,
+                            }));
+                          }}
+                        >
+                          <option value="">
+                            Todos los precios / personalizado
+                          </option>
+                          {Array.from({ length: 8 }, (_, i) => {
+                            const min = i * 5000,
+                              max = (i + 1) * 5000;
+                            return (
+                              <option key={min} value={min + ':' + max}>
+                                $ {min.toLocaleString('es-AR')} – ${' '}
+                                {max.toLocaleString('es-AR')}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </label>
+                      <label>
+                        Precio mínimo
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={priceMin}
+                          onChange={(event) => {
+                            setPriceMin(event.target.value);
+                            setCatalogPage((current) => ({
+                              ...current,
+                              page: 1,
+                            }));
+                          }}
+                          placeholder="Desde"
+                        />
+                      </label>
+                      <label>
+                        Precio máximo
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={priceMax}
+                          onChange={(event) => {
+                            setPriceMax(event.target.value);
+                            setCatalogPage((current) => ({
+                              ...current,
+                              page: 1,
+                            }));
+                          }}
+                          placeholder="Hasta"
+                        />
+                      </label>
+                    </div>
+                  </details>
                 </form>
-                {loading ? (
-                  <p role="status">Cargando diseños…</p>
+                <div className="catalog-feedback">
+                  <p role="status" aria-live="polite">
+                    {loading
+                      ? 'Actualizando catálogo…'
+                      : `${catalogPage.total ?? products.length} diseños encontrados`}
+                  </p>
+                  {(search || category !== 'Todos' || priceMin || priceMax) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearch('');
+                        setCategory('Todos');
+                        setPriceMin('');
+                        setPriceMax('');
+                        setCatalogPage((current) => ({ ...current, page: 1 }));
+                      }}
+                    >
+                      Limpiar filtros
+                    </button>
+                  )}
+                </div>
+                {loading && !products.length ? (
+                  <div className="catalog-loading" role="status">
+                    <span>Cargando diseños…</span>
+                    <div className="grid-products" aria-hidden="true">
+                      {Array.from({ length: 4 }, (_, i) => (
+                        <div className="product-skeleton" key={i}>
+                          <div />
+                          <span />
+                          <span />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : !products.length ? (
                   <div className="empty" role="status">
                     <strong>Sin resultados</strong>
-                    <p>No encontramos productos que coincidan con tu búsqueda y filtros.</p>
-                    <button type="button" onClick={() => {
-                      setSearch(''); setCategory('Todos'); setPriceMin(''); setPriceMax('');
-                      setCatalogPage((current) => ({ ...current, page: 1 }));
-                    }}>Limpiar filtros</button>
+                    <p>
+                      No encontramos productos que coincidan con tu búsqueda y
+                      filtros.
+                    </p>
                   </div>
                 ) : (
-                  <div className="grid-products">
+                  <div className="grid-products" aria-busy={loading}>
                     {products.map((p, i) => (
                       <article
                         className="product-card"
@@ -819,6 +964,8 @@ function App() {
                           {p.image?.url ? (
                             <img
                               className="product-photo"
+                              width="600"
+                              height="600"
                               src={p.image.url}
                               alt={p.name}
                               loading="lazy"
@@ -846,7 +993,9 @@ function App() {
                           </div>
                           <strong>{money(p.priceCents, p.currency)}</strong>
                         </div>
-                        <p className="description">{p.shortDescription || p.name}</p>
+                        <p className="description">
+                          {p.shortDescription || p.name}
+                        </p>
                         <div className="card-actions">
                           <button
                             className="model-button"
@@ -864,17 +1013,19 @@ function App() {
                               ? 'En el carrito'
                               : 'Agregar al carrito'}{' '}
                             <span aria-hidden="true">
-                              {cartProductIds.has(p._id) ? '✓' : '＋'}
+                              {cartProductIds.has(p._id) ? '✓' : '+'}
                             </span>
                           </button>
                         </div>
-                        <p className="card-help">
-                          {!p.model?.url
-                            ? 'Vista 3D todavía no disponible.'
-                            : cartProductIds.has(p._id)
-                              ? 'Cambiá la cantidad desde tu carrito.'
-                              : 'Giralo y acercalo en el visor.'}
-                        </p>
+                        {cartProductIds.has(p._id) && (
+                          <p className="card-help">
+                            {!p.model?.url
+                              ? 'Vista 3D todavía no disponible.'
+                              : cartProductIds.has(p._id)
+                                ? 'Cambiá la cantidad desde tu carrito.'
+                                : 'Giralo y acercalo en el visor.'}
+                          </p>
+                        )}
                       </article>
                     ))}
                   </div>
@@ -922,12 +1073,32 @@ function App() {
                 ))}
               </section>
               <section className="coming">
-                <span>PRÓXIMAMENTE</span>
-                <h2>Más espacio para tu imaginación.</h2>
-                <p>
-                  Estamos preparando la personalización de medidas y, más
-                  adelante, la generación de modelos desde imágenes.
-                </p>
+                <div>
+                  <p className="eyebrow">¿TENÉS UN ARCHIVO 3D?</p>
+                  <h2>Tu idea también tiene lugar acá.</h2>
+                  <p>
+                    Subí tu modelo, revisalo en 3D y consultanos para hacerlo
+                    realidad.
+                  </p>
+                </div>
+                <a
+                  className="primary"
+                  href="/disenar"
+                  onClick={(event) => {
+                    if (
+                      event.button === 0 &&
+                      !event.metaKey &&
+                      !event.ctrlKey &&
+                      !event.shiftKey &&
+                      !event.altKey
+                    ) {
+                      event.preventDefault();
+                      openDesign();
+                    }
+                  }}
+                >
+                  Cotizar mi archivo <span aria-hidden="true">↗</span>
+                </a>
               </section>
             </>
           ) : (
@@ -992,8 +1163,16 @@ function App() {
       )}
       {!loginPage && (
         <footer>
-          <a className="brand" href="#" onClick={showCatalog}>
-            ✳ Mundo 3D
+          <a
+            className="brand"
+            aria-label="Mundo 3D, inicio"
+            href="/"
+            onClick={(event) => {
+              event.preventDefault();
+              showCatalog();
+            }}
+          >
+            <Brand />
           </a>
           <p>Ideas que toman forma.</p>
           <div className="footer-legal">
@@ -1131,7 +1310,7 @@ function App() {
         <Modal onClose={() => setLoginPrompt(false)}>
           <div className="login-prompt">
             <span className="login-prompt-icon" aria-hidden="true">
-              ✳
+              <BrandMark />
             </span>
             <p className="eyebrow">TU PRÓXIMA IDEA EMPIEZA ACÁ</p>
             <h2 id="modal-title">Guardá tus favoritos en el carrito</h2>
