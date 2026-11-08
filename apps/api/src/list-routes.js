@@ -34,6 +34,7 @@ export async function listProducts(req, res) {
     if (escaped) filter.$or = [
       { name: { $regex: '^' + escaped, $options: 'i' } },
       { category: { $regex: '^' + escaped, $options: 'i' } },
+      { categories: { $regex: '^' + escaped, $options: 'i' } },
     ];
   }
   const priceMin = req.query.priceMin;
@@ -59,14 +60,17 @@ export async function listProducts(req, res) {
     .lean();
   // Keep old open tabs compatible, with bounded responses.
   if (req.query.page === undefined) return res.json(products);
-  const [total, categories] = await Promise.all([
+  const [total, primaryCategories, additionalCategories] = await Promise.all([
     Product.countDocuments(filter),
     Product.distinct('category', { active: true }),
+    Product.distinct('categories', { active: true }),
   ]);
   res.json({
     products,
     ...pageMetadata(page, total),
-    categories: categories.filter(Boolean).sort(),
+    categories: [...new Set([...primaryCategories, ...additionalCategories])]
+      .filter(Boolean)
+      .sort(),
   });
 }
 export async function listOrders(req, res) {
