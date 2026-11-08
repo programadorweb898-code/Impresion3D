@@ -3215,10 +3215,11 @@ footer,
 
 
 /* Black storefront palette. Keep admin, forms and white product photography readable. */
-body {
+/* Only the public catalog has the dark canvas. Internal pages retain the light theme. */
+body:has(.storefront-dark) {
   background: #000;
 }
-.site-header {
+body:has(.storefront-dark) .site-header {
   --text: #f5f5f5;
   --muted: #b7b7b7;
   --border: #343434;
@@ -3259,13 +3260,13 @@ body {
 .storefront-dark .catalog-feedback button {
   color: #9db0ff;
 }
-footer {
+body:has(.storefront-dark) footer {
   --text: #f5f5f5;
   --muted: #b7b7b7;
   --border: #343434;
   background: #000;
   color: var(--text);
 }
-footer .footer-legal a {
+body:has(.storefront-dark) footer .footer-legal a {
   color: #aabbff;
 }
