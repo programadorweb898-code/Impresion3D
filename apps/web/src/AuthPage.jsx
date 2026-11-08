@@ -1,3 +1,4 @@
+import { Brand } from './Brand.jsx';
 import { newPasswordSchema } from '@impresion3d/shared';
 import { PasswordInput } from './PasswordInput.jsx';
 import { useEffect, useState } from 'react';
@@ -241,10 +242,10 @@ export function AuthPage({
   }
   const disabled = busy || working;
   return (
-    <main className="login-page">
+    <main className="login-page" id="contenido">
       <section className="login-panel" aria-labelledby="login-title">
-        <p className="auth-brand">
-          <span aria-hidden="true">✳</span> Mundo <span>3D</span>
+        <p className="auth-brand brand" aria-label="Mundo 3D">
+          <Brand />
         </p>
         <h1 id="login-title">
           {mode === 'confirm-google'

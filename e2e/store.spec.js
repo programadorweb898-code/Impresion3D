@@ -671,7 +671,7 @@ test('la advertencia de disponibilidad se mantiene cuando el servidor confirma q
     drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
   ).toBeDisabled();
 });
-test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver y continuar comprando', async ({
+test('ficha conserva fotos, descripción y medidas; galería adaptable a móvil y escritorio; volver y continuar comprando', async ({
   page,
 }) => {
   await page.goto('/');
@@ -713,8 +713,9 @@ test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 844 });
     const image = await page.locator('.product-detail-media').boundingBox();
-    expect(Math.abs(image.width - width / 2)).toBeLessThan(2);
-    expect(Math.abs(image.x + image.width / 2 - width / 2)).toBeLessThan(2);
+    expect(image.width).toBeGreaterThan(width <= 900 ? Math.min(width * 0.8, 540) : width * 0.4);
+    expect(image.x).toBeGreaterThanOrEqual(0);
+    expect(image.x + image.width).toBeLessThanOrEqual(width);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth,
