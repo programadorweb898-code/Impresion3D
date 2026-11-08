@@ -36,7 +36,7 @@ test('solicitud privada: proporciones, cancelar sin enviar, original descargable
   expect(warningBox.y).toBeGreaterThan(0);
   expect(warningBox.height).toBeLessThan(800);
   await page.screenshot({
-    path: '/workspace/scratch/b47d4206c37c/solicitud-aviso-color.png',
+    path: test.info().outputPath('solicitud-aviso-color.png'),
     fullPage: false,
   });
   await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
