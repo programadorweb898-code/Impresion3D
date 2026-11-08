@@ -2180,3 +2180,11 @@ a:focus-visible,
 .design-parts-table th,.design-parts-table td { text-align:left; padding:.65rem .35rem; border-bottom:1px solid var(--line); }
 .design-parts-table tbody th { font-weight:400; overflow-wrap:anywhere; max-width:9rem; }
 .design-parts-table td { white-space:nowrap; }
+
+.design-quote { margin-top:3rem; padding:1.5rem; border:1px solid var(--line); border-radius:1rem; background:var(--surface); }
+.quote-options { display:flex; flex-wrap:wrap; gap:.75rem; margin:1.5rem 0; }
+.quote-inputs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin:1.25rem 0; }
+.design-quote label { display:grid; gap:.5rem; }
+.design-quote input { max-width:100%; min-width:0; }
+.quote-result { margin-top:1.5rem; padding:1rem; border-left:4px solid var(--accent); }
+@media(max-width:600px) { .quote-inputs { grid-template-columns:1fr; } }
