@@ -1274,3 +1274,20 @@ test('administración convierte centímetros a milímetros y conserva decimales 
   await expect(page.getByLabel('Alto (cm)', { exact: true })).toHaveValue('12.12');
   await expect(page.getByLabel('Profundidad (cm)', { exact: true })).toHaveValue('5.21');
 });
+
+
+test('el catálogo usa fondo negro y administración conserva fondo claro y texto legible', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('main.storefront-dark')).toBeVisible();
+  expect(await page.locator('body').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(0, 0, 0)');
+  await login(page, 0, 'admin-browser@example.com');
+  await menu(page, 'Administración');
+  await expect(page.getByRole('heading', { name: 'Administración', exact: true })).toBeVisible();
+  await expect(page.locator('main.storefront-dark')).toHaveCount(0);
+  const colors = await page.locator('body').evaluate((el) => ({
+    background: getComputedStyle(el).backgroundColor,
+    text: getComputedStyle(el).color,
+  }));
+  expect(colors.background).toBe('rgb(246, 245, 241)');
+  expect(colors.text).toBe('rgb(32, 35, 35)');
+});
