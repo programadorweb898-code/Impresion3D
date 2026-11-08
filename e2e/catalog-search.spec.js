@@ -46,3 +46,26 @@ test('buscar agrupa pulsaciones, filtra precios y permite recuperar el catálogo
     }
   }
 });
+
+
+test('las pestañas reutilizan la búsqueda dinámica y permiten volver a buscar', async ({ page }) => {
+  const requests = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (url.pathname === '/api/products') requests.push(url);
+  });
+  await page.goto('/');
+  const category = page.locator('.filters button').filter({ hasNotText: /^Todos$/ }).first();
+  const label = (await category.textContent()).trim();
+  await category.click();
+  await expect.poll(() => requests.some((url) =>
+    url.searchParams.get('startsWith') === label.toLowerCase() &&
+    !url.searchParams.has('category'),
+  )).toBe(true);
+  await page.getByLabel('Buscar productos', { exact: true }).fill('Pieza 00');
+  await expect(page.locator('.filters button').first()).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => requests.some((url) =>
+    url.searchParams.get('startsWith') === 'pieza 00' &&
+    !url.searchParams.has('category'),
+  )).toBe(true);
+});
