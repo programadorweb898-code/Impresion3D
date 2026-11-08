@@ -35,5 +35,14 @@ test('buscar agrupa pulsaciones, filtra precios y permite recuperar el catálogo
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBe(width);
+    if (width === 1440) {
+      const nav = page.getByRole('navigation', { name: 'Principal' });
+      expect(await nav.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
+        true,
+      );
+      await expect(
+        page.getByRole('button', { name: 'Ingresar', exact: true }),
+      ).toBeInViewport();
+    }
   }
 });
