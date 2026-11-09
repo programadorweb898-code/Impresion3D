@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('la navegación de escritorio no recorta Catálogo ni se superpone al logo', async ({
+test('la navegación de escritorio permanece en una fila con desplazamiento horizontal', async ({
   page,
 }) => {
   await page.goto('/');
@@ -30,20 +30,39 @@ test('la navegación de escritorio no recorta Catálogo ni se superpone al logo'
             const actions = document
               .querySelector('.header-actions')
               .getBoundingClientRect();
+            const centers = Array.from(nav.children).map((link) => {
+              const item = link.getBoundingClientRect();
+              return item.top + item.height / 2;
+            });
             return (
-              Array.from(nav.children).every((link) => {
-                const item = link.getBoundingClientRect();
-                return (
-                  item.left >= box.left - 1 &&
-                  item.right <= box.right + 1 &&
-                  item.left >= logo.right + 8 &&
-                  item.right <= actions.left - 8
-                );
-              }) && nav.scrollWidth <= nav.clientWidth + 1
+              Math.max(...centers) - Math.min(...centers) < 2 &&
+              box.left >= logo.right + 8 &&
+              box.right <= actions.left - 8 &&
+              getComputedStyle(nav).overflowX === 'auto'
             );
           }),
         )
         .toBe(true);
+      const links = page.locator('.site-nav > *');
+      for (let i = 0; i < (await links.count()); i++) {
+        await links.nth(i).scrollIntoViewIfNeeded();
+        expect(
+          await links.nth(i).evaluate((link) => {
+            const item = link.getBoundingClientRect();
+            const nav = link.parentElement.getBoundingClientRect();
+            return item.left >= nav.left - 1 && item.right <= nav.right + 1;
+          }),
+        ).toBe(true);
+      }
+      if (signedIn && width === 1024) {
+        expect(
+          await page
+            .locator('.site-nav')
+            .evaluate(
+              (nav) => nav.scrollWidth > nav.clientWidth && nav.scrollLeft > 0,
+            ),
+        ).toBe(true);
+      }
       await expect
         .poll(async () => {
           const main = await page.locator('main').boundingBox();
