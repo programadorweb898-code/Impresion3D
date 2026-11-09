@@ -3215,8 +3215,22 @@ footer,
 
 
 /* Black storefront palette. Keep admin, forms and white product photography readable. */
-body {
+/* Dark canvas and readable typography on every route. */
+:root {
+  color-scheme: dark;
+  --text: #f5f5f5;
+  --muted: #bcbcbc;
+  --surface: #191919;
+  --surface-raised: #252525;
+  --border: #414141;
+  --line: #414141;
   background: #000;
+  color: var(--text);
+}
+body,
+.login-page {
+  background: #000;
+  color: var(--text);
 }
 .site-header {
   --text: #f5f5f5;
@@ -3268,4 +3282,86 @@ footer {
 }
 footer .footer-legal a {
   color: #aabbff;
+}
+
+
+/* Dark surfaces and readable controls in account, checkout, and administration. */
+.orders,
+.admin,
+.profile-page,
+.product-details,
+.legal-page,
+.cart-page,
+.login-page {
+  --text: #f5f5f5;
+  --muted: #bcbcbc;
+  --surface: #191919;
+  --surface-raised: #252525;
+  --border: #414141;
+  --line: #414141;
+  color: var(--text);
+  background: #000;
+}
+.admin .order,
+.admin .product-editor,
+.admin .slicer-connections,
+.admin .request-slicing,
+.profile-panel,
+.login-panel,
+.cart-summary,
+.cart-item,
+.product-details .product-detail-info,
+.legal-contact {
+  background: #191919;
+  border-color: #414141;
+  color: #f5f5f5;
+}
+.admin .small,
+.admin .description,
+.admin p:not(.error):not(.notice),
+.admin label,
+.admin .order ol,
+.profile-page p,
+.login-page .auth-intro {
+  color: #c8c8c8;
+}
+.admin input:not([type='checkbox']):not([type='radio']),
+.admin textarea,
+.admin select,
+.profile-page input:not([type='checkbox']),
+.login-page input,
+.login-page select,
+.orders input,
+.orders textarea,
+.orders select {
+  color: #f5f5f5;
+  background: #252525;
+  border-color: #666;
+  color-scheme: dark;
+}
+.admin input::placeholder,
+.admin textarea::placeholder,
+.profile-page input::placeholder,
+.login-page input::placeholder {
+  color: #c1c1c1;
+}
+.admin .filters button:not(.active),
+.admin .outline,
+.admin .prompt-secondary {
+  color: #f5f5f5;
+  border-color: #666;
+}
+.admin .filters button.active {
+  background: #2448d8;
+  color: #fff;
+  border-color: #2448d8;
+}
+.admin .empty,
+.admin .notice,
+.admin .error,
+.login-page .auth-message,
+.login-page .error,
+.profile-page .notice,
+.profile-page .error {
+  color: #202323;
 }
