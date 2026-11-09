@@ -81,6 +81,19 @@ export const Product = model(
     { timestamps: true },
   ),
 );
+const orderOfferSchema = new Schema(
+  {
+    id: String,
+    mode: String,
+    selections: [
+      new Schema(
+        { id: String, name: String, quantity: Number },
+        { _id: false },
+      ),
+    ],
+  },
+  { _id: false },
+);
 const orderModel = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -89,6 +102,7 @@ const orderModel = new Schema(
         productId: { type: Schema.Types.ObjectId, ref: 'Product' },
         name: String,
         unitPriceCents: Number,
+        offer: { type: orderOfferSchema, default: undefined },
         quantity: Number,
         dimensions: { width: Number, height: Number, depth: Number },
       },

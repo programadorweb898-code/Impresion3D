@@ -1,3 +1,4 @@
+import { offersRouter } from './offers.js';
 import { slicerWorkerRouter, adminSlicingRouter } from './slicing.js';
 import {
   designRequestsRouter,
@@ -301,6 +302,7 @@ export function createApp({
       res.sendStatus(204);
     }),
   );
+  app.use('/api/offers', offersRouter(authenticated));
   app.get('/api/orders', authenticated, listOrders);
   app.post(
     '/api/orders',

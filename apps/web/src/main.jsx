@@ -1,3 +1,5 @@
+import { offerDefinitions, offerPath } from '@impresion3d/shared';
+import { OfferDetails } from './OfferDetails.jsx';
 import { Brand, BrandMark } from './Brand.jsx';
 import { validationMessage } from '@impresion3d/shared';
 import React, {
@@ -123,6 +125,7 @@ function App() {
   const cart = useCart(user?.id);
   const [authReady, setAuthReady] = useState(false);
   const loginDestination = useRef(null);
+  const offerDrafts = useRef({});
   const toastSequence = useRef(0);
   const dismissCartToast = useCallback(() => setCartToast(null), []);
   useEffect(() => {
@@ -153,7 +156,7 @@ function App() {
   }, [view, loginPage, detailId, navigationVersion]);
   const cartProductIds = new Set(cart.items.map((item) => item.productId));
   const cartIds = cart.items.map((item) => item.productId).join(',');
-  const cartKey = JSON.stringify([user?.id, cartIds, cartRefresh]);
+  const cartKey = JSON.stringify([user?.id, cart.items, cartRefresh]);
   const currentCartCatalog = cartCatalog.key === cartKey;
   const cartProducts = currentCartCatalog ? cartCatalog.products : [];
   const cartCatalogError = currentCartCatalog && cartCatalog.status === 'error';
@@ -167,9 +170,14 @@ function App() {
       products: current.key === cartKey ? current.products : [],
       status: 'loading',
     }));
-    const request = cartIds
-      ? api('/products?ids=' + cartIds)
-      : Promise.resolve([]);
+    const request = cart.items.some((i) => i.offer)
+      ? api('/offers/cart/preview', {
+          method: 'POST',
+          body: JSON.stringify({ items: cart.items }),
+        })
+      : cartIds
+        ? api('/products?ids=' + cartIds)
+        : Promise.resolve([]);
     request
       .then((data) => {
         if (active)
@@ -297,8 +305,8 @@ function App() {
   }, []);
   function openLogin() {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
-    if (view === 'product' && !loginDestination.current)
-      loginDestination.current = 'product';
+    if (['product', 'offer'].includes(view) && !loginDestination.current)
+      loginDestination.current = view;
     dismissCartToast();
     setCartOpen(false);
     setLoginPrompt(false);
@@ -330,11 +338,16 @@ function App() {
       window.history.replaceState(window.history.state, '', '/perfil');
   }, [profileToken]);
   useEffect(() => {
-    const page = legalPages[view] || informationPages[view];
+    const page =
+      legalPages[view] ||
+      informationPages[view] ||
+      (view === 'offer'
+        ? { title: offerDefinitions[detailId]?.name || 'Oferta' }
+        : null);
     document.title = page
       ? page.title + ' | ' + legalSite.name
       : legalSite.name + ' · Ideas que toman forma';
-  }, [view]);
+  }, [view, detailId]);
   function openSection(id) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
     navigatePage('catalog', '/#' + id);
@@ -397,6 +410,35 @@ function App() {
     scrollTarget.current = null;
     setNavigationVersion((current) => current + 1);
   }
+  function openOffer(id, replace = false) {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    navigatePage('offer', offerPath(id), { replace });
+    setDetailId(id);
+    setView('offer');
+    setError('');
+    setNotice('');
+    setCartOpen(false);
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
+  }
+  function addOfferToCart(line, name) {
+    if (!authReady) return;
+    if (!user) {
+      loginDestination.current = 'offer';
+      setLoginPrompt(true);
+      return;
+    }
+    try {
+      cart.addOffer(line);
+      setNotice('');
+      setCartToast({
+        id: ++toastSequence.current,
+        message: 'Agregaste ' + name + ' al carrito.',
+      });
+    } catch (e) {
+      setNotice(e.message);
+    }
+  }
   function openProduct(id, replace = false) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
     navigatePage('product', '/descripcion/' + encodeURIComponent(id), {
@@ -437,6 +479,7 @@ function App() {
     try {
       await api('/auth/logout', { method: 'POST' });
       setUser(null);
+      offerDrafts.current = {};
       setCartNotes('');
       setOrders([]);
       setProfileToken('');
@@ -511,6 +554,8 @@ function App() {
       if (loginDestination.current === 'profile') openProfile();
       if (loginDestination.current === 'product' && detailId)
         openProduct(detailId, true);
+      if (loginDestination.current === 'offer' && detailId)
+        openOffer(detailId, true);
       loginDestination.current = null;
       setNotice('Ya podés armar tu carrito y consultar tus pedidos.');
     } catch (e) {
@@ -718,6 +763,26 @@ function App() {
             >
               <DesignUpload />
             </Suspense>
+          ) : view === 'offer' ? (
+            !authReady || (user && !cart.ready) ? (
+              <p role="status">Cargando oferta…</p>
+            ) : (
+              <OfferDetails
+                key={detailId}
+                id={detailId || ''}
+                initial={
+                  offerDrafts.current[detailId] ||
+                  cart.items.find((i) => i.offer?.id === detailId)?.offer
+                }
+                onDraft={(draft) => {
+                  offerDrafts.current[draft.id] = draft;
+                }}
+                onAdd={addOfferToCart}
+                onContinue={showCatalog}
+                authReady={authReady}
+                inCart={cart.items.some((i) => i.offer?.id === detailId)}
+              />
+            )
           ) : view === 'product' ? (
             <ProductDetails
               id={detailId || ''}
@@ -805,7 +870,7 @@ function App() {
                   </figcaption>
                 </figure>
               </section>
-              <OffersCarousel />
+              <OffersCarousel onOffer={openOffer} />
               <section id="catalogo" className="catalog">
                 <div className="section-top">
                   <div>
@@ -1243,6 +1308,7 @@ function App() {
             }}
             onQuantity={(id, q) => editCart(() => cart.quantity(id, q))}
             onRemove={(id) => editCart(() => cart.remove(id))}
+            onOffer={openOffer}
             onClear={() => editCart(() => cart.clear())}
             onSubmit={submitOrder}
             onRefresh={refreshCart}

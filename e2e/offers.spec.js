@@ -11,6 +11,9 @@ for (const width of [390, 1280]) {
       name: 'Ofertas para darle forma a tus ideas.',
     });
     await carousel.scrollIntoViewIfNeeded();
+    await carousel
+      .getByRole('button', { name: 'Pausar ofertas automáticas' })
+      .click();
     await expect(
       carousel.getByRole('button', { name: 'Activar ofertas automáticas' }),
     ).toBeVisible();
@@ -55,9 +58,10 @@ for (const width of [390, 1280]) {
     await carousel.getByRole('button', { name: 'Oferta siguiente' }).click();
     await expect(active).toContainText('Llevando 5 o más');
     await expect(active).toContainText('$2.000 c/u');
-    const url = new URL(await active.getByRole('link').getAttribute('href'));
-    expect(url.origin).toBe('https://wa.me');
-    expect(url.searchParams.get('text')).toContain('$2.000 por unidad');
+    await expect(active.getByRole('link')).toHaveAttribute(
+      'href',
+      '/descripction/oferta/llaveros',
+    );
     await carousel.getByRole('button', { name: 'Oferta siguiente' }).click();
     await expect(active).toContainText('Bandeja navideña + 4 adornos');
     await carousel.getByRole('button', { name: 'Oferta anterior' }).click();
@@ -91,6 +95,7 @@ test('ofertas: bucle automático infinito, pausa y preferencias de movimiento', 
   await carousel.scrollIntoViewIfNeeded();
   await page.mouse.move(0, 0);
   const active = carousel.locator('.offer-slide.is-active');
+  await carousel.hover();
   await page.clock.runFor(300);
   for (const product of [
     'Bolas navideñas con efecto tejido',
@@ -100,6 +105,12 @@ test('ofertas: bucle automático infinito, pausa y preferencias de movimiento', 
     await page.clock.fastForward(6100);
     await expect(active).toContainText(product);
   }
+  await carousel.getByRole('button', { name: 'Oferta siguiente' }).click();
+  await page.clock.fastForward(6100);
+  await expect(active).toContainText('Llaveros para vos o para regalar');
+  await carousel
+    .getByRole('button', { name: 'Ver oferta 1:', exact: false })
+    .click();
   await carousel
     .getByRole('button', { name: 'Pausar ofertas automáticas' })
     .click();
@@ -113,15 +124,18 @@ test('ofertas: bucle automático infinito, pausa y preferencias de movimiento', 
   await page.clock.runFor(100);
   await page.clock.fastForward(6100);
   await expect(active).toContainText('Bolas navideñas con efecto tejido');
+  await page.keyboard.press('Tab');
   await active.getByRole('link').focus();
   await page.clock.fastForward(18000);
   await expect(active).toContainText('Bolas navideñas con efecto tejido');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(
-    carousel.getByRole('button', { name: 'Activar ofertas automáticas' }),
+    carousel.getByRole('button', { name: 'Pausar ofertas automáticas' }),
   ).toBeVisible();
   await page.evaluate(() => document.activeElement.blur());
   await page.mouse.move(0, 0);
-  await page.clock.fastForward(18000);
-  await expect(active).toContainText('Bolas navideñas con efecto tejido');
+  await page.clock.runFor(100);
+  await page.clock.fastForward(6100);
+  await expect(active).toContainText('Llaveros para vos o para regalar');
+  await expect(active).toHaveCSS('transition-duration', '0s');
 });
