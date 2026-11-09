@@ -1,3 +1,4 @@
+import { offerPath, selectionCount } from '@impresion3d/shared';
 import { formatMoney as money } from '@impresion3d/shared';
 export function Cart({
   items,
@@ -10,6 +11,7 @@ export function Cart({
   onSubmit,
   onRefresh,
   onContinue,
+  onOffer,
   busy,
   refreshing,
   catalogError,
@@ -102,30 +104,63 @@ export function Cart({
                 <div className="cart-item-info">
                   <h2>{name}</h2>
                   <p className="cart-quantity">
-                    Cantidad: <strong>{quantity}</strong>
+                    {product?.offer ? 'Piezas elegidas: ' : 'Cantidad: '}
+                    <strong>
+                      {product?.offer
+                        ? selectionCount(product.offer.selections)
+                        : quantity}
+                    </strong>
                   </p>
                   {product && (
                     <p>
-                      Por unidad: {money(product.priceCents, product.currency)}
+                      {product.offer ? 'Esta oferta: ' : 'Por unidad: '}
+                      {money(product.priceCents, product.currency)}
                     </p>
                   )}
-                  <label>
-                    Cantidad de {name}
-                    <select
-                      aria-label={'Cantidad de ' + name}
-                      value={quantity}
-                      disabled={busy}
-                      onChange={(e) =>
-                        onQuantity(productId, Number(e.target.value))
-                      }
-                    >
-                      {Array.from({ length: 20 }, (_, n) => (
-                        <option key={n + 1} value={n + 1}>
-                          {n + 1}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  {product?.offer ? (
+                    <>
+                      <p className="cart-offer-selection">
+                        {product.selectionSummary}
+                      </p>
+                      <a
+                        className="cart-offer-edit"
+                        href={offerPath(product.offer.id)}
+                        onClick={(event) => {
+                          if (
+                            onOffer &&
+                            event.button === 0 &&
+                            !event.metaKey &&
+                            !event.ctrlKey &&
+                            !event.shiftKey &&
+                            !event.altKey
+                          ) {
+                            event.preventDefault();
+                            onOffer(product.offer.id);
+                          }
+                        }}
+                      >
+                        Editar selección
+                      </a>
+                    </>
+                  ) : (
+                    <label>
+                      Cantidad de {name}
+                      <select
+                        aria-label={'Cantidad de ' + name}
+                        value={quantity}
+                        disabled={busy}
+                        onChange={(e) =>
+                          onQuantity(productId, Number(e.target.value))
+                        }
+                      >
+                        {Array.from({ length: 20 }, (_, n) => (
+                          <option key={n + 1} value={n + 1}>
+                            {n + 1}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                   <button
                     type="button"
                     disabled={busy}

@@ -6,9 +6,9 @@ El carrusel se inserta entre el hero y `#catalogo` (“La colección”). Los te
 - Bolas navideñas con efecto tejido: una por $3.000 o seis por $15.000.
 - Llaveros: uno por $3.000; desde cinco, $2.000 por unidad.
 
-Cada botón abre una consulta de WhatsApp con el producto y las condiciones de esa oferta. El usuario elige su combinación/cantidad al coordinar el pedido. La sección promociona estas ofertas sin alterar los precios ni el flujo de carrito del catálogo.
+Cada botón abre la página `/descripction/oferta/id` para elegir las opciones y agregarlas al carrito. Las reglas del carrito, disponibilidad e idempotencia se explican en [Selección y compra de ofertas](ofertas-carrito.md).
 
-El avance automático cada seis segundos usa un índice circular y un fundido entre las tres ofertas, sin retroceso visual al reiniciar el ciclo. Hay flechas, indicadores, teclado, gestos horizontales en celular y pausa/reproducción. El avance se pausa cuando el usuario pasa el mouse, interactúa con el teclado, cambia de pestaña o deja el carrusel fuera de vista. La preferencia de movimiento reducido desactiva el avance inicial y las transiciones; el usuario puede iniciarlo manualmente. Las ofertas inactivas son `inert` y quedan excluidas del árbol accesible.
+El avance automático cada seis segundos usa un índice circular y un fundido entre las tres ofertas, sin retroceso visual al reiniciar el ciclo. Hay flechas, indicadores, teclado, gestos horizontales en celular y pausa/reproducción. El avance se pausa por pausa explícita, foco visible de teclado, pestaña oculta o carrusel fuera de vista. El puntero sobre el carrusel no lo detiene. La preferencia de movimiento reducido elimina las transiciones y conserva el avance automático solicitado. Las ofertas inactivas son `inert` y quedan excluidas del árbol accesible.
 
 ## Recursos visuales
 
@@ -17,7 +17,7 @@ Generados con la herramienta integrada de imágenes, usando fotos de los product
 Archivos optimizados WebP, en variantes de 640 y 1200 píxeles de ancho:
 
 - `apps/web/public/images/offers/navidad-combo-{640,1200}.webp`
-- `apps/web/public/images/offers/navidad-bolas-{640,1200}.webp`
+- `apps/web/public/images/offers/navidad-bolas-colores-{640,1200}.webp`
 - `apps/web/public/images/offers/llaveros-{640,1200}.webp`
 
 El conjunto de las seis variantes ocupa aproximadamente 290 KiB. Se sirve `srcset` y carga diferida, sin recortar las piezas (`object-fit: contain`).

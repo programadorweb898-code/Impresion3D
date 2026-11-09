@@ -8,6 +8,8 @@ export function currentPage() {
   } catch {
     /* Invalid escapes are handled as unavailable routes. */
   }
+  const offer = path.match(/^\/descripction\/oferta\/([^/]+)\/?$/);
+  if (offer) return { view: 'offer', id: offer[1] };
   const detail = path.match(
     /^\/(?:descripcion|descripción|descripction|description)(?:\/(.*))?$/u,
   );

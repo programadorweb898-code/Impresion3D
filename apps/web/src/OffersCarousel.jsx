@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { siteContact } from './site-content.js';
+import { offerPath } from '@impresion3d/shared';
+import { internalLink } from './site-content.js';
 import './OffersCarousel.css';
 
 const offers = [
@@ -16,8 +17,6 @@ const offers = [
     secondary: '',
     note: 'Adornos impresos en 3D con efecto tejido.',
     alt: 'Bandeja dorada con cuatro adornos de efecto tejido: Papá Noel, reno, árbol y jengibre',
-    message:
-      '¡Hola! Me interesa la oferta de bandeja navideña + 4 adornos a elección por $35.000. Quisiera coordinar mi combinación.',
   },
   {
     id: 'navidad-bolas',
@@ -29,9 +28,7 @@ const offers = [
     priceLabel: 'Llevá el conjunto',
     secondary: 'También: 1 por $3.000',
     note: 'Adornos impresos en 3D con efecto tejido.',
-    alt: 'Seis bolas navideñas blancas impresas en 3D con relieve de tejido y aro para colgar',
-    message:
-      '¡Hola! Me interesa la oferta de bolas navideñas con efecto tejido: 1 por $3.000 o 6 por $15.000. Quisiera consultar mi pedido.',
+    alt: 'Seis bolas tejidas en blanco, rojo, verde, marrón, dorado y plateado',
   },
   {
     id: 'llaveros',
@@ -44,26 +41,21 @@ const offers = [
     secondary: 'También: 1 por $3.000',
     note: 'El precio de $2.000 por unidad se aplica desde 5 llaveros.',
     alt: 'Cinco llaveros impresos en 3D con los diseños de Malvinas y River',
-    message:
-      '¡Hola! Me interesa la oferta de llaveros: 1 por $3.000 o, llevando 5 o más, $2.000 por unidad. Quisiera coordinar los diseños y la cantidad.',
   },
 ];
 
-export function OffersCarousel() {
+export function OffersCarousel({ onOffer }) {
   const region = useRef(null);
   const touch = useRef(null);
   const [index, setIndex] = useState(0);
   const [reduced, setReduced] = useState(
     () => matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
-  const [enabled, setEnabled] = useState(
-    () => !matchMedia('(prefers-reduced-motion: reduce)').matches,
-  );
-  const [hovered, setHovered] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [focused, setFocused] = useState(false);
   const [visible, setVisible] = useState(false);
   const [pageVisible, setPageVisible] = useState(() => !document.hidden);
-  const playing = enabled && visible && pageVisible && !hovered && !focused;
+  const playing = enabled && visible && pageVisible && !focused;
   const move = (delta) =>
     setIndex((current) => (current + delta + offers.length) % offers.length);
 
@@ -78,7 +70,6 @@ export function OffersCarousel() {
     const media = matchMedia('(prefers-reduced-motion: reduce)');
     const onMotion = () => {
       setReduced(media.matches);
-      if (media.matches) setEnabled(false);
     };
     media.addEventListener('change', onMotion);
     return () => {
@@ -102,12 +93,11 @@ export function OffersCarousel() {
       className="home-offers"
       aria-labelledby="offers-title"
       aria-roledescription="carrusel"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onFocusCapture={() => setFocused(true)}
+      onFocusCapture={(event) =>
+        setFocused(event.target.matches(':focus-visible'))
+      }
       onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget))
-          setFocused(false);
+        setFocused(false);
       }}
     >
       <div className="offers-heading">
@@ -172,26 +162,22 @@ export function OffersCarousel() {
               </div>
               <a
                 className="offer-cta"
-                href={
-                  'https://wa.me/' +
-                  siteContact.whatsapp +
-                  '?text=' +
-                  encodeURIComponent(offer.message)
+                href={offerPath(offer.id)}
+                onClick={(event) =>
+                  internalLink(event, () => onOffer(offer.id))
                 }
-                target="_blank"
-                rel="noopener noreferrer"
               >
-                Quiero esta oferta <span aria-hidden="true">↗</span>
+                Agregar esta oferta <span aria-hidden="true">↗</span>
                 <span className="sr-only">
-                  : {offer.product} (abre WhatsApp en otra pestaña)
+                  : {offer.product} (ver opciones)
                 </span>
               </a>
               <p className="offer-note">{offer.note}</p>
             </div>
             <figure className="offer-art">
               <img
-                src={`/images/offers/${offer.id}-1200.webp`}
-                srcSet={`/images/offers/${offer.id}-640.webp 640w, /images/offers/${offer.id}-1200.webp 1200w`}
+                src={`/images/offers/${offer.id === 'navidad-bolas' ? 'navidad-bolas-colores' : offer.id}-1200.webp`}
+                srcSet={`/images/offers/${offer.id === 'navidad-bolas' ? 'navidad-bolas-colores' : offer.id}-640.webp 640w, /images/offers/${offer.id === 'navidad-bolas' ? 'navidad-bolas-colores' : offer.id}-1200.webp 1200w`}
                 sizes="(max-width: 700px) 90vw, 50vw"
                 width="1200"
                 height="800"
