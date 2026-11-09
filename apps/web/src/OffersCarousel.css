@@ -43,8 +43,8 @@
   visibility: hidden;
   pointer-events: none;
   transition:
-    opacity 0.45s ease,
-    visibility 0.45s;
+    opacity 1.5s ease,
+    visibility 1.5s;
   min-width: 0;
 }
 .offer-slide.is-active {

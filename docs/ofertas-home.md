@@ -3,12 +3,12 @@
 El carrusel se inserta entre el hero y `#catalogo` (“La colección”). Los textos y precios se editan en `apps/web/src/OffersCarousel.jsx`.
 
 - Bandeja navideña + cuatro adornos a elección: $35.000.
-- Bolas navideñas con efecto tejido: una por $3.000 o seis por $15.000.
+- Bolas navideñas con efecto tejido: de 1 a 5 a $3.000 cada una; desde 6 a $2.500 cada una.
 - Llaveros: uno por $3.000; desde cinco, $2.000 por unidad.
 
 Cada botón abre la página `/descripction/oferta/id` para elegir las opciones y agregarlas al carrito. Las reglas del carrito, disponibilidad e idempotencia se explican en [Selección y compra de ofertas](ofertas-carrito.md).
 
-El avance automático cada seis segundos usa un índice circular y un fundido entre las tres ofertas, sin retroceso visual al reiniciar el ciclo. Hay flechas, indicadores, teclado, gestos horizontales en celular y pausa/reproducción. El avance se pausa por pausa explícita, foco visible de teclado, pestaña oculta o carrusel fuera de vista. El puntero sobre el carrusel no lo detiene. La preferencia de movimiento reducido elimina las transiciones y conserva el avance automático solicitado. Las ofertas inactivas son `inert` y quedan excluidas del árbol accesible.
+El avance automático cada seis segundos usa un índice circular y un fundido de 1,5 segundos entre las tres ofertas, sin retroceso visual al reiniciar el ciclo. Hay flechas, indicadores, teclado, gestos horizontales en celular y pausa/reproducción. El avance se pausa por pausa explícita, foco visible de teclado, pestaña oculta o carrusel fuera de vista. El puntero sobre el carrusel no lo detiene. La preferencia de movimiento reducido elimina las transiciones y conserva el avance automático solicitado. Las ofertas inactivas son `inert` y quedan excluidas del árbol accesible.
 
 ## Recursos visuales
 

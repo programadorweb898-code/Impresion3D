@@ -42,7 +42,7 @@ for (const width of [390, 1280]) {
       await carousel.locator('.offers-stage').dispatchEvent('touchend', {
         changedTouches: [{ identifier: 0, clientX: 80, clientY: 210 }],
       });
-      await expect(active).toContainText('6 por $15.000');
+      await expect(active).toContainText('$2.500 c/u');
       await carousel.locator('.offers-stage').dispatchEvent('touchstart', {
         touches: [{ identifier: 0, clientX: 80, clientY: 200 }],
       });
@@ -53,8 +53,8 @@ for (const width of [390, 1280]) {
     }
 
     await carousel.getByRole('button', { name: 'Oferta siguiente' }).click();
-    await expect(active).toContainText('6 por $15.000');
-    await expect(active).toContainText('1 por $3.000');
+    await expect(active).toContainText('$2.500 c/u');
+    await expect(active).toContainText('De 1 a 5: $3.000 c/u');
     await carousel.getByRole('button', { name: 'Oferta siguiente' }).click();
     await expect(active).toContainText('Llevando 5 o más');
     await expect(active).toContainText('$2.000 c/u');
@@ -71,7 +71,7 @@ for (const width of [390, 1280]) {
       .click();
     await active.getByRole('link').focus();
     await page.keyboard.press('ArrowRight');
-    await expect(active).toContainText('6 por $15.000');
+    await expect(active).toContainText('$2.500 c/u');
     await carousel
       .getByRole('button', { name: 'Ver oferta 1:', exact: false })
       .click();
@@ -97,6 +97,7 @@ test('ofertas: bucle automático infinito, pausa y preferencias de movimiento', 
   const active = carousel.locator('.offer-slide.is-active');
   await carousel.hover();
   await page.clock.runFor(300);
+  await expect(active).toHaveCSS('transition-duration', '1.5s, 1.5s');
   for (const product of [
     'Bolas navideñas con efecto tejido',
     'Llaveros para vos o para regalar',

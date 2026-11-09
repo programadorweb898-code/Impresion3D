@@ -118,6 +118,9 @@ test('bolas seleccionan colores y cantidad exacta; llaveros aplican precio por c
     .check();
   await page.getByLabel('Cantidad de Rojo', { exact: true }).selectOption('6');
   await expect(add).toBeEnabled();
+  await page.getByLabel('Cantidad de Rojo', { exact: true }).selectOption('8');
+  await expect(page.locator('.offer-detail-total')).toContainText('20.000');
+  await page.getByLabel('Cantidad de Rojo', { exact: true }).selectOption('6');
   await add.click();
   await page.goto('/descripction/oferta/llaveros');
   await page
@@ -134,7 +137,7 @@ test('bolas seleccionan colores y cantidad exacta; llaveros aplican precio por c
   await page.getByRole('link', { name: 'Editar selección' }).first().click();
   await expect(page).toHaveURL('/descripction/oferta/navidad-bolas');
   await expect(page.locator('.offer-options input:checked')).toHaveCount(1);
-  await page.getByRole('radio', { name: '1 bola · $3.000' }).check();
+  await page.getByRole('radio', { name: '1 a 5 bolas · $3.000 c/u' }).check();
   await expect(
     page.getByRole('button', { name: 'Actualizar selección del carrito' }),
   ).toBeDisabled();

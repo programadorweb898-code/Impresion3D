@@ -125,7 +125,7 @@ test('oferta exige cuatro opciones reales, precio servidor, instantánea e idemp
   );
   await Product.updateOne({ _id: options[0]._id }, { $set: { active: true } });
 });
-test('bolas validan colores, pack exacto de seis o unidad, y preservan selección en carrito', async () => {
+test('bolas validan colores, cantidades y precio de $2.500 desde seis', async () => {
   const pack = line('navidad-bolas', [
     { id: 'rojo', quantity: 3 },
     { id: 'dorado', quantity: 3 },
@@ -150,6 +150,22 @@ test('bolas validan colores, pack exacto de seis o unidad, y preservan selecció
   await post('/api/orders', { items: [bad] }).then((r) =>
     assert.equal(r.status, 400),
   );
+  for (const [quantity, total] of [
+    [6, 1500000],
+    [7, 1750000],
+    [10, 2500000],
+    [20, 5000000],
+  ]) {
+    const response = await post('/api/orders', {
+      items: [line('navidad-bolas', [{ id: 'verde', quantity }])],
+    });
+    assert.equal(response.status, 201, JSON.stringify(response.body));
+    assert.equal(response.body.totalCents, total);
+  }
+  const five = await post('/api/orders', {
+    items: [line('navidad-bolas', [{ id: 'rojo', quantity: 5 }], 'single')],
+  });
+  assert.equal(five.body.totalCents, 1500000);
   const values = new Map();
   const storage = {
     getItem: (k) => values.get(k),
