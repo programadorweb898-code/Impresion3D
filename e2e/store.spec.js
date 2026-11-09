@@ -1276,7 +1276,7 @@ test('administración convierte centímetros a milímetros y conserva decimales 
 });
 
 
-test('el catálogo usa fondo negro y administración conserva fondo claro y texto legible', async ({ page }) => {
+test('catálogo y administración usan fondo oscuro con textos legibles', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('main.storefront-dark')).toBeVisible();
   expect(await page.locator('body').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(0, 0, 0)');
@@ -1288,6 +1288,8 @@ test('el catálogo usa fondo negro y administración conserva fondo claro y text
     background: getComputedStyle(el).backgroundColor,
     text: getComputedStyle(el).color,
   }));
-  expect(colors.background).toBe('rgb(246, 245, 241)');
-  expect(colors.text).toBe('rgb(32, 35, 35)');
+  expect(colors.background).toBe('rgb(0, 0, 0)');
+  expect(colors.text).toBe('rgb(245, 245, 245)');
+  const headingColor = await page.getByRole('heading', { name: 'Administración', exact: true }).evaluate((el) => getComputedStyle(el).color);
+  expect(headingColor).toBe('rgb(245, 245, 245)');
 });
