@@ -28,6 +28,7 @@ import {
 import { AuthPage } from './AuthPage.jsx';
 import { WhatsAppButton } from './WhatsAppButton.jsx';
 import { Navbar } from './Navbar.jsx';
+import { OffersCarousel } from './OffersCarousel.jsx';
 import { SiteFooter } from './SiteFooter.jsx';
 import { InformationPage } from './InformationPage.jsx';
 import { informationPages, siteContact } from './site-content.js';
@@ -804,6 +805,7 @@ function App() {
                   </figcaption>
                 </figure>
               </section>
+              <OffersCarousel />
               <section id="catalogo" className="catalog">
                 <div className="section-top">
                   <div>
