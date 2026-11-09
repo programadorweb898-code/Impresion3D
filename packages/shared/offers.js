@@ -13,7 +13,7 @@ export const offerDefinitions = {
     name: 'Bolas navideñas con efecto tejido',
     image: '/images/offers/navidad-bolas-colores-1200.webp',
     description:
-      'Elegí los colores y las cantidades: 1 bola por $3.000 o un pack de exactamente 6 por $15.000. Podés repetir colores.',
+      'Elegí colores y cantidades: de 1 a 5 bolas, $3.000 cada una; llevando 6 o más, $2.500 cada una. Podés repetir colores.',
     mode: 'pack',
   },
   llaveros: {
@@ -39,8 +39,8 @@ export const selectionCount = (selections) =>
   selections.reduce((sum, item) => sum + item.quantity, 0);
 export function offerPriceCents({ id, mode, selections }) {
   if (id === 'navidad-combo') return 3500000;
-  if (id === 'navidad-bolas') return mode === 'single' ? 300000 : 1500000;
   const count = selectionCount(selections);
+  if (id === 'navidad-bolas') return count * (count >= 6 ? 250000 : 300000);
   return count * (count >= 5 ? 200000 : 300000);
 }
 export function offerSelectionError(offer) {
@@ -58,11 +58,11 @@ export function offerSelectionError(offer) {
   if (
     id === 'navidad-bolas' &&
     (!['single', 'pack'].includes(mode) ||
-      count !== (mode === 'single' ? 1 : 6))
+      (mode === 'single' ? count > 5 : count < 6 || count > 20))
   )
     return mode === 'single'
-      ? 'Elegí exactamente 1 bola.'
-      : 'El pack requiere exactamente 6 bolas.';
+      ? 'Elegí entre 1 y 5 bolas a $3.000 cada una.'
+      : 'Elegí entre 6 y 20 bolas a $2.500 cada una.';
   if (id === 'llaveros' && (mode !== 'custom' || count > 20))
     return 'Elegí entre 1 y 20 llaveros.';
   return '';

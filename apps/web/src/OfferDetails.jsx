@@ -66,8 +66,8 @@ export function OfferDetails({
       ? 4
       : id === 'navidad-bolas'
         ? mode === 'single'
-          ? 1
-          : 6
+          ? 5
+          : 20
         : 20;
   const error = offerSelectionError(offer);
   const stale = selections.some(
@@ -95,7 +95,7 @@ export function OfferDetails({
             {id === 'navidad-combo'
               ? 'La oferta incluye la bandeja y solo 4 adornos diferentes. Seleccioná exactamente 4 para habilitar el carrito.'
               : id === 'navidad-bolas'
-                ? 'Elegí una unidad o completá las 6 bolas del pack, con los colores que prefieras.'
+                ? 'Desde 6 bolas, cada una cuesta $2.500. Elegí los colores y las cantidades que prefieras.'
                 : 'Seleccioná los diseños y ajustá sus cantidades. Desde 5 unidades, cada llavero cuesta $2.000.'}
           </p>
         </div>
@@ -120,7 +120,7 @@ export function OfferDetails({
                 setSelections([]);
               }}
             />
-            1 bola · $3.000
+            1 a 5 bolas · $3.000 c/u
           </label>
           <label>
             <input
@@ -132,7 +132,7 @@ export function OfferDetails({
                 setSelections([]);
               }}
             />
-            6 bolas · $15.000
+            6 o más bolas · $2.500 c/u
           </label>
         </fieldset>
       )}

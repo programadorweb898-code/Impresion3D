@@ -3,7 +3,7 @@
 Las tarjetas del Home abren `/descripction/oferta/navidad-combo`, `/descripction/oferta/navidad-bolas` y `/descripction/oferta/llaveros`. Las páginas muestran su imagen, descripción, opciones con casillas inicialmente vacías y botones para agregar al carrito o continuar comprando.
 
 - **Bandeja + 4 adornos:** conserva el precio de $35.000. Incluye la bandeja y exige exactamente cuatro adornos diferentes; al marcar cuatro se deshabilitan los restantes. Las opciones se obtienen de productos activos cuya descripción indique efecto tejido, excluyendo bolas, bandejas y llaveros. Sin bandeja disponible o con menos de cuatro opciones, la oferta queda no disponible.
-- **Bolas:** una por $3.000 o pack exacto de seis por $15.000. Blanco, rojo, verde, marrón, dorado metalizado y plateado metalizado. Las cantidades por color permiten repetir colores hasta completar el formato elegido. Se comprueba que el modelo base siga activo.
+- **Bolas:** de 1 a 5 a $3.000 cada una; desde 6 a $2.500 cada una. Blanco, rojo, verde, marrón, dorado metalizado y plateado metalizado. Las cantidades por color permiten repetir colores hasta la cantidad elegida (máximo 20). Se comprueba que el modelo base siga activo.
 - **Llaveros:** diseños activos del catálogo, cantidades por diseño y precio de $3.000 por unidad o $2.000 desde cinco. Hasta 20 unidades por selección, conforme al límite actual del carrito.
 
 Cada tipo de oferta ocupa una línea con su configuración completa. Editar o agregar nuevamente ese tipo actualiza su selección. No se modifica la cantidad de esa línea como si fueran piezas individuales: se vuelve a su página para editar sus componentes. Las líneas de oferta pueden combinarse con productos normales.
