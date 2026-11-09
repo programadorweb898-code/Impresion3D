@@ -62,6 +62,7 @@ export function Navbar({
       setMobile(!media.matches);
       if (media.matches) setExpanded(false);
     };
+    resize();
     media.addEventListener('change', resize);
     return () => media.removeEventListener('change', resize);
   }, []);

@@ -2048,9 +2048,18 @@ summary:focus-visible {
   color: var(--muted);
 }
 .site-header .site-nav {
-  justify-content: flex-end;
+  /* Overflow must remain reachable from its start on tablet widths. */
+  justify-content: safe flex-end;
   font-weight: 500;
   gap: 24px;
+}
+@media (min-width: 901px) {
+  .site-header .site-nav {
+    /* Extra account links wrap within their own column, beside the brand. */
+    flex-wrap: wrap;
+    overflow: visible;
+    row-gap: 10px;
+  }
 }
 .site-header .site-nav > * {
   margin: 0;
