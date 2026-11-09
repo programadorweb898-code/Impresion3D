@@ -3213,7 +3213,6 @@ footer,
   font-weight: 650;
 }
 
-
 /* Black storefront palette. Keep admin, forms and white product photography readable. */
 /* Dark canvas and readable typography on every route. */
 :root {
@@ -3283,7 +3282,6 @@ footer {
 footer .footer-legal a {
   color: #aabbff;
 }
-
 
 /* Dark surfaces and readable controls in account, checkout, and administration. */
 .orders,
@@ -3364,4 +3362,200 @@ footer .footer-legal a {
 .profile-page .notice,
 .profile-page .error {
   color: #202323;
+}
+
+/* Store information and footer: a single dark palette across every route. */
+.site-footer {
+  display: block;
+  padding: 52px 5% 100px;
+  border-top: 1px solid #414141;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.8fr 1fr 1.25fr;
+  gap: 32px;
+  padding-bottom: 36px;
+}
+.footer-grid > * {
+  min-width: 0;
+}
+.site-footer p,
+.site-footer address,
+.site-footer li {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.site-footer p {
+  color: #bcbcbc;
+}
+.site-footer .footer-tagline {
+  color: #f5f5f5;
+  font-size: 17px;
+  margin: 20px 0 8px;
+}
+.site-footer a {
+  color: #c5d0ff;
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+}
+.site-footer a:hover {
+  color: #fff;
+}
+.site-footer .brand {
+  text-decoration: none;
+  color: #fff;
+}
+.site-footer nav.footer-column {
+  display: block;
+}
+.footer-column h2 {
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #f5f5f5;
+  letter-spacing: 0;
+}
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.footer-column li + li {
+  margin-top: 8px;
+}
+.footer-column address {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-style: normal;
+}
+.footer-faq details,
+.faq-list details {
+  border-bottom: 1px solid #414141;
+  padding: 14px 0;
+}
+.footer-faq details:first-of-type {
+  padding-top: 0;
+}
+.footer-faq summary,
+.faq-list summary {
+  cursor: pointer;
+  color: #f5f5f5;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.footer-faq summary:focus-visible,
+.faq-list summary:focus-visible {
+  outline: 3px solid #aabbff;
+  outline-offset: 4px;
+}
+.footer-faq details p {
+  margin: 12px 0 0;
+}
+.footer-faq > a {
+  display: inline-block;
+  font-size: 14px;
+  margin-top: 18px;
+}
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  padding-top: 24px;
+  border-top: 1px solid #414141;
+}
+.footer-bottom small {
+  color: #bcbcbc;
+  font-size: 12px;
+}
+.site-footer .footer-legal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  width: auto;
+}
+.information-page {
+  max-width: 880px;
+  margin: auto;
+  padding: 48px 5% 72px;
+  color: #f5f5f5;
+}
+.information-page h1 {
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin: 14px 0 24px;
+}
+.information-page h2 {
+  font-size: clamp(22px, 3vw, 28px);
+  margin: 32px 0 16px;
+}
+.information-page p {
+  color: #c8c8c8;
+  line-height: 1.8;
+}
+.information-page .information-lead {
+  font-size: 21px;
+  max-width: 650px;
+}
+.information-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  margin-top: 32px;
+}
+.information-page a {
+  color: #c5d0ff;
+  text-underline-offset: 4px;
+}
+.information-actions .primary {
+  padding: 14px 20px;
+  border-radius: 6px;
+  background: #2448d8;
+  color: #fff;
+  text-decoration: none;
+}
+.faq-list {
+  margin: 32px 0;
+}
+.faq-list summary {
+  font-size: 18px;
+}
+.faq-list p {
+  padding-right: 16px;
+}
+@media (max-width: 1000px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px;
+  }
+}
+@media (max-width: 575.98px) {
+  .footer-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+  }
+  .site-footer {
+    padding-top: 36px;
+  }
+  .footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .information-page {
+    padding-top: 26px;
+  }
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

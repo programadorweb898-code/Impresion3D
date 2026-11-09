@@ -13,6 +13,7 @@ export function Navbar({
   onLogin,
   onLogout,
   onHowItWorks,
+  onAbout,
   onDesign,
   cartButtonRef,
 }) {
@@ -141,6 +142,24 @@ export function Navbar({
               }}
             >
               Cómo funciona
+            </a>
+            <a
+              href="/sobre-nosotros"
+              aria-current={view === 'about' ? 'page' : undefined}
+              onClick={(event) => {
+                if (
+                  event.button === 0 &&
+                  !event.metaKey &&
+                  !event.ctrlKey &&
+                  !event.shiftKey &&
+                  !event.altKey
+                ) {
+                  event.preventDefault();
+                  choose(onAbout);
+                }
+              }}
+            >
+              Sobre nosotros
             </a>
             {user ? (
               <>

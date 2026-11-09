@@ -1,3 +1,4 @@
+import { informationPages } from './site-content.js';
 import { legalPageFromPath } from '@impresion3d/shared';
 const key = 'impresion3dNavigation';
 export function currentPage() {
@@ -12,6 +13,10 @@ export function currentPage() {
   );
   if (detail)
     return { view: 'product', id: (detail[1] || '').replace(/\/$/, '') };
+  const information = Object.keys(informationPages).find(
+    (key) => informationPages[key].path === path.replace(/\/$/, ''),
+  );
+  if (information) return { view: information, id: null };
   const legal = legalPageFromPath(path);
   if (legal) return { view: legal, id: null };
   if (/^\/disenar\/?$/.test(path)) return { view: 'design', id: null };
@@ -63,7 +68,9 @@ export function catalogContext() {
   const saved = history.state?.[key]?.catalog;
   return {
     page: Number.isInteger(saved?.page) && saved.page > 0 ? saved.page : 1,
-    category: typeof saved?.category === 'string' ? saved.category : 'Todos',
+    category:
+      new URLSearchParams(location.search).get('categoria') ||
+      (typeof saved?.category === 'string' ? saved.category : 'Todos'),
   };
 }
 export function rememberCatalog(page, category) {

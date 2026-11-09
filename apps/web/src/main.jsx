@@ -28,6 +28,9 @@ import {
 import { AuthPage } from './AuthPage.jsx';
 import { WhatsAppButton } from './WhatsAppButton.jsx';
 import { Navbar } from './Navbar.jsx';
+import { SiteFooter } from './SiteFooter.jsx';
+import { InformationPage } from './InformationPage.jsx';
+import { informationPages, siteContact } from './site-content.js';
 import { CartDrawer } from './CartDrawer.jsx';
 import { Pagination } from './Pagination.jsx';
 import { Profile } from './Profile.jsx';
@@ -273,6 +276,9 @@ function App() {
       if (page.view === 'catalog') {
         const saved = catalogContext();
         setCategory(saved.category);
+        setSearch('');
+        setPriceMin('');
+        setPriceMax('');
         setCatalogPage((current) => ({ ...current, page: saved.page }));
       }
       const emailToken =
@@ -323,8 +329,9 @@ function App() {
       window.history.replaceState(window.history.state, '', '/perfil');
   }, [profileToken]);
   useEffect(() => {
-    document.title = legalPages[view]
-      ? legalPages[view].title + ' | ' + legalSite.name
+    const page = legalPages[view] || informationPages[view];
+    document.title = page
+      ? page.title + ' | ' + legalSite.name
       : legalSite.name + ' · Ideas que toman forma';
   }, [view]);
   function openSection(id) {
@@ -334,6 +341,37 @@ function App() {
     setView('catalog');
     setError('');
     setNotice('');
+    setNavigationVersion((current) => current + 1);
+  }
+  function openInformation(key) {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    closeAuth();
+    navigatePage(key, informationPages[key].path);
+    setView(key);
+    setError('');
+    setNotice('');
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
+  }
+  function openCategory(nextCategory) {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    closeAuth();
+    const path =
+      nextCategory === 'Todos'
+        ? '/#catalogo'
+        : '/?categoria=' + encodeURIComponent(nextCategory) + '#catalogo';
+    navigatePage('catalog', path);
+    setCategory(nextCategory);
+    setSearch('');
+    setPriceMin('');
+    setPriceMax('');
+    setSort('relevance');
+    setCatalogPage((current) => ({ ...current, page: 1 }));
+    rememberCatalog(1, nextCategory);
+    setView('catalog');
+    setError('');
+    setNotice('');
+    scrollTarget.current = 'catalogo';
     setNavigationVersion((current) => current + 1);
   }
   function requestLogout() {
@@ -641,13 +679,17 @@ function App() {
           onLogin={openLogin}
           onLogout={requestLogout}
           onHowItWorks={() => openSection('proceso')}
+          onAbout={() => openInformation('about')}
         />
       )}
       {(loginPage || view !== 'catalog') && (
         <BackLink onBack={goBack} disabled={busy || loggingOut} />
       )}
       {!loginPage && (
-        <main id="contenido" className={view === 'catalog' ? 'storefront-dark' : undefined}>
+        <main
+          id="contenido"
+          className={view === 'catalog' ? 'storefront-dark' : undefined}
+        >
           {notice && (
             <div role="status" className="notice">
               {notice}
@@ -663,6 +705,12 @@ function App() {
           )}
           {legalPages[view] ? (
             <LegalPage pageKey={view} />
+          ) : informationPages[view] ? (
+            <InformationPage
+              pageKey={view}
+              onDesign={openDesign}
+              onCatalog={() => openCategory('Todos')}
+            />
           ) : view === 'design' ? (
             <Suspense
               fallback={<p role="status">Cargando tu espacio de diseño…</p>}
@@ -774,11 +822,7 @@ function App() {
                       key={c}
                       aria-pressed={category === c}
                       className={category === c ? 'active' : ''}
-                      onClick={() => {
-                        setCategory(c);
-                        setSearch('');
-                        setCatalogPage((current) => ({ ...current, page: 1 }));
-                      }}
+                      onClick={() => openCategory(c)}
                     >
                       {c}
                     </button>
@@ -1170,47 +1214,14 @@ function App() {
         </main>
       )}
       {!loginPage && (
-        <footer>
-          <a
-            className="brand"
-            aria-label="Mundo 3D, inicio"
-            href="/"
-            onClick={(event) => {
-              event.preventDefault();
-              showCatalog();
-            }}
-          >
-            <Brand />
-          </a>
-          <p>Ideas que toman forma.</p>
-          <div className="footer-legal">
-            <span className="small">
-              Diseño local. Posibilidades infinitas.
-            </span>
-            {Object.entries(legalPages).map(([key, page]) => (
-              <a
-                key={key}
-                href={page.path}
-                aria-current={view === key ? 'page' : undefined}
-                onClick={(event) => {
-                  if (
-                    event.button === 0 &&
-                    !event.metaKey &&
-                    !event.ctrlKey &&
-                    !event.shiftKey &&
-                    !event.altKey
-                  ) {
-                    event.preventDefault();
-                    openLegal(key);
-                  }
-                }}
-              >
-                {page.title}
-              </a>
-            ))}
-            <a href={'mailto:' + legalSite.email}>{legalSite.email}</a>
-          </div>
-        </footer>
+        <SiteFooter
+          categories={catalogPage.categories}
+          view={view}
+          onCatalog={showCatalog}
+          onCategory={openCategory}
+          onInformation={openInformation}
+          onLegal={openLegal}
+        />
       )}
       {user && !loginPage && (
         <CartDrawer
@@ -1243,7 +1254,7 @@ function App() {
           />
         </CartDrawer>
       )}
-      {!loginPage && <WhatsAppButton phone="5491155606321" />}
+      {!loginPage && <WhatsAppButton phone={siteContact.whatsapp} />}
       {!loginPage && cartToast && (
         <Toast
           key={cartToast.id}
