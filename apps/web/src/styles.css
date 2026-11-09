@@ -2053,12 +2053,11 @@ summary:focus-visible {
   font-weight: 500;
   gap: 24px;
 }
-@media (min-width: 901px) {
+@media (min-width: 576px) {
   .site-header .site-nav {
-    /* Extra account links wrap within their own column, beside the brand. */
-    flex-wrap: wrap;
-    overflow: visible;
-    row-gap: 10px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 }
 .site-header .site-nav > * {
