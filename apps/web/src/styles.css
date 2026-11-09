@@ -3437,6 +3437,20 @@ footer .footer-legal a {
   gap: 12px;
   font-style: normal;
 }
+.footer-contact-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.footer-contact-link svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+}
+.footer-contact-link > span:last-child {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
 .footer-faq details,
 .faq-list details {
   border-bottom: 1px solid #414141;

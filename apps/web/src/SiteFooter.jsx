@@ -74,15 +74,39 @@ export function SiteFooter({
         >
           <h2 id="footer-contact-title">Hablemos de tu idea</h2>
           <address>
-            <a href={'mailto:' + siteContact.email}>{siteContact.email}</a>
-            <a href={siteContact.phoneHref}>Teléfono: {siteContact.phone}</a>
             <a
-              href={'https://wa.me/' + siteContact.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
+              className="footer-contact-link"
+              href={'mailto:' + siteContact.email}
             >
-              Escribinos por WhatsApp <span aria-hidden="true">↗</span>
-              <span className="sr-only"> (se abre en otra pestaña)</span>
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m3 7 9 6 9-6" />
+              </svg>
+              <span className="sr-only">Correo electrónico: </span>
+              <span>{siteContact.email}</span>
+            </a>
+            <a className="footer-contact-link" href={siteContact.phoneHref}>
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z" />
+              </svg>
+              <span className="sr-only">Teléfono: </span>
+              <span>{siteContact.phone}</span>
             </a>
             {socialLinks().map(([label, href]) => (
               <a
