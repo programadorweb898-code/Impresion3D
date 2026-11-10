@@ -220,3 +220,53 @@ test('persistencia del carrito ignora datos corruptos y nunca guarda precios o c
   assert.equal(cartItemsSchema.safeParse([...state, ...state]).success, false);
   assert.equal(orderSchema.safeParse({ items: [] }).success, false);
 });
+
+test('delivery snapshots keep free pickup separate from shipping pending quotation and reject forged prices', async () => {
+  const product = await Product.create({
+    name: 'Entrega prueba',
+    priceCents: 10000,
+    currency: 'ARS',
+  });
+  const base = { items: [{ productId: String(product._id), quantity: 1 }] };
+  const pickup = await checkout(alice, {
+    ...base,
+    delivery: { method: 'pickup' },
+    requestId: randomUUID(),
+  });
+  assert.equal(pickup.status, 201);
+  assert.equal(pickup.body.delivery.costCents, 0);
+  assert.equal(pickup.body.delivery.status, 'free_pickup');
+  assert.equal(pickup.body.delivery.originPostalCode, '1755');
+  assert.equal(pickup.body.totalCents, 10000);
+  const body = {
+    ...base,
+    delivery: { method: 'shipping', postalCode: ' b1755abc ' },
+    requestId: randomUUID(),
+  };
+  const shipping = await checkout(alice, body);
+  assert.equal(shipping.status, 201, JSON.stringify(shipping.body));
+  assert.equal(shipping.body.delivery.postalCode, 'B1755ABC');
+  assert.equal(shipping.body.delivery.status, 'pending_quote');
+  assert.equal(shipping.body.delivery.costCents, undefined);
+  assert.equal(shipping.body.totalCents, 10000);
+  const replay = await checkout(alice, body);
+  assert.equal(replay.status, 200);
+  assert.equal(replay.body._id, shipping.body._id);
+  assert.equal(
+    (await checkout(alice, { ...body, delivery: { method: 'pickup' } })).status,
+    409,
+  );
+  for (const delivery of [
+    { method: 'shipping', postalCode: 'abc' },
+    { method: 'shipping', postalCode: '12345' },
+    { method: 'shipping', postalCode: '1755', costCents: 0 },
+    { method: 'pickup', costCents: -100 },
+  ])
+    assert.equal((await checkout(alice, { ...base, delivery })).status, 400);
+  const listed = await alice.get('/api/orders').expect(200);
+  assert.equal(
+    listed.body.find((order) => order._id === shipping.body._id).delivery
+      .postalCode,
+    'B1755ABC',
+  );
+});

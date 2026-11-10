@@ -107,6 +107,23 @@ const orderModel = new Schema(
         dimensions: { width: Number, height: Number, depth: Number },
       },
     ],
+    delivery: {
+      type: new Schema(
+        {
+          method: {
+            type: String,
+            enum: ['pickup', 'shipping'],
+            required: true,
+          },
+          postalCode: String,
+          originPostalCode: String,
+          costCents: { type: Number, min: 0 },
+          status: { type: String, enum: ['free_pickup', 'pending_quote'] },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
     requestId: { type: String, select: false },
     requestHash: { type: String, select: false },
     totalCents: { type: Number, required: true },

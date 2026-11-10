@@ -42,7 +42,7 @@ export const commonQuestions = [
   {
     question: '¿Cómo se coordinan el pago y la entrega?',
     answer:
-      'Coordinamos personalmente el medio de pago y la modalidad de retiro o envío antes de confirmar el pedido. El sitio no cobra pagos online. Si corresponde un costo de envío, te lo informamos antes de confirmar.',
+      'Podés elegir retiro gratuito en tienda (CP 1755), con dirección a coordinar al confirmar el pedido, o envío indicando tu código postal. Por ahora el costo de envío se confirma al revisar la solicitud y no está incluido en el subtotal de productos. El retiro se coordina cuando el pedido esté listo. El sitio no cobra pagos online.',
   },
   {
     question: '¿Qué pasa si el modelo no tiene colores definidos?',

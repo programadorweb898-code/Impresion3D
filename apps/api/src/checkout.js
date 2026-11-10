@@ -10,7 +10,7 @@ function publicOrder(doc) {
   return value;
 }
 export async function submitCatalogOrder(req, res) {
-  const { items, notes, requestId } = req.body;
+  const { items, notes, requestId, delivery } = req.body;
   const requestHash = requestId
     ? createHash('sha256')
         .update(
@@ -19,6 +19,7 @@ export async function submitCatalogOrder(req, res) {
               .map(canonicalCartItem)
               .sort((a, b) => a.productId.localeCompare(b.productId)),
             notes,
+            ...(delivery ? { delivery } : {}),
           }),
         )
         .digest('hex')
@@ -102,6 +103,17 @@ export async function submitCatalogOrder(req, res) {
       ),
       currency: products[0].currency,
       notes,
+      ...(delivery
+        ? {
+            delivery: {
+              method: delivery.method,
+              originPostalCode: '1755',
+              ...(delivery.method === 'pickup'
+                ? { costCents: 0, status: 'free_pickup' }
+                : { postalCode: delivery.postalCode, status: 'pending_quote' }),
+            },
+          }
+        : {}),
       requestId,
       requestHash,
       history: [{ status: 'en_espera', at: new Date() }],

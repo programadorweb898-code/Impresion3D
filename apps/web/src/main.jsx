@@ -1,3 +1,4 @@
+import { OrderDelivery } from './OrderDelivery.jsx';
 import { offerDefinitions, offerPath } from '@impresion3d/shared';
 import { OfferDetails } from './OfferDetails.jsx';
 import { Brand, BrandMark } from './Brand.jsx';
@@ -124,6 +125,7 @@ function App() {
     [sort, setSort] = useState(() => catalogContext().sort),
     [loadedCatalogKey, setLoadedCatalogKey] = useState(null),
     [cartNotes, setCartNotes] = useState(''),
+    [cartDelivery, setCartDelivery] = useState({ method: 'pickup' }),
     [viewing, setViewing] = useState(null),
     [navigationVersion, setNavigationVersion] = useState(0);
   const cart = useCart(user?.id);
@@ -133,9 +135,14 @@ function App() {
   const toastSequence = useRef(0);
   const dismissCartToast = useCallback(() => setCartToast(null), []);
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setCartDelivery({ method: 'pickup' });
+      return;
+    }
     try {
-      setCartNotes(pendingCheckout(user.id)?.notes || '');
+      const pending = pendingCheckout(user.id);
+      setCartNotes(pending?.notes || '');
+      setCartDelivery(pending?.delivery || { method: 'pickup' });
     } catch {
       setError(
         'No pudimos recuperar el envío pendiente. Revisá Mis pedidos antes de enviar.',
@@ -719,6 +726,7 @@ function App() {
               expectedUnitPriceCents: byId.get(i.productId).priceCents,
             })),
             notes: cartNotes,
+            delivery: cartDelivery,
           }),
         ),
       });
@@ -1354,7 +1362,13 @@ function App() {
                         {item.quantity} × {item.name}
                       </p>
                     ))}
-                    <strong>{money(o.totalCents, o.currency)}</strong>
+                    <OrderDelivery delivery={o.delivery} />
+                    <strong>
+                      {o.delivery?.method === 'shipping'
+                        ? 'Productos (sin envío): '
+                        : 'Total: '}
+                      {money(o.totalCents, o.currency)}
+                    </strong>
                     <p>
                       {o.estimatedReadyAt
                         ? 'Entrega estimada: ' +
@@ -1414,6 +1428,8 @@ function App() {
             products={cartProducts}
             user={user}
             notes={cartNotes}
+            delivery={cartDelivery}
+            onDelivery={setCartDelivery}
             onNotes={(value) => {
               setCartNotes(value);
             }}
