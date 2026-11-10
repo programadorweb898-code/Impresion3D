@@ -42,7 +42,7 @@ export const commonQuestions = [
   {
     question: '¿Cómo se coordinan el pago y la entrega?',
     answer:
-      'Podés elegir retiro gratuito en tienda (CP 1755), con dirección a coordinar al confirmar el pedido, o envío indicando tu código postal. Por ahora el costo de envío se confirma al revisar la solicitud y no está incluido en el subtotal de productos. El retiro se coordina cuando el pedido esté listo. El sitio no cobra pagos online.',
+      'Podés elegir retiro coordinado gratuito en Rafael Castillo (CP 1755) o entrega propia en auto hasta 30 km de ida. Para cotizar la entrega ingresá calle y altura, localidad y CP. El carrito suma productos más envío antes de enviar el pedido. El envío es gratis desde $120.000 en productos. El sitio no cobra pagos online.',
   },
   {
     question: '¿Qué pasa si el modelo no tiene colores definidos?',
