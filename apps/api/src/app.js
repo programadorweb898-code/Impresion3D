@@ -25,7 +25,7 @@ import { listProducts, listOrders } from './list-routes.js';
 import { createAdminRouter } from './admin.js';
 import { submitCatalogOrder } from './checkout.js';
 import { cartCatalog } from './offers.js';
-import { createShippingService, storeShippingQuote } from './shipping.js';
+import { createShippingService, storeShippingQuote, reuseShippingQuote } from './shipping.js';
 import { sendVerification } from './email-verification.js';
 import {
   createAccountAccess,
@@ -349,6 +349,8 @@ export function createApp({
       );
       if (!Number.isSafeInteger(subtotalCents))
         return res.status(400).json({ message: 'No pudimos calcular el subtotal.' });
+      const cached = reuseShippingQuote(req.session, delivery, items, subtotalCents);
+      if (cached) return res.json(cached);
       try {
         const calculated = await shippingService.quote(delivery, subtotalCents);
         res.json(storeShippingQuote(req.session, delivery, items, subtotalCents, calculated));
