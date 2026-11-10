@@ -1,3 +1,4 @@
+import { rateLimitMessage } from './rate-limit-message.js';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -67,6 +68,7 @@ export function adminSlicingRouter() {
       limit: 10,
       standardHeaders: 'draft-8',
       legacyHeaders: false,
+      message: rateLimitMessage,
     }),
     async (req, res) => {
       const parsed = z
@@ -212,6 +214,7 @@ export function slicerWorkerRouter() {
       limit: 10,
       standardHeaders: 'draft-8',
       legacyHeaders: false,
+      message: rateLimitMessage,
     }),
     async (req, res) => {
       const parsed = z

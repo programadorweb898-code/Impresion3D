@@ -1,3 +1,4 @@
+import { publicProductProjection } from './public-product.js';
 import { Product, Order } from './models.js';
 import { relevancePipeline } from './relevance.js';
 import { pageNumber, pageMetadata, pageSize as limit } from './pagination.js';
@@ -13,7 +14,7 @@ export async function listProducts(req, res) {
       return res.status(400).json({ message: 'Productos inválidos' });
     return res.json(
       await Product.find({ ...filter, _id: { $in: ids } })
-        .select('-__v')
+        .select(publicProductProjection)
         .limit(limit)
         .lean(),
     );
@@ -30,34 +31,51 @@ export async function listProducts(req, res) {
   if (startsWith !== undefined) {
     if (typeof startsWith !== 'string' || startsWith.length > 80)
       return res.status(400).json({ message: 'Búsqueda inválida' });
-    const escaped = startsWith.trim().toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    if (escaped) filter.$or = [
-      { name: { $regex: '^' + escaped, $options: 'i' } },
-      { category: { $regex: '^' + escaped, $options: 'i' } },
-      { categories: { $regex: '^' + escaped, $options: 'i' } },
-    ];
+    const escaped = startsWith
+      .trim()
+      .toLowerCase()
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (escaped)
+      filter.$or = [
+        { name: { $regex: '^' + escaped, $options: 'i' } },
+        { category: { $regex: '^' + escaped, $options: 'i' } },
+        { categories: { $regex: '^' + escaped, $options: 'i' } },
+      ];
   }
   const priceMin = req.query.priceMin;
   const priceMax = req.query.priceMax;
   if (priceMin !== undefined || priceMax !== undefined) {
     const min = priceMin === undefined ? undefined : Number(priceMin);
     const max = priceMax === undefined ? undefined : Number(priceMax);
-    if ((min !== undefined && (!Number.isInteger(min) || min < 0)) || (max !== undefined && (!Number.isInteger(max) || max < 0)) || (min !== undefined && max !== undefined && min > max))
+    if (
+      (min !== undefined && (!Number.isInteger(min) || min < 0)) ||
+      (max !== undefined && (!Number.isInteger(max) || max < 0)) ||
+      (min !== undefined && max !== undefined && min > max)
+    )
       return res.status(400).json({ message: 'Rango de precio inválido' });
     filter.priceCents = {};
     if (min !== undefined) filter.priceCents.$gte = min;
     if (max !== undefined) filter.priceCents.$lte = max;
   }
   const sortKey = req.query.sort || 'relevance';
-  const sort = sortKey === 'price-asc' ? { priceCents: 1, _id: 1 } : sortKey === 'price-desc' ? { priceCents: -1, _id: -1 } : { createdAt: -1, _id: -1 };
-  const products = sortKey === 'relevance'
-    ? await Product.aggregate(relevancePipeline(filter, page, limit))
-    : await Product.find(filter)
-    .sort(sort)
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .select('-__v')
-    .lean();
+  const sort =
+    sortKey === 'price-asc'
+      ? { priceCents: 1, _id: 1 }
+      : sortKey === 'price-desc'
+        ? { priceCents: -1, _id: -1 }
+        : { createdAt: -1, _id: -1 };
+  const products =
+    sortKey === 'relevance'
+      ? await Product.aggregate([
+          ...relevancePipeline(filter, page, limit),
+          { $project: publicProductProjection },
+        ])
+      : await Product.find(filter)
+          .sort(sort)
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .select(publicProductProjection)
+          .lean();
   // Keep old open tabs compatible, with bounded responses.
   if (req.query.page === undefined) return res.json(products);
   const [total, primaryCategories, additionalCategories] = await Promise.all([
@@ -89,4 +107,3 @@ export async function listOrders(req, res) {
     ...pageMetadata(page, total),
   });
 }
-

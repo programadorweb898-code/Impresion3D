@@ -60,6 +60,7 @@ after(async () => {
   await mongoose.disconnect();
   await mongo?.stop();
 });
+
 test('solicitud conserva archivo original, datos y privacidad; reintentos no duplican', async () => {
   const data = metadata();
   const first = await send(customer, data);
@@ -143,4 +144,35 @@ test('administración responde con presupuesto versionado; cliente solo consulta
   const own = await customer.get('/api/design-requests').expect(200);
   assert.equal(own.body.requests[0].priceCents, 125000);
   assert.match(own.body.requests[0].response, /dos unidades/);
+});
+
+test('dos envíos concurrentes no superan el cupo de solicitudes abiertas en la instancia', async () => {
+  const agent = await register('quota-client@example.com');
+  const user = await User.findOne({ email: 'quota-client@example.com' });
+  await DesignRequest.insertMany(
+    Array.from({ length: 19 }, () => ({
+      ...metadata(),
+      userId: user._id,
+      fileId: new mongoose.Types.ObjectId(),
+      requestHash: 'fixture',
+    })),
+  );
+  const token = (await agent.get('/api/csrf')).body.token;
+  const post = () =>
+    agent
+      .post('/api/design-requests')
+      .set('Origin', origin)
+      .set('x-csrf-token', token)
+      .field('metadata', JSON.stringify(metadata()))
+      .attach('model', original, 'modelo.3mf');
+  const responses = await Promise.all([post(), post()]);
+  assert.equal(responses.filter((r) => r.status === 201).length, 1);
+  assert.ok(responses.some((r) => [409, 429].includes(r.status)));
+  assert.equal(
+    await DesignRequest.countDocuments({
+      userId: user._id,
+      status: { $ne: 'cerrado' },
+    }),
+    20,
+  );
 });

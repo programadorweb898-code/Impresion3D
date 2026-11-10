@@ -21,7 +21,9 @@ async function readJson(response) {
     return await response.json();
   } catch (cause) {
     throw new Error(
-      `No recibimos una respuesta válida (HTTP ${response.status}). Recargá la página y volvé a intentarlo.${errorReference(response) ? ' Referencia: ' + errorReference(response) : ''}`,
+      response.status === 429
+        ? 'Hiciste varios intentos seguidos. Esperá unos minutos y volvé a intentarlo.'
+        : 'El servicio no está disponible temporalmente. Esperá unos segundos y volvé a intentarlo.',
       { cause },
     );
   }
@@ -51,8 +53,7 @@ export async function api(path, options = {}) {
   const data = await readJson(response);
   if (!response.ok) {
     const error = new Error(
-      (data?.message || 'No pudimos completar la solicitud. Intentá nuevamente.') +
-        (errorReference(response) ? ' Referencia: ' + errorReference(response) : ''),
+      data?.message || 'No pudimos completar la solicitud. Intentá nuevamente.',
     );
     error.status = response.status;
     error.code = data?.code;

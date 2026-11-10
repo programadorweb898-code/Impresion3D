@@ -2,10 +2,33 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { registerSchema, orderSchema, newPasswordSchema } from '@impresion3d/shared';
+import {
+  registerSchema,
+  orderSchema,
+  newPasswordSchema,
+} from '@impresion3d/shared';
 const app = createApp({
   sessionSecret: 'test-secret-with-at-least-32-characters',
   webOrigin: 'http://localhost:5173',
+});
+
+test('el límite global responde en español y JSON sin detalles internos', async () => {
+  const limited = createApp({
+    sessionSecret: 'rate-limit-test-secret-at-least-32-characters',
+    webOrigin: 'http://localhost:5173',
+  });
+  for (let i = 0; i < 120; i++)
+    await request(limited).get('/api/health').expect(200);
+  const response = await request(limited)
+    .get('/api/health')
+    .expect(429)
+    .expect('Content-Type', /json/);
+  assert.equal(
+    response.body.message,
+    'Hiciste varios intentos seguidos. Esperá unos minutos y volvé a intentarlo.',
+  );
+  assert.deepEqual(Object.keys(response.body), ['message']);
+  assert.ok(response.headers['retry-after']);
 });
 test('rechaza mutaciones sin CSRF', async () => {
   await request(app)
@@ -28,7 +51,14 @@ test('historial requiere autenticación', async () => {
 });
 test('validación de contraseñas y cantidades', () => {
   assert.equal(newPasswordSchema.safeParse('PruebaSegura1!').success, true);
-  for (const value of ['corta', 'SinNumero!', 'sinmayuscula1!', 'SINMINUSCULA1!', 'SinEspecial1', 'DemasiadoLarga123456789!']) {
+  for (const value of [
+    'corta',
+    'SinNumero!',
+    'sinmayuscula1!',
+    'SINMINUSCULA1!',
+    'SinEspecial1',
+    'DemasiadoLarga123456789!',
+  ]) {
     assert.equal(newPasswordSchema.safeParse(value).success, false, value);
   }
   assert.equal(
