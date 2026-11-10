@@ -138,6 +138,7 @@ export default function ProductViewer({
           root = await parseLocalModel(
             product.model.buffer,
             product.model.format,
+            { signal: abort.signal },
           );
         } else {
           const response = await fetch(product.model.url, {
@@ -294,7 +295,13 @@ export default function ProductViewer({
         role="img"
         aria-label={'Modelo 3D interactivo de ' + product.name}
       />
-      {status === 'loading' && <p role="status">Cargando modelo 3D…</p>}
+      {status === 'loading' && (
+        <p role="status">
+          {product.model.buffer
+            ? 'Procesando modelo 3D… Los archivos grandes pueden tardar unos segundos. Podés elegir otro archivo mientras esperás.'
+            : 'Cargando modelo 3D…'}
+        </p>
+      )}
       {error && (
         <p className="error" role="alert">
           {error}

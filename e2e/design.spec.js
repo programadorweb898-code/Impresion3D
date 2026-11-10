@@ -292,3 +292,47 @@ test('part names are displayed in Spanish with neutral fallbacks', async ({
     'Pieza 4',
   ]);
 });
+
+test('busy model worker leaves the page responsive and replacement cancels stale work', async ({
+  page,
+}) => {
+  // Deterministic CPU work in the real worker: the main page must keep handling input.
+  await page.route('**/assets/local-model.worker-*.js', async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      body:
+        'const until = Date.now() + 2000; while (Date.now() < until) {};' +
+        (await response.text()),
+    });
+  });
+  await page.goto('/disenar');
+  const workerStarted = page.waitForEvent('worker');
+  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
+    name: 'lento.3mf',
+    mimeType: 'application/octet-stream',
+    buffer: coloredThreeMf(),
+  });
+  const worker = await workerStarted;
+  const workerClosed = new Promise((resolve) => worker.once('close', resolve));
+  await expect(page.getByText(/Procesando modelo 3D/)).toBeVisible();
+  // A normal UI replacement must complete before the busy worker finishes.
+  const before = Date.now();
+  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
+    name: 'reemplazo.glb',
+    mimeType: 'application/octet-stream',
+    buffer: tetraGlb(),
+  });
+  await expect(
+    page.getByRole('button', { name: 'Restablecer vista', exact: true }),
+  ).toBeVisible();
+  expect(Date.now() - before).toBeLessThan(1800);
+  await workerClosed;
+  await expect(page.locator('.design-measurements h2')).toHaveText(
+    'reemplazo.glb',
+  );
+  await expect(
+    page.locator('.design-measurements dl > div').first(),
+  ).toHaveText('Ancho100 cm');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+});
