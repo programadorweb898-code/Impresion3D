@@ -204,9 +204,6 @@ export function Navbar({
                   </svg>
                   <span className="profile-label">Perfil</span>
                 </a>
-                <button className="nav-logout" onClick={() => choose(onLogout)}>
-                  Cerrar sesión
-                </button>
               </>
             ) : (
               <button className="outline" onClick={() => choose(onLogin)}>
