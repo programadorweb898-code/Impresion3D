@@ -84,9 +84,9 @@ export const productSchema = z.strictObject({
   priceCents: z.number().int().min(0).max(100000000),
   currency: z.literal('ARS'),
   dimensions: z.strictObject({
-    width: z.number().positive().max(2000),
+    width: z.number().positive().max(2000).optional(),
     height: z.number().positive().max(2000),
-    depth: z.number().positive().max(2000),
+    depth: z.number().positive().max(2000).optional(),
   }),
   active: z.boolean(),
 });

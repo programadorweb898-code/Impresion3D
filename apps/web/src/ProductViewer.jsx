@@ -346,8 +346,8 @@ export default function ProductViewer({
       )}
       {product.dimensions && (
         <p className="small">
-          Medidas de la ficha: {product.dimensions.width} ×{' '}
-          {product.dimensions.height} × {product.dimensions.depth} mm.
+          Medidas de la ficha: ancho {product.dimensions.width ? `${product.dimensions.width} mm` : 'a confirmar'}, alto{' '}
+          {product.dimensions.height} mm, profundidad {product.dimensions.depth ? `${product.dimensions.depth} mm` : 'a confirmar'}.
         </p>
       )}
     </div>

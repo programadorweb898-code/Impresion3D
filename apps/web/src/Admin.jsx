@@ -21,7 +21,7 @@ const emptyProduct = {
   color: 'terracotta',
   priceCents: 0,
   currency: 'ARS',
-  dimensions: { width: 100, height: 100, depth: 100 },
+  dimensions: { height: 50 },
   active: true,
 };
 const toLocalDate = (iso) => {
@@ -164,9 +164,9 @@ export function Admin({ onCatalogChange, onPreview }) {
       priceCents: Math.round(Number(values.price) * 100),
       currency: 'ARS',
       dimensions: {
-        width: Math.round(Number(values.width) * 100) / 10,
+        ...(values.width !== '' && { width: Math.round(Number(values.width) * 100) / 10 }),
         height: Math.round(Number(values.height) * 100) / 10,
-        depth: Math.round(Number(values.depth) * 100) / 10,
+        ...(values.depth !== '' && { depth: Math.round(Number(values.depth) * 100) / 10 }),
       },
       active: values.active === 'on',
     });
@@ -417,9 +417,12 @@ export function Admin({ onCatalogChange, onPreview }) {
                       max="200"
                       step="0.01"
                       defaultValue={
-                        Math.round(editing.dimensions[key] * 10) / 100
+                        Number.isFinite(editing.dimensions?.[key])
+                          ? Math.round(editing.dimensions[key] * 10) / 100
+                          : ''
                       }
-                      required
+                      required={key === 'height'}
+                      placeholder="A confirmar"
                     />
                   </label>
                 ))}
