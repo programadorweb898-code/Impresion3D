@@ -233,7 +233,7 @@ export function Cart({
                 {!confirmed || mixed ? '—' : money(total, currency)}
               </strong>
             </div>
-            <fieldset className="delivery-options" disabled={busy}>
+            <fieldset className="delivery-options" disabled={busy || quoting}>
               <legend>¿Cómo querés recibir tu pedido?</legend>
               <label className="delivery-choice">
                 <input
