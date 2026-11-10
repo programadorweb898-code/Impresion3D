@@ -1,16 +1,23 @@
 import { test, expect } from '@playwright/test';
 
+// Keep this scenario independent of seeded customers, order counts and request limits.
+test.use({ extraHTTPHeaders: { 'X-Forwarded-For': '198.19.88.15' } });
+
 test('cart offers free pickup and saves shipping as pending, never as a free quotation', async ({
   page,
 }) => {
   await page.goto('/login');
   await page
-    .getByLabel('Correo electrónico', { exact: true })
-    .fill('browser@example.com');
+    .getByRole('button', { name: 'Crear una cuenta', exact: true })
+    .click();
+  await page.getByLabel('Nombre', { exact: true }).fill('Cliente Entrega');
   await page
-    .getByLabel('Contraseña', { exact: true })
-    .fill('NavegadorPrueba1!');
-  await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
+    .getByLabel('Correo electrónico', { exact: true })
+    .fill('entrega-browser@example.com');
+  await page.getByLabel('Contraseña', { exact: true }).fill('EntregaPrueba1!');
+  await page
+    .getByRole('button', { name: 'Crear cuenta con email', exact: true })
+    .click();
   await expect(page.locator('.product-card')).toHaveCount(20);
   await page
     .locator('.product-card')
