@@ -156,15 +156,7 @@ export function confirmShippingQuote(session, delivery, items, subtotalCents) {
   return quote;
 }
 
-export function storeShippingQuote(session, delivery, items, subtotalCents, calculated) {
-  const quote = {
-    quoteId: randomUUID(),
-    ...delivery,
-    ...calculated,
-    fingerprint: shippingFingerprint(items, subtotalCents),
-    expiresAt: Date.now() + SHIPPING_POLICY.quoteLifetimeMs,
-  };
-  session.deliveryQuote = quote;
+function publicQuote(quote, subtotalCents) {
   return {
     quoteId: quote.quoteId,
     subtotalCents,
@@ -174,4 +166,26 @@ export function storeShippingQuote(session, delivery, items, subtotalCents, calc
     roundTripKm: Number((quote.roundTripMeters / 1000).toFixed(1)),
     freeShipping: quote.costCents === 0,
   };
+}
+
+export function reuseShippingQuote(session, delivery, items, subtotalCents) {
+  const quote = session.deliveryQuote;
+  if (!quote || quote.expiresAt <= Date.now() ||
+      quote.fingerprint !== shippingFingerprint(items, subtotalCents) ||
+      quote.streetAddress !== delivery.streetAddress ||
+      quote.city !== delivery.city || quote.postalCode !== delivery.postalCode)
+    return null;
+  return publicQuote(quote, subtotalCents);
+}
+
+export function storeShippingQuote(session, delivery, items, subtotalCents, calculated) {
+  const quote = {
+    quoteId: randomUUID(),
+    ...delivery,
+    ...calculated,
+    fingerprint: shippingFingerprint(items, subtotalCents),
+    expiresAt: Date.now() + SHIPPING_POLICY.quoteLifetimeMs,
+  };
+  session.deliveryQuote = quote;
+  return publicQuote(quote, subtotalCents);
 }
