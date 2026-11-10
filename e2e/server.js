@@ -146,6 +146,13 @@ host.use(
     // This server binds localhost and is never deployed.
     trustProxy: true,
     staticDirectory: resolve('apps/web/dist'),
+    shippingService: {
+      quote: async (_destination, subtotalCents) => ({
+        oneWayMeters: 10000,
+        roundTripMeters: 21000,
+        costCents: subtotalCents >= 12000000 ? 0 : 840000,
+      }),
+    },
     accountServices: {
       providers: {
         google: {
