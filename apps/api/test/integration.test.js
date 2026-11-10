@@ -168,14 +168,14 @@ test('administración: permisos, productos, estados y concurrencia', async () =>
     mutate(admin, 'patch', '/api/admin/orders/' + orderId, data);
   const eta = new Date(Date.now() + 86400000).toISOString();
   assert.equal(
-    (await patch({ status: 'entregado', estimatedReadyAt: eta, version: 0 }))
+    (await patch({ status: 'finalizado', estimatedReadyAt: eta, version: 0 }))
       .status,
     400,
   );
   assert.equal(
     (
       await patch({
-        status: 'en_revision',
+        status: 'en_preparacion',
         estimatedReadyAt: '2020-01-01T00:00:00.000Z',
         version: 0,
       })
@@ -183,7 +183,7 @@ test('administración: permisos, productos, estados y concurrencia', async () =>
     400,
   );
   const updated = await patch({
-    status: 'en_revision',
+    status: 'en_preparacion',
     estimatedReadyAt: eta,
     version: 0,
   });

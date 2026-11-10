@@ -685,7 +685,7 @@ function App() {
     setNotice(
       'Pedido #' +
         order._id.slice(-6).toUpperCase() +
-        ' recibido. Coordinaremos disponibilidad, pago y entrega.',
+        ' en espera. Coordinaremos disponibilidad, pago y entrega.',
     );
     setCartOpen(false);
     navigatePage('orders', '/');

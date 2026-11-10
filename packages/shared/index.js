@@ -94,21 +94,14 @@ export const productUpdateSchema = productSchema.extend({
   version: z.number().int().nonnegative(),
 });
 export const statusLabels = {
-  recibido: 'Recibido',
-  en_revision: 'En revisión',
-  aprobado: 'Aprobado',
-  en_fabricacion: 'En fabricación',
-  terminado: 'Terminado',
-  entregado: 'Entregado',
-  cancelado: 'Cancelado',
+  en_espera: 'En espera',
+  en_preparacion: 'En preparación',
+  finalizado: 'Finalizado',
 };
 export const statusTransitions = {
-  recibido: ['en_revision', 'cancelado'],
-  en_revision: ['aprobado', 'cancelado'],
-  aprobado: ['en_fabricacion', 'cancelado'],
-  en_fabricacion: ['terminado', 'cancelado'],
-  terminado: ['entregado'],
-  entregado: [],
+  en_espera: ['en_preparacion', 'cancelado'],
+  en_preparacion: ['finalizado', 'cancelado'],
+  finalizado: [],
   cancelado: [],
 };
 export const orderUpdateSchema = z.strictObject({

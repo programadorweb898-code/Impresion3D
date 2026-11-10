@@ -104,7 +104,7 @@ export async function submitCatalogOrder(req, res) {
       notes,
       requestId,
       requestHash,
-      history: [{ status: 'recibido', at: new Date() }],
+      history: [{ status: 'en_espera', at: new Date() }],
     });
     res.status(201).json(publicOrder(order));
   } catch (error) {

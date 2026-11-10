@@ -126,16 +126,8 @@ const orderModel = new Schema(
     },
     status: {
       type: String,
-      enum: [
-        'recibido',
-        'en_revision',
-        'aprobado',
-        'en_fabricacion',
-        'terminado',
-        'entregado',
-        'cancelado',
-      ],
-      default: 'recibido',
+      enum: ['en_espera', 'en_preparacion', 'finalizado', 'cancelado'],
+      default: 'en_espera',
     },
     estimatedReadyAt: Date,
     history: [{ status: String, at: Date, estimatedReadyAt: Date }],

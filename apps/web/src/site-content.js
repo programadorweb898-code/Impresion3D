@@ -27,7 +27,12 @@ export const commonQuestions = [
   {
     question: '¿Cuánto tarda la fabricación?',
     answer:
-      'El plazo depende del diseño, el tamaño, la cantidad y los trabajos pendientes. Te informamos el plazo estimado al revisar tu solicitud y acordamos la entrega antes de confirmar el encargo.',
+      'El plazo de fabricación es de 2 a 4 días hábiles, según la complejidad del diseño, el tamaño y la cantidad de piezas. Te confirmamos la fecha estimada antes de reservar el trabajo.',
+  },
+  {
+    question: '¿Hay que pagar una reserva para empezar el trabajo?',
+    answer:
+      'Sí. Para reservar tu trabajo y comenzar la fabricación se debe abonar el 30 % del total como mínimo. El saldo restante se coordina antes de la entrega.',
   },
   {
     question: '¿Cómo recibo el presupuesto de mi diseño?',
