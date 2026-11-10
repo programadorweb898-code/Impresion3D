@@ -101,7 +101,6 @@ export function createAdminRouter({
       await imageStorage.remove(product.gallery.context.publicId).catch(() => {});
     res.json({ message: 'Producto eliminado del catálogo' });
   });
-
   adminRouter.get('/orders', async (req, res) => {
     const page = pageNumber(req, res);
     if (!page) return;

@@ -1,3 +1,6 @@
+import { WorkerConnections } from './SlicingControls.jsx';
+import DesignQuote from './DesignQuote.jsx';
+import DesignRequests from './DesignRequests.jsx';
 import { ProductGalleryEditor } from './ProductGalleryEditor.jsx';
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
@@ -13,11 +16,12 @@ import {
 const emptyProduct = {
   name: '',
   description: '',
+  shortDescription: '',
   category: 'Hogar',
   color: 'terracotta',
   priceCents: 0,
   currency: 'ARS',
-  dimensions: { width: 100, height: 100, depth: 100 },
+  dimensions: { height: 50 },
   active: true,
 };
 const toLocalDate = (iso) => {
@@ -128,23 +132,6 @@ export function Admin({ onCatalogChange, onPreview }) {
   useEffect(() => {
     load().catch((e) => setError(e.message));
   }, []);
-  async function deleteProduct(id) {
-    if (!window.confirm('¿Seguro que querés eliminar este producto del catálogo?')) {
-      return;
-    }
-    setBusy(true);
-    setError('');
-    try {
-      await api('/admin/products/' + id, { method: 'DELETE' });
-      await Promise.all([load(data.page), onCatalogChange()]);
-      setNotice('Producto eliminado.');
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function saveOrder(id, body) {
     setBusy(true);
     setError('');
@@ -162,6 +149,22 @@ export function Admin({ onCatalogChange, onPreview }) {
       setBusy(false);
     }
   }
+  async function deleteProduct(id) {
+    if (!window.confirm('¿Seguro que querés eliminar este producto del catálogo?')) {
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      await api('/admin/products/' + id, { method: 'DELETE' });
+      await Promise.all([load(data.page), onCatalogChange()]);
+      setNotice('Producto eliminado.');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
   async function saveProduct(e) {
     e.preventDefault();
     setBusy(true);
@@ -171,14 +174,15 @@ export function Admin({ onCatalogChange, onPreview }) {
     const parsed = productSchema.safeParse({
       name: values.name,
       description: values.description,
+      shortDescription: values.shortDescription,
       category: values.category,
       color: values.color,
       priceCents: Math.round(Number(values.price) * 100),
       currency: 'ARS',
       dimensions: {
-        width: Math.round(Number(values.width) * 100) / 10,
+        ...(values.width !== '' && { width: Math.round(Number(values.width) * 100) / 10 }),
         height: Math.round(Number(values.height) * 100) / 10,
-        depth: Math.round(Number(values.depth) * 100) / 10,
+        ...(values.depth !== '' && { depth: Math.round(Number(values.depth) * 100) / 10 }),
       },
       active: values.active === 'on',
     });
@@ -223,6 +227,13 @@ export function Admin({ onCatalogChange, onPreview }) {
           Productos
         </button>
         <button
+          aria-pressed={tab === 'designs'}
+          className={tab === 'designs' ? 'active' : ''}
+          onClick={() => setTab('designs')}
+        >
+          Presupuestos 3D
+        </button>
+        <button
           aria-pressed={tab === 'operations'}
           className={tab === 'operations' ? 'active' : ''}
           onClick={() => setTab('operations')}
@@ -251,6 +262,12 @@ export function Admin({ onCatalogChange, onPreview }) {
       )}
       {loading ? (
         <p role="status">Cargando taller…</p>
+      ) : tab === 'designs' ? (
+        <>
+          <WorkerConnections />
+          <DesignRequests admin />
+          <DesignQuote />
+        </>
       ) : tab === 'operations' ? (
         <section>
           <h2>Estado del servicio</h2>
@@ -343,7 +360,20 @@ export function Admin({ onCatalogChange, onPreview }) {
                 />
               </label>
               <label>
-                Descripción
+                Descripción breve de la tarjeta
+                <textarea
+                  name="shortDescription"
+                  defaultValue={editing.shortDescription || ''}
+                  maxLength="180"
+                  aria-describedby="short-description-help"
+                />
+              </label>
+              <p id="short-description-help" className="small">
+                Una frase sobre el producto, sin medidas. El detalle y las
+                medidas se muestran en su ficha.
+              </p>
+              <label>
+                Descripción detallada de la ficha
                 <textarea
                   name="description"
                   defaultValue={editing.description}
@@ -402,8 +432,13 @@ export function Admin({ onCatalogChange, onPreview }) {
                       min="0.01"
                       max="200"
                       step="0.01"
-                      defaultValue={Math.round(editing.dimensions[key] * 10) / 100}
-                      required
+                      defaultValue={
+                        Number.isFinite(editing.dimensions?.[key])
+                          ? Math.round(editing.dimensions[key] * 10) / 100
+                          : ''
+                      }
+                      required={key === 'height'}
+                      placeholder="A confirmar"
                     />
                   </label>
                 ))}
