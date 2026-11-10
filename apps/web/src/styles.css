@@ -2028,7 +2028,6 @@ summary:focus-visible {
 @media (min-width: 576px) {
   .site-header .site-nav {
     flex-wrap: nowrap;
-    overflow-x: auto;
     overflow-y: hidden;
   }
 }
