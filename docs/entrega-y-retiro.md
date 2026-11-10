@@ -1,9 +1,46 @@
-# Retiro y envío del carrito
+# Entregas propias — SomosMundo3D
 
-El carrito permite retirar gratis en el CP 1755, con dirección a coordinar al confirmar y retiro cuando la pieza esté lista, o solicitar envío indicando un CP argentino de cuatro dígitos o un CPA completo.
+El carrito admite retiro coordinado sin costo y entrega por auto propio a domicilio.
+**Zipnova no está integrado ni es necesario para este servicio.**
 
-Por ahora no existe conexión con Zipnova: no se solicitan tarifas, no se crean guías y no se realiza ningún cobro online. La elección de envío se guarda como pendiente de cotización y se muestra como costo a confirmar. El importe registrado sigue siendo el de productos, identificado como subtotal sin envío. No se publica una dirección particular.
+## Cotización y condiciones
 
-El servidor define el retiro sin cargo y no acepta precios de envío enviados por el navegador. La modalidad y el CP forman parte de la clave del intento de pedido para evitar reutilizar un pedido con otra entrega. Los pedidos antiguos sin modalidad siguen figurando como entrega a coordinar.
+El comprador ingresa calle y altura, localidad y CP de destino. Al elegir
+«Calcular envío», el backend llama a Google Maps Routes API para recorrer en auto
+**origen → domicilio → origen**, con parada intermedia en el domicilio. Se cobran
+$400 ARS por km de recorrido total, con mínimo $2.000 ARS. En compras de productos
+desde $120.000 ARS, el costo del envío es $0. El recorrido de ida debe ser de
+hasta 30 km inclusive. La cotización vence a los 10 minutos.
 
-La elección aparece en Mis pedidos y Administración. Se actualiza el aviso de privacidad y la respuesta de preguntas frecuentes. Para activar cotización automática faltan cuenta y credenciales de Zipnova, origen habilitado y peso/medidas de los paquetes embalados; las medidas del modelo no sustituyen a las del embalaje.
+El total de los pedidos nuevos es subtotal de productos + envío. Se guarda el
+desglose y distancia del presupuesto confirmado. Pedidos anteriores conservan su
+historial y se diferencian según el estado anterior `pending_quote`.
+
+## Configuración privada en Render (solo backend)
+
+- `GOOGLE_MAPS_API_KEY`: clave restringida a Routes API y protegida como secreto.
+- `DELIVERY_ORIGIN_ADDRESS`: dirección/intersección de partida en Rafael Castillo,
+  Provincia de Buenos Aires, Argentina. **No publicar la ubicación privada en el
+  repositorio ni en variables VITE_**.
+- Activar la facturación y Routes API en el proyecto Google Cloud. Revisar límites
+  y cuotas directamente en Google Cloud antes de habilitar producción.
+
+Si falta alguna variable, el servidor devuelve 503 y no ofrece una cotización ficticia.
+
+## Consumo y seguridad
+
+El endpoint exige sesión iniciada, CSRF y límites por IP. Guarda como máximo
+250 solicitudes a la API de rutas por día UTC mediante un contador en MongoDB,
+compartido entre instancias. Es un límite de aplicación; configurar **también**
+las cuotas de Google Cloud y alertas de facturación (un presupuesto no corta gastos).
+No se realiza una nueva solicitud a Google al confirmar un pedido: se valida
+la cotización temporal guardada en la sesión contra usuario, domicilio, carrito
+y subtotal calculado por el servidor. No se acepta precio de envío del cliente.
+
+Las tarifas y umbrales están centralizados en `SHIPPING_POLICY` y podrán migrarse
+a administración en una etapa posterior. El cliente nunca recibe la dirección
+privada de origen. No se factura ni cobra online: el total sirve para coordinar el pago.
+
+> Nota: La disponibilidad del camino y la precisión de una dirección dependen
+> de Google Maps. La interfaz requiere calle con altura y CP; el resultado debe
+> confirmarse antes del reparto.
