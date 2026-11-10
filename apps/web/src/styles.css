@@ -1547,8 +1547,6 @@ header > nav {
   }
 }
 @media (max-width: 575.98px) {
-  :root {
-  }
   .site-header {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 0 12px;
