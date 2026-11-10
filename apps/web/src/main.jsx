@@ -852,21 +852,21 @@ function App() {
                 </div>
                 <figure className="hero-art">
                   <p className="hero-art-heading">
-                    EN CASA, CADA DETALLE CUENTA
+                    DE LA IDEA A LA ÚLTIMA CAPA
                   </p>
                   <img
                     className="hero-photo"
-                    src="/images/hero-organizador-1000.webp"
-                    srcSet="/images/hero-organizador-640.webp 640w, /images/hero-organizador-1000.webp 1000w"
+                    src="/images/hero-impresora-1000.webp"
+                    srcSet="/images/hero-impresora-640.webp 640w, /images/hero-impresora-1000.webp 1000w"
                     sizes="(max-width: 575px) 90vw, 45vw"
-                    width="1254"
-                    height="1254"
+                    width="1024"
+                    height="1024"
                     fetchPriority="high"
-                    alt="Organizador de platos negro de Mundo 3D en una cocina, con platos blancos"
+                    alt="Impresora 3D terminando un florero escultórico blanco de líneas onduladas"
                   />
                   <figcaption className="hero-art-caption">
-                    <span>Organización, con otra forma.</span>
-                    <span className="hero-caption-category">HOGAR</span>
+                    <span>Diseño que cobra forma.</span>
+                    <span className="hero-caption-category">IMPRESIÓN 3D</span>
                   </figcaption>
                 </figure>
               </section>
@@ -1457,4 +1457,3 @@ function App() {
   );
 }
 createRoot(document.getElementById('root')).render(<App />);
-

@@ -177,7 +177,7 @@ async function login(page, count = 0, email = 'browser@example.com') {
     page.getByRole('button', { name: `Abrir carrito, ${count} productos` }),
   ).toBeEnabled();
 }
-test('barra fija conserva carrito y menú al scrollear sin tapar contenido ni enlaces internos', async ({
+test('la navegación sigue el flujo del sitio y permite usar el menú móvil', async ({
   page,
 }) => {
   await page.goto('/');
@@ -196,7 +196,9 @@ test('barra fija conserva carrito y menú al scrollear sin tapar contenido ni en
       })
       .toBeGreaterThanOrEqual(-1);
     await page.evaluate(() => scrollTo({ top: 1800, behavior: 'instant' }));
-    expect((await header.boundingBox()).y).toBe(0);
+    expect((await header.boundingBox()).y).toBeLessThan(-100);
+    await expect(page.locator('.site-header-spacer')).toHaveCount(0);
+    await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
     await expect(
       page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
     ).toBeInViewport();
@@ -210,7 +212,7 @@ test('barra fija conserva carrito y menú al scrollear sin tapar contenido ni en
       ).toBeVisible();
       expect(await page.evaluate(() => scrollY)).toBe(position);
       await page.screenshot({
-        path: test.info().outputPath('impresion3d-fixed-navbar.png'),
+        path: test.info().outputPath('impresion3d-flow-navbar.png'),
         animations: 'disabled',
       });
       await page
@@ -222,8 +224,7 @@ test('barra fija conserva carrito y menú al scrollear sin tapar contenido ni en
       await expect
         .poll(async () => {
           const target = await page.locator('#proceso').boundingBox();
-          const bar = await header.boundingBox();
-          return target.y - bar.height;
+          return target.y;
         })
         .toBeGreaterThanOrEqual(0);
     }
@@ -240,9 +241,6 @@ test('barra fija conserva carrito y menú al scrollear sin tapar contenido ni en
   });
   await profileLink.scrollIntoViewIfNeeded();
   await expect(profileLink).toBeInViewport();
-  await expect(
-    page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
-  ).toBeInViewport();
   await profileLink.click();
   await expect(
     page.getByRole('heading', { name: 'Mi perfil', exact: true }),
@@ -446,7 +444,10 @@ test('visor WebGL carga geometría y permite cerrarlo y volver a abrirlo', async
   await expect(
     page.getByRole('button', { name: 'Restablecer vista' }),
   ).toBeVisible();
-  await expect(page.locator('.model-stage')).toHaveCSS('background-color', 'rgb(37, 43, 51)');
+  await expect(page.locator('.model-stage')).toHaveCSS(
+    'background-color',
+    'rgb(37, 43, 51)',
+  );
   await page.getByRole('button', { name: 'Vista superior' }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Cerrar visor 3D' }).click();
@@ -494,9 +495,7 @@ test('registro por correo confirma un enlace y elige una contraseña antes de in
   await page
     .getByLabel('Correo electrónico', { exact: true })
     .fill('new-browser@example.com');
-  await page
-    .getByLabel('Contraseña', { exact: true })
-    .fill('NavegadorFinal2!');
+  await page.getByLabel('Contraseña', { exact: true }).fill('NavegadorFinal2!');
   await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
   await expect(
     page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
@@ -685,7 +684,9 @@ test('ficha conserva fotos, descripción y medidas; galería adaptable a móvil 
   await expect(card.locator('.description')).toHaveText(
     'Una pieza decorativa para tu espacio.',
   );
-  await expect(card).not.toContainText(/100 × 100 × 100|\bmm\b|Descripción completa/);
+  await expect(card).not.toContainText(
+    /100 × 100 × 100|\bmm\b|Descripción completa/,
+  );
   const url = await link.getAttribute('href');
   await link.click();
   await expect(page).toHaveURL(new RegExp('/descripcion/[a-f0-9]{24}$'));
@@ -703,17 +704,35 @@ test('ficha conserva fotos, descripción y medidas; galería adaptable a móvil 
     '/images/hero-3d-studio.svg',
   );
   await expect(page.locator('.gallery-thumbnails button')).toHaveCount(2);
-  await expect(page.getByRole('button', { name: 'Ver foto: Girado 45°', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Ver foto: En uso', exact: true }).click();
-  await expect(page.locator('.product-gallery-stage > img')).toHaveAttribute('src', '/images/hero-3d-studio.svg?context');
-  await expect(page.locator('.product-gallery figcaption')).toContainText('2 / 2');
-  await page.getByRole('button', { name: 'Foto siguiente', exact: true }).click();
-  await expect(page.locator('.product-gallery-stage > img')).toHaveAttribute('src', '/images/hero-3d-studio.svg');
-  await expect(page.locator('.product-gallery figcaption')).toContainText('1 / 2');
+  await expect(
+    page.getByRole('button', { name: 'Ver foto: Girado 45°', exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole('button', { name: 'Ver foto: En uso', exact: true })
+    .click();
+  await expect(page.locator('.product-gallery-stage > img')).toHaveAttribute(
+    'src',
+    '/images/hero-3d-studio.svg?context',
+  );
+  await expect(page.locator('.product-gallery figcaption')).toContainText(
+    '2 / 2',
+  );
+  await page
+    .getByRole('button', { name: 'Foto siguiente', exact: true })
+    .click();
+  await expect(page.locator('.product-gallery-stage > img')).toHaveAttribute(
+    'src',
+    '/images/hero-3d-studio.svg',
+  );
+  await expect(page.locator('.product-gallery figcaption')).toContainText(
+    '1 / 2',
+  );
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 844 });
     const image = await page.locator('.product-detail-media').boundingBox();
-    expect(image.width).toBeGreaterThan(width <= 900 ? Math.min(width * 0.8, 540) : width * 0.4);
+    expect(image.width).toBeGreaterThan(
+      width <= 900 ? Math.min(width * 0.8, 540) : width * 0.4,
+    );
     expect(image.x).toBeGreaterThanOrEqual(0);
     expect(image.x + image.width).toBeLessThanOrEqual(width);
     expect(
@@ -973,9 +992,12 @@ test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni 
   ).toBeVisible();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
   // Let the frame recorder observe the destination before intentional scrolling.
-  await page.evaluate(() => new Promise((resolve) =>
-    requestAnimationFrame(() => requestAnimationFrame(resolve)),
-  ));
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
   await page.evaluate(() => scrollTo({ top: 1200, behavior: 'instant' }));
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(500);
   await page
@@ -992,9 +1014,12 @@ test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni 
       .getByRole('link', { name: 'Términos y condiciones', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
   // Let the frame recorder observe the destination before intentional scrolling.
-  await page.evaluate(() => new Promise((resolve) =>
-    requestAnimationFrame(() => requestAnimationFrame(resolve)),
-  ));
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
   await page.evaluate(() => scrollTo({ top: 1400, behavior: 'instant' }));
   await page.goBack();
   await expect(
@@ -1002,9 +1027,12 @@ test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni 
   ).toBeVisible();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
   // Let the frame recorder observe the destination before intentional scrolling.
-  await page.evaluate(() => new Promise((resolve) =>
-    requestAnimationFrame(() => requestAnimationFrame(resolve)),
-  ));
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
   await page.evaluate(() => scrollTo({ top: 900, behavior: 'instant' }));
   await page.goBack();
   await expect(page.locator('.product-card')).toHaveCount(20);
@@ -1099,16 +1127,16 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
   ).toHaveAttribute('aria-current', 'page');
 });
 
-test('cerrar sesión desde el perfil abre login', async ({
-  page,
-}) => {
+test('cerrar sesión desde el perfil abre login', async ({ page }) => {
   await login(page);
   await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page.getByRole('link', { name: 'Mi perfil', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Mi perfil', exact: true }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Cerrar sesión', exact: true })
+    .click();
   await expect(
     page.getByRole('dialog', { name: '¿Querés cerrar sesión?', exact: true }),
   ).toBeVisible();
@@ -1230,34 +1258,62 @@ test('Facebook recupera en el mismo intento una cookie omitida en el regreso ext
   );
 });
 
-test('administración convierte centímetros a milímetros y conserva decimales al reabrir', async ({ page }) => {
+test('administración convierte centímetros a milímetros y conserva decimales al reabrir', async ({
+  page,
+}) => {
   await login(page, 0, 'admin-browser@example.com');
   await menu(page, 'Administración');
   await page.getByRole('button', { name: 'Productos', exact: true }).click();
-  const edit = page.locator('.admin-products > article').first().getByRole('button', { name: /^Editar / });
+  const edit = page
+    .locator('.admin-products > article')
+    .first()
+    .getByRole('button', { name: /^Editar / });
   await edit.click();
   await page.getByLabel('Ancho (cm)', { exact: true }).fill('17');
   await page.getByLabel('Alto (cm)', { exact: true }).fill('12.12');
   await page.getByLabel('Profundidad (cm)', { exact: true }).fill('5.21');
-  const saving = page.waitForResponse(r => r.request().method() === 'PUT' && r.url().includes('/api/admin/products/'));
-  await page.getByRole('button', { name: 'Guardar producto', exact: true }).click();
+  const saving = page.waitForResponse(
+    (r) =>
+      r.request().method() === 'PUT' &&
+      r.url().includes('/api/admin/products/'),
+  );
+  await page
+    .getByRole('button', { name: 'Guardar producto', exact: true })
+    .click();
   const saved = await saving;
   expect(saved.ok()).toBeTruthy();
-  expect(saved.request().postDataJSON().dimensions).toEqual({ width: 170, height: 121.2, depth: 52.1 });
+  expect(saved.request().postDataJSON().dimensions).toEqual({
+    width: 170,
+    height: 121.2,
+    depth: 52.1,
+  });
   await edit.click();
-  await expect(page.getByLabel('Ancho (cm)', { exact: true })).toHaveValue('17');
-  await expect(page.getByLabel('Alto (cm)', { exact: true })).toHaveValue('12.12');
-  await expect(page.getByLabel('Profundidad (cm)', { exact: true })).toHaveValue('5.21');
+  await expect(page.getByLabel('Ancho (cm)', { exact: true })).toHaveValue(
+    '17',
+  );
+  await expect(page.getByLabel('Alto (cm)', { exact: true })).toHaveValue(
+    '12.12',
+  );
+  await expect(
+    page.getByLabel('Profundidad (cm)', { exact: true }),
+  ).toHaveValue('5.21');
 });
 
-
-test('catálogo y administración usan fondo oscuro con textos legibles', async ({ page }) => {
+test('catálogo y administración usan fondo oscuro con textos legibles', async ({
+  page,
+}) => {
   await page.goto('/');
   await expect(page.locator('main.storefront-dark')).toBeVisible();
-  expect(await page.locator('body').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(0, 0, 0)');
+  expect(
+    await page
+      .locator('body')
+      .evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).toBe('rgb(0, 0, 0)');
   await login(page, 0, 'admin-browser@example.com');
   await menu(page, 'Administración');
-  await expect(page.getByRole('heading', { name: 'Administración', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Administración', exact: true }),
+  ).toBeVisible();
   await expect(page.locator('main.storefront-dark')).toHaveCount(0);
   const colors = await page.locator('body').evaluate((el) => ({
     background: getComputedStyle(el).backgroundColor,
@@ -1265,6 +1321,8 @@ test('catálogo y administración usan fondo oscuro con textos legibles', async 
   }));
   expect(colors.background).toBe('rgb(0, 0, 0)');
   expect(colors.text).toBe('rgb(245, 245, 245)');
-  const headingColor = await page.getByRole('heading', { name: 'Administración', exact: true }).evaluate((el) => getComputedStyle(el).color);
+  const headingColor = await page
+    .getByRole('heading', { name: 'Administración', exact: true })
+    .evaluate((el) => getComputedStyle(el).color);
   expect(headingColor).toBe('rgb(245, 245, 245)');
 });
