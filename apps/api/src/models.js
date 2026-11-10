@@ -50,7 +50,9 @@ export const Product = model(
     {
       name: { type: String, required: true },
       description: String,
+      shortDescription: String,
       category: String,
+      categories: { type: [String], default: undefined },
       color: String,
       priceCents: { type: Number, required: true, min: 0 },
       currency: { type: String, default: 'ARS' },
@@ -61,7 +63,12 @@ export const Product = model(
       image: { url: String, publicId: String, width: Number, height: Number },
       gallery: {
         angle: { url: String, publicId: String, width: Number, height: Number },
-        context: { url: String, publicId: String, width: Number, height: Number },
+        context: {
+          url: String,
+          publicId: String,
+          width: Number,
+          height: Number,
+        },
       },
       model: {
         url: String,
@@ -74,6 +81,19 @@ export const Product = model(
     { timestamps: true },
   ),
 );
+const orderOfferSchema = new Schema(
+  {
+    id: String,
+    mode: String,
+    selections: [
+      new Schema(
+        { id: String, name: String, quantity: Number },
+        { _id: false },
+      ),
+    ],
+  },
+  { _id: false },
+);
 const orderModel = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -82,6 +102,7 @@ const orderModel = new Schema(
         productId: { type: Schema.Types.ObjectId, ref: 'Product' },
         name: String,
         unitPriceCents: Number,
+        offer: { type: orderOfferSchema, default: undefined },
         quantity: Number,
         dimensions: { width: Number, height: Number, depth: Number },
       },
@@ -131,3 +152,81 @@ orderModel.index({ 'notification.state': 1, 'notification.dueAt': 1 });
 orderModel.index({ 'notification.state': 1, 'notification.leaseUntil': 1 });
 export const Order = model('Order', orderModel);
 
+const designRequestSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    fileId: { type: Schema.Types.ObjectId, required: true },
+    filename: String,
+    format: String,
+    requestId: { type: String, required: true },
+    requestHash: { type: String, required: true, select: false },
+    quantity: Number,
+    scale: Number,
+    dimensions: { width: Number, height: Number, depth: Number },
+    colorStatus: { type: String, enum: ['complete', 'missing', 'unknown'] },
+    acceptedMissingColor: Boolean,
+    usage: String,
+    status: {
+      type: String,
+      enum: ['recibido', 'en_revision', 'presupuestado', 'cerrado'],
+      default: 'recibido',
+    },
+    priceCents: { type: Number, default: null },
+    response: { type: String, default: '' },
+  },
+  { timestamps: true },
+);
+designRequestSchema.index({ userId: 1, requestId: 1 }, { unique: true });
+designRequestSchema.index({ userId: 1, createdAt: -1 });
+designRequestSchema.index({ createdAt: -1 });
+export const DesignRequest = model('DesignRequest', designRequestSchema);
+
+const slicerWorkerSchema = new Schema(
+  {
+    ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    authVersion: { type: Number, default: 0 },
+    name: { type: String, default: 'Mi PC' },
+    tokenHash: { type: String, select: false },
+    pairingHash: { type: String, select: false },
+    pairingExpiresAt: Date,
+    revokedAt: Date,
+    lastSeenAt: Date,
+    profiles: [{ _id: false, id: String, name: String, material: String }],
+  },
+  { timestamps: true },
+);
+slicerWorkerSchema.index({ tokenHash: 1 }, { unique: true, sparse: true });
+slicerWorkerSchema.index({ pairingHash: 1 }, { unique: true, sparse: true });
+export const SlicerWorker = model('SlicerWorker', slicerWorkerSchema);
+const slicingJobSchema = new Schema(
+  {
+    requestId: {
+      type: Schema.Types.ObjectId,
+      ref: 'DesignRequest',
+      required: true,
+    },
+    workerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'SlicerWorker',
+      required: true,
+    },
+    profileId: String,
+    profileName: String,
+    material: String,
+    state: {
+      type: String,
+      enum: ['queued', 'processing', 'complete', 'failed'],
+      default: 'queued',
+    },
+    leaseHash: { type: String, select: false },
+    leaseUntil: Date,
+    attempts: { type: Number, default: 0 },
+    result: { grams: Number, seconds: Number, plates: Number },
+    error: String,
+    finishedAt: Date,
+  },
+  { timestamps: true },
+);
+slicingJobSchema.index({ requestId: 1 }, { unique: true });
+slicingJobSchema.index({ workerId: 1, state: 1, leaseUntil: 1 });
+export const SlicingJob = model('SlicingJob', slicingJobSchema);

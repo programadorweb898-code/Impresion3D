@@ -1,3 +1,6 @@
+import { offerDefinitions, offerPath } from '@impresion3d/shared';
+import { OfferDetails } from './OfferDetails.jsx';
+import { Brand, BrandMark } from './Brand.jsx';
 import { validationMessage } from '@impresion3d/shared';
 import React, {
   useState,
@@ -27,6 +30,10 @@ import {
 import { AuthPage } from './AuthPage.jsx';
 import { WhatsAppButton } from './WhatsAppButton.jsx';
 import { Navbar } from './Navbar.jsx';
+import { OffersCarousel } from './OffersCarousel.jsx';
+import { SiteFooter } from './SiteFooter.jsx';
+import { InformationPage } from './InformationPage.jsx';
+import { informationPages, siteContact } from './site-content.js';
 import { CartDrawer } from './CartDrawer.jsx';
 import { Pagination } from './Pagination.jsx';
 import { Profile } from './Profile.jsx';
@@ -47,6 +54,7 @@ const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
 );
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
+const DesignUpload = lazy(() => import('./DesignUpload.jsx'));
 function Modal({ children, onClose, wide = false }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -117,6 +125,7 @@ function App() {
   const cart = useCart(user?.id);
   const [authReady, setAuthReady] = useState(false);
   const loginDestination = useRef(null);
+  const offerDrafts = useRef({});
   const toastSequence = useRef(0);
   const dismissCartToast = useCallback(() => setCartToast(null), []);
   useEffect(() => {
@@ -147,7 +156,7 @@ function App() {
   }, [view, loginPage, detailId, navigationVersion]);
   const cartProductIds = new Set(cart.items.map((item) => item.productId));
   const cartIds = cart.items.map((item) => item.productId).join(',');
-  const cartKey = JSON.stringify([user?.id, cartIds, cartRefresh]);
+  const cartKey = JSON.stringify([user?.id, cart.items, cartRefresh]);
   const currentCartCatalog = cartCatalog.key === cartKey;
   const cartProducts = currentCartCatalog ? cartCatalog.products : [];
   const cartCatalogError = currentCartCatalog && cartCatalog.status === 'error';
@@ -161,9 +170,14 @@ function App() {
       products: current.key === cartKey ? current.products : [],
       status: 'loading',
     }));
-    const request = cartIds
-      ? api('/products?ids=' + cartIds)
-      : Promise.resolve([]);
+    const request = cart.items.some((i) => i.offer)
+      ? api('/offers/cart/preview', {
+          method: 'POST',
+          body: JSON.stringify({ items: cart.items }),
+        })
+      : cartIds
+        ? api('/products?ids=' + cartIds)
+        : Promise.resolve([]);
     request
       .then((data) => {
         if (active)
@@ -187,33 +201,40 @@ function App() {
     let active = true;
     setLoading(true);
     const query = new URLSearchParams({ page: String(catalogPage.page) });
-    if (category !== 'Todos') query.set('category', category);
-    if (search.trim().toLowerCase()) query.set('startsWith', search.trim().toLowerCase());
-    if (priceMin !== '') query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
-    if (priceMax !== '') query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
+    // Category tabs and text search share the same dynamic search endpoint.
+    const searchTerm = search.trim() || (category === 'Todos' ? '' : category);
+    if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
+    if (priceMin !== '')
+      query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
+    if (priceMax !== '')
+      query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
     if (sort !== 'relevance') query.set('sort', sort);
-    if (search.trim().toLowerCase()) query.set('startsWith', search.trim().toLowerCase());
-    if (priceMin !== '') query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
-    if (priceMax !== '') query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
-    if (sort !== 'relevance') query.set('sort', sort);
-    api('/products?' + query)
-      .then((data) => {
-        if (!active) return;
-        setProducts(data.products);
-        setCatalogPage((current) => ({
-          ...current,
-          pages: data.pages,
-          categories: data.categories,
-        }));
-      })
-      .catch((e) => {
-        if (active) setError(e.message);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    const controller = new AbortController();
+    const timer = setTimeout(
+      () =>
+        api('/products?' + query, { signal: controller.signal })
+          .then((data) => {
+            if (!active) return;
+            setProducts(data.products);
+            setCatalogPage((current) => ({
+              ...current,
+              pages: data.pages,
+              total: data.total,
+              categories: data.categories,
+            }));
+          })
+          .catch((e) => {
+            if (active) setError(e.message);
+          })
+          .finally(() => {
+            if (active) setLoading(false);
+          }),
+      search || priceMin || priceMax ? 250 : 0,
+    );
     return () => {
       active = false;
+      clearTimeout(timer);
+      controller.abort();
     };
   }, [catalogPage.page, category, search, priceMin, priceMax, sort]);
   useEffect(() => {
@@ -222,7 +243,13 @@ function App() {
   }, [view, user?.id]);
   async function reloadCatalog() {
     const query = new URLSearchParams({ page: String(catalogPage.page) });
-    if (category !== 'Todos') query.set('category', category);
+    const searchTerm = search.trim() || (category === 'Todos' ? '' : category);
+    if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
+    if (priceMin !== '')
+      query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
+    if (priceMax !== '')
+      query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
+    if (sort !== 'relevance') query.set('sort', sort);
     const data = await api('/products?' + query);
     setProducts(data.products);
     setCatalogPage({
@@ -258,6 +285,9 @@ function App() {
       if (page.view === 'catalog') {
         const saved = catalogContext();
         setCategory(saved.category);
+        setSearch('');
+        setPriceMin('');
+        setPriceMax('');
         setCatalogPage((current) => ({ ...current, page: saved.page }));
       }
       const emailToken =
@@ -275,8 +305,8 @@ function App() {
   }, []);
   function openLogin() {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
-    if (view === 'product' && !loginDestination.current)
-      loginDestination.current = 'product';
+    if (['product', 'offer'].includes(view) && !loginDestination.current)
+      loginDestination.current = view;
     dismissCartToast();
     setCartOpen(false);
     setLoginPrompt(false);
@@ -308,10 +338,16 @@ function App() {
       window.history.replaceState(window.history.state, '', '/perfil');
   }, [profileToken]);
   useEffect(() => {
-    document.title = legalPages[view]
-      ? legalPages[view].title + ' | ' + legalSite.name
+    const page =
+      legalPages[view] ||
+      informationPages[view] ||
+      (view === 'offer'
+        ? { title: offerDefinitions[detailId]?.name || 'Oferta' }
+        : null);
+    document.title = page
+      ? page.title + ' | ' + legalSite.name
       : legalSite.name + ' · Ideas que toman forma';
-  }, [view]);
+  }, [view, detailId]);
   function openSection(id) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
     navigatePage('catalog', '/#' + id);
@@ -321,9 +357,49 @@ function App() {
     setNotice('');
     setNavigationVersion((current) => current + 1);
   }
+  function openInformation(key) {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    closeAuth();
+    navigatePage(key, informationPages[key].path);
+    setView(key);
+    setError('');
+    setNotice('');
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
+  }
+  function openCategory(nextCategory) {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    closeAuth();
+    const path =
+      nextCategory === 'Todos'
+        ? '/#catalogo'
+        : '/?categoria=' + encodeURIComponent(nextCategory) + '#catalogo';
+    navigatePage('catalog', path);
+    setCategory(nextCategory);
+    setSearch('');
+    setPriceMin('');
+    setPriceMax('');
+    setSort('relevance');
+    setCatalogPage((current) => ({ ...current, page: 1 }));
+    rememberCatalog(1, nextCategory);
+    setView('catalog');
+    setError('');
+    setNotice('');
+    scrollTarget.current = 'catalogo';
+    setNavigationVersion((current) => current + 1);
+  }
   function requestLogout() {
     setLogoutError('');
     setLogoutPrompt(true);
+  }
+  function openDesign() {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    navigatePage('design', '/disenar');
+    setView('design');
+    setError('');
+    setNotice('');
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
   }
   function openLegal(key) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
@@ -333,6 +409,35 @@ function App() {
     setNotice('');
     scrollTarget.current = null;
     setNavigationVersion((current) => current + 1);
+  }
+  function openOffer(id, replace = false) {
+    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    navigatePage('offer', offerPath(id), { replace });
+    setDetailId(id);
+    setView('offer');
+    setError('');
+    setNotice('');
+    setCartOpen(false);
+    scrollTarget.current = null;
+    setNavigationVersion((current) => current + 1);
+  }
+  function addOfferToCart(line, name) {
+    if (!authReady) return;
+    if (!user) {
+      loginDestination.current = 'offer';
+      setLoginPrompt(true);
+      return;
+    }
+    try {
+      cart.addOffer(line);
+      setNotice('');
+      setCartToast({
+        id: ++toastSequence.current,
+        message: 'Agregaste ' + name + ' al carrito.',
+      });
+    } catch (e) {
+      setNotice(e.message);
+    }
   }
   function openProduct(id, replace = false) {
     if (view === 'catalog') rememberCatalog(catalogPage.page, category);
@@ -374,6 +479,7 @@ function App() {
     try {
       await api('/auth/logout', { method: 'POST' });
       setUser(null);
+      offerDrafts.current = {};
       setCartNotes('');
       setOrders([]);
       setProfileToken('');
@@ -448,6 +554,8 @@ function App() {
       if (loginDestination.current === 'profile') openProfile();
       if (loginDestination.current === 'product' && detailId)
         openProduct(detailId, true);
+      if (loginDestination.current === 'offer' && detailId)
+        openOffer(detailId, true);
       loginDestination.current = null;
       setNotice('Ya podés armar tu carrito y consultar tus pedidos.');
     } catch (e) {
@@ -598,6 +706,9 @@ function App() {
   }
   return (
     <>
+      <a className="skip-link" href="#contenido">
+        Ir al contenido
+      </a>
       {!loginPage && (
         <Navbar
           cartButtonRef={cartButtonRef}
@@ -606,6 +717,7 @@ function App() {
           authReady={authReady}
           view={view}
           onCatalog={showCatalog}
+          onDesign={openDesign}
           onCart={openCart}
           onOrders={() => history()}
           onAdmin={openAdmin}
@@ -613,13 +725,17 @@ function App() {
           onLogin={openLogin}
           onLogout={requestLogout}
           onHowItWorks={() => openSection('proceso')}
+          onAbout={() => openInformation('about')}
         />
       )}
       {(loginPage || view !== 'catalog') && (
         <BackLink onBack={goBack} disabled={busy || loggingOut} />
       )}
       {!loginPage && (
-        <main>
+        <main
+          id="contenido"
+          className={view === 'catalog' ? 'storefront-dark' : undefined}
+        >
           {notice && (
             <div role="status" className="notice">
               {notice}
@@ -635,6 +751,38 @@ function App() {
           )}
           {legalPages[view] ? (
             <LegalPage pageKey={view} />
+          ) : informationPages[view] ? (
+            <InformationPage
+              pageKey={view}
+              onDesign={openDesign}
+              onCatalog={() => openCategory('Todos')}
+            />
+          ) : view === 'design' ? (
+            <Suspense
+              fallback={<p role="status">Cargando tu espacio de diseño…</p>}
+            >
+              <DesignUpload />
+            </Suspense>
+          ) : view === 'offer' ? (
+            !authReady || (user && !cart.ready) ? (
+              <p role="status">Cargando oferta…</p>
+            ) : (
+              <OfferDetails
+                key={detailId}
+                id={detailId || ''}
+                initial={
+                  offerDrafts.current[detailId] ||
+                  cart.items.find((i) => i.offer?.id === detailId)?.offer
+                }
+                onDraft={(draft) => {
+                  offerDrafts.current[draft.id] = draft;
+                }}
+                onAdd={addOfferToCart}
+                onContinue={showCatalog}
+                authReady={authReady}
+                inCart={cart.items.some((i) => i.offer?.id === detailId)}
+              />
+            )
           ) : view === 'product' ? (
             <ProductDetails
               id={detailId || ''}
@@ -669,16 +817,16 @@ function App() {
             <>
               <section className="hero">
                 <div>
-                  <p className="eyebrow">
-                    DISEÑADO CON INTENCIÓN · IMPRESO EN 3D
-                  </p>
+                  <p className="eyebrow">DISEÑO QUE TOMA FORMA</p>
                   <h1>
-                    De una idea,
-                    <br />a tu <em>mundo.</em>
+                    Otra forma
+                    <br />
+                    de hacer <em>lo cotidiano.</em>
                   </h1>
                   <p className="hero-copy">
-                    Objetos que hacen tu día un poco más tuyo. Descubrí diseños
-                    únicos y contanos cómo los imaginás.
+                    Piezas para ordenar, decorar y regalar. Elegí un diseño de
+                    nuestro catálogo o traé tu propia idea: la imprimimos para
+                    vos.
                   </p>
                   <a
                     className="primary"
@@ -696,36 +844,44 @@ function App() {
                       }
                     }}
                   >
-                    Explorar diseños <span>↗</span>
+                    Explorar catálogo <span aria-hidden="true">↗</span>
                   </a>
                   <p className="small mt-6">
-                    Hecho por encargo · Atención personal · Sin pagos online
+                    Hecho a pedido. Coordinamos pago y entrega con vos.
                   </p>
                 </div>
                 <figure className="hero-art">
                   <p className="hero-art-heading">
-                    01 / OBJETOS CON PERSONALIDAD
+                    EN CASA, CADA DETALLE CUENTA
                   </p>
                   <img
                     className="hero-photo"
-                    src="/images/hero-3d-studio.svg"
-                    width="1000"
-                    height="1000"
+                    src="/images/hero-organizador-1000.webp"
+                    srcSet="/images/hero-organizador-640.webp 640w, /images/hero-organizador-1000.webp 1000w"
+                    sizes="(max-width: 575px) 90vw, 45vw"
+                    width="1254"
+                    height="1254"
                     fetchPriority="high"
-                    alt="Visualización realista de una maceta geométrica terracota con textura de impresión 3D"
+                    alt="Organizador de platos negro de Mundo 3D en una cocina, con platos blancos"
                   />
                   <figcaption className="hero-art-caption">
-                    De la pantalla a tus manos.
+                    <span>Organización, con otra forma.</span>
+                    <span className="hero-caption-category">HOGAR</span>
                   </figcaption>
                 </figure>
               </section>
+              <OffersCarousel onOffer={openOffer} />
               <section id="catalogo" className="catalog">
                 <div className="section-top">
                   <div>
-                    <p className="eyebrow">PEQUEÑOS DETALLES, GRANDES IDEAS</p>
-                    <h2>Encontrá tu próxima pieza.</h2>
+                    <p className="eyebrow">LA COLECCIÓN</p>
+                    <h2>
+                      Diseños para tu mundo<span className="accent-dot">.</span>
+                    </h2>
                   </div>
-                  <span className="small">Hechas a pedido, para vos.</span>
+                  <span className="small">
+                    Explorá los detalles. Elegí tu próxima pieza.
+                  </span>
                 </div>
                 <div className="filters" aria-label="Filtrar productos">
                   {['Todos', ...catalogPage.categories].map((c) => (
@@ -733,49 +889,172 @@ function App() {
                       key={c}
                       aria-pressed={category === c}
                       className={category === c ? 'active' : ''}
-                      onClick={() => {
-                        setCategory(c);
-                        setCatalogPage((current) => ({ ...current, page: 1 }));
-                      }}
+                      onClick={() => openCategory(c)}
                     >
                       {c}
                     </button>
                   ))}
                 </div>
-                <form className="catalog-search" onSubmit={(event) => { event.preventDefault(); setCatalogPage((current) => ({ ...current, page: 1 })); }}>
-                  <label>Buscar productos<input type="search" value={search} onChange={(event) => { setSearch(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Nombre o categoría" /></label>
-                  <label>Ordenar por<select value={sort} onChange={(event) => setSort(event.target.value)}><option value="relevance">Más relevantes</option><option value="price-asc">Precio: menor a mayor</option><option value="price-desc">Precio: mayor a menor</option></select></label>
-                  <label>Rango de precio
-                    <select aria-label="Rango de precio" value={Array.from({ length: 8 }, (_, i) => [String(i * 5000), String((i + 1) * 5000)]).some(([min, max]) => priceMin === min && priceMax === max) ? priceMin + ':' + priceMax : ''}
+                <form
+                  className="catalog-search"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    setCatalogPage((current) => ({ ...current, page: 1 }));
+                  }}
+                >
+                  <label>
+                    Buscar productos
+                    <input
+                      type="search"
+                      value={search}
                       onChange={(event) => {
-                        const [min, max] = event.target.value ? event.target.value.split(':') : ['', ''];
-                        setPriceMin(min);
-                        setPriceMax(max);
+                        setSearch(event.target.value);
+                        setCategory('Todos');
                         setCatalogPage((current) => ({ ...current, page: 1 }));
-                      }}>
-                      <option value="">Todos los precios / personalizado</option>
-                      {Array.from({ length: 8 }, (_, i) => {
-                        const min = i * 5000, max = (i + 1) * 5000;
-                        return <option key={min} value={min + ':' + max}>$ {min.toLocaleString('es-AR')} – $ {max.toLocaleString('es-AR')}</option>;
-                      })}
+                      }}
+                      placeholder="Nombre o categoría"
+                    />
+                  </label>
+                  <label>
+                    Ordenar por
+                    <select
+                      value={sort}
+                      onChange={(event) => {
+                        setSort(event.target.value);
+                        setCatalogPage((current) => ({ ...current, page: 1 }));
+                      }}
+                    >
+                      <option value="relevance">Más relevantes</option>
+                      <option value="price-asc">Precio: menor a mayor</option>
+                      <option value="price-desc">Precio: mayor a menor</option>
                     </select>
                   </label>
-                  <label>Precio mínimo<input type="number" min="0" step="1" value={priceMin} onChange={(event) => { setPriceMin(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Desde" /></label>
-                  <label>Precio máximo<input type="number" min="0" step="1" value={priceMax} onChange={(event) => { setPriceMax(event.target.value); setCatalogPage((current) => ({ ...current, page: 1 })); }} placeholder="Hasta" /></label>
+                  <details className="price-filters">
+                    <summary>Filtrar por precio</summary>
+                    <div className="price-fields">
+                      <label>
+                        Rango de precio
+                        <select
+                          aria-label="Rango de precio"
+                          value={
+                            Array.from({ length: 8 }, (_, i) => [
+                              String(i * 5000),
+                              String((i + 1) * 5000),
+                            ]).some(
+                              ([min, max]) =>
+                                priceMin === min && priceMax === max,
+                            )
+                              ? priceMin + ':' + priceMax
+                              : ''
+                          }
+                          onChange={(event) => {
+                            const [min, max] = event.target.value
+                              ? event.target.value.split(':')
+                              : ['', ''];
+                            setPriceMin(min);
+                            setPriceMax(max);
+                            setCatalogPage((current) => ({
+                              ...current,
+                              page: 1,
+                            }));
+                          }}
+                        >
+                          <option value="">
+                            Todos los precios / personalizado
+                          </option>
+                          {Array.from({ length: 8 }, (_, i) => {
+                            const min = i * 5000,
+                              max = (i + 1) * 5000;
+                            return (
+                              <option key={min} value={min + ':' + max}>
+                                $ {min.toLocaleString('es-AR')} – ${' '}
+                                {max.toLocaleString('es-AR')}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </label>
+                      <label>
+                        Precio mínimo
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={priceMin}
+                          onChange={(event) => {
+                            setPriceMin(event.target.value);
+                            setCatalogPage((current) => ({
+                              ...current,
+                              page: 1,
+                            }));
+                          }}
+                          placeholder="Desde"
+                        />
+                      </label>
+                      <label>
+                        Precio máximo
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={priceMax}
+                          onChange={(event) => {
+                            setPriceMax(event.target.value);
+                            setCatalogPage((current) => ({
+                              ...current,
+                              page: 1,
+                            }));
+                          }}
+                          placeholder="Hasta"
+                        />
+                      </label>
+                    </div>
+                  </details>
                 </form>
-                {loading ? (
-                  <p role="status">Cargando diseños…</p>
+                <div className="catalog-feedback">
+                  <p role="status" aria-live="polite">
+                    {loading
+                      ? 'Actualizando catálogo…'
+                      : `${catalogPage.total ?? products.length} diseños encontrados`}
+                  </p>
+                  {(search || category !== 'Todos' || priceMin || priceMax) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearch('');
+                        setCategory('Todos');
+                        setPriceMin('');
+                        setPriceMax('');
+                        setCatalogPage((current) => ({ ...current, page: 1 }));
+                      }}
+                    >
+                      Limpiar filtros
+                    </button>
+                  )}
+                </div>
+                {loading && !products.length ? (
+                  <div className="catalog-loading" role="status">
+                    <span>Cargando diseños…</span>
+                    <div className="grid-products" aria-hidden="true">
+                      {Array.from({ length: 4 }, (_, i) => (
+                        <div className="product-skeleton" key={i}>
+                          <div />
+                          <span />
+                          <span />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : !products.length ? (
                   <div className="empty" role="status">
                     <strong>Sin resultados</strong>
-                    <p>No encontramos productos que coincidan con tu búsqueda y filtros.</p>
-                    <button type="button" onClick={() => {
-                      setSearch(''); setCategory('Todos'); setPriceMin(''); setPriceMax('');
-                      setCatalogPage((current) => ({ ...current, page: 1 }));
-                    }}>Limpiar filtros</button>
+                    <p>
+                      No encontramos productos que coincidan con tu búsqueda y
+                      filtros.
+                    </p>
                   </div>
                 ) : (
-                  <div className="grid-products">
+                  <div className="grid-products" aria-busy={loading}>
                     {products.map((p, i) => (
                       <article
                         className="product-card"
@@ -804,6 +1083,8 @@ function App() {
                           {p.image?.url ? (
                             <img
                               className="product-photo"
+                              width="600"
+                              height="600"
                               src={p.image.url}
                               alt={p.name}
                               loading="lazy"
@@ -831,10 +1112,8 @@ function App() {
                           </div>
                           <strong>{money(p.priceCents, p.currency)}</strong>
                         </div>
-                        <p className="description">{p.description}</p>
-                        <p className="small">
-                          {p.dimensions?.width} × {p.dimensions?.height} ×{' '}
-                          {p.dimensions?.depth} mm
+                        <p className="description">
+                          {p.shortDescription || p.name}
                         </p>
                         <div className="card-actions">
                           <button
@@ -853,17 +1132,19 @@ function App() {
                               ? 'En el carrito'
                               : 'Agregar al carrito'}{' '}
                             <span aria-hidden="true">
-                              {cartProductIds.has(p._id) ? '✓' : '＋'}
+                              {cartProductIds.has(p._id) ? '✓' : '+'}
                             </span>
                           </button>
                         </div>
-                        <p className="card-help">
-                          {!p.model?.url
-                            ? 'Vista 3D todavía no disponible.'
-                            : cartProductIds.has(p._id)
-                              ? 'Cambiá la cantidad desde tu carrito.'
-                              : 'Giralo y acercalo en el visor.'}
-                        </p>
+                        {cartProductIds.has(p._id) && (
+                          <p className="card-help">
+                            {!p.model?.url
+                              ? 'Vista 3D todavía no disponible.'
+                              : cartProductIds.has(p._id)
+                                ? 'Cambiá la cantidad desde tu carrito.'
+                                : 'Giralo y acercalo en el visor.'}
+                          </p>
+                        )}
                       </article>
                     ))}
                   </div>
@@ -911,12 +1192,32 @@ function App() {
                 ))}
               </section>
               <section className="coming">
-                <span>PRÓXIMAMENTE</span>
-                <h2>Más espacio para tu imaginación.</h2>
-                <p>
-                  Estamos preparando la personalización de medidas y, más
-                  adelante, la generación de modelos desde imágenes.
-                </p>
+                <div>
+                  <p className="eyebrow">¿TENÉS UN ARCHIVO 3D?</p>
+                  <h2>Tu idea también tiene lugar acá.</h2>
+                  <p>
+                    Subí tu modelo, revisalo en 3D y consultanos para hacerlo
+                    realidad.
+                  </p>
+                </div>
+                <a
+                  className="primary"
+                  href="/disenar"
+                  onClick={(event) => {
+                    if (
+                      event.button === 0 &&
+                      !event.metaKey &&
+                      !event.ctrlKey &&
+                      !event.shiftKey &&
+                      !event.altKey
+                    ) {
+                      event.preventDefault();
+                      openDesign();
+                    }
+                  }}
+                >
+                  Cotizar mi archivo <span aria-hidden="true">↗</span>
+                </a>
               </section>
             </>
           ) : (
@@ -980,39 +1281,14 @@ function App() {
         </main>
       )}
       {!loginPage && (
-        <footer>
-          <a className="brand" href="#" onClick={showCatalog}>
-            ✳ Mundo 3D
-          </a>
-          <p>Ideas que toman forma.</p>
-          <div className="footer-legal">
-            <span className="small">
-              Diseño local. Posibilidades infinitas.
-            </span>
-            {Object.entries(legalPages).map(([key, page]) => (
-              <a
-                key={key}
-                href={page.path}
-                aria-current={view === key ? 'page' : undefined}
-                onClick={(event) => {
-                  if (
-                    event.button === 0 &&
-                    !event.metaKey &&
-                    !event.ctrlKey &&
-                    !event.shiftKey &&
-                    !event.altKey
-                  ) {
-                    event.preventDefault();
-                    openLegal(key);
-                  }
-                }}
-              >
-                {page.title}
-              </a>
-            ))}
-            <a href={'mailto:' + legalSite.email}>{legalSite.email}</a>
-          </div>
-        </footer>
+        <SiteFooter
+          categories={catalogPage.categories}
+          view={view}
+          onCatalog={showCatalog}
+          onCategory={openCategory}
+          onInformation={openInformation}
+          onLegal={openLegal}
+        />
       )}
       {user && !loginPage && (
         <CartDrawer
@@ -1032,6 +1308,7 @@ function App() {
             }}
             onQuantity={(id, q) => editCart(() => cart.quantity(id, q))}
             onRemove={(id) => editCart(() => cart.remove(id))}
+            onOffer={openOffer}
             onClear={() => editCart(() => cart.clear())}
             onSubmit={submitOrder}
             onRefresh={refreshCart}
@@ -1045,7 +1322,7 @@ function App() {
           />
         </CartDrawer>
       )}
-      {!loginPage && <WhatsAppButton phone="5491155606321" />}
+      {!loginPage && <WhatsAppButton phone={siteContact.whatsapp} />}
       {!loginPage && cartToast && (
         <Toast
           key={cartToast.id}
@@ -1120,7 +1397,7 @@ function App() {
         <Modal onClose={() => setLoginPrompt(false)}>
           <div className="login-prompt">
             <span className="login-prompt-icon" aria-hidden="true">
-              ✳
+              <BrandMark />
             </span>
             <p className="eyebrow">TU PRÓXIMA IDEA EMPIEZA ACÁ</p>
             <h2 id="modal-title">Guardá tus favoritos en el carrito</h2>

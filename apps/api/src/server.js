@@ -1,3 +1,4 @@
+import { DesignRequest, SlicerWorker, SlicingJob } from './models.js';
 import mongoose from 'mongoose';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
@@ -8,6 +9,8 @@ import { createImageStorage } from './images.js';
 import { createAccountServices } from './account-access.js';
 import { SocialIdentity } from './models.js';
 import { ensureUserEmailIndex } from './user-email-index.js';
+import { migrateCatalogCopy } from './catalog-copy.js';
+import { migrateSeasonalCuencos } from './seasonal-cuencos.js';
 import {
   createOrderNotifier,
   startOrderNotifications,
@@ -47,7 +50,15 @@ const staticDirectory =
 if (staticDirectory && !existsSync(staticDirectory + 'index.html'))
   throw new Error('Primero ejecutá npm run build');
 await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
-await Promise.all([ensureUserEmailIndex(), SocialIdentity.init()]);
+await Promise.all([
+  ensureUserEmailIndex(),
+  SocialIdentity.init(),
+  DesignRequest.init(),
+  SlicerWorker.init(),
+  SlicingJob.init(),
+]);
+await migrateCatalogCopy();
+await migrateSeasonalCuencos();
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,

@@ -446,6 +446,7 @@ test('visor WebGL carga geometría y permite cerrarlo y volver a abrirlo', async
   await expect(
     page.getByRole('button', { name: 'Restablecer vista' }),
   ).toBeVisible();
+  await expect(page.locator('.model-stage')).toHaveCSS('background-color', 'rgb(37, 43, 51)');
   await page.getByRole('button', { name: 'Vista superior' }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Cerrar visor 3D' }).click();
@@ -670,7 +671,7 @@ test('la advertencia de disponibilidad se mantiene cuando el servidor confirma q
     drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
   ).toBeDisabled();
 });
-test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver y continuar comprando', async ({
+test('ficha conserva fotos, descripción y medidas; galería adaptable a móvil y escritorio; volver y continuar comprando', async ({
   page,
 }) => {
   await page.goto('/');
@@ -680,6 +681,11 @@ test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver
     exact: true,
   });
   await expect(link).toBeVisible();
+  const card = page.locator('.product-card').filter({ has: link });
+  await expect(card.locator('.description')).toHaveText(
+    'Una pieza decorativa para tu espacio.',
+  );
+  await expect(card).not.toContainText(/100 × 100 × 100|\bmm\b|Descripción completa/);
   const url = await link.getAttribute('href');
   await link.click();
   await expect(page).toHaveURL(new RegExp('/descripcion/[a-f0-9]{24}$'));
@@ -707,8 +713,9 @@ test('ficha conserva fotos, descripción y medidas; imagen centrada 50vw; volver
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 844 });
     const image = await page.locator('.product-detail-media').boundingBox();
-    expect(Math.abs(image.width - width / 2)).toBeLessThan(2);
-    expect(Math.abs(image.x + image.width / 2 - width / 2)).toBeLessThan(2);
+    expect(image.width).toBeGreaterThan(width <= 900 ? Math.min(width * 0.8, 540) : width * 0.4);
+    expect(image.x).toBeGreaterThanOrEqual(0);
+    expect(image.x + image.width).toBeLessThanOrEqual(width);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth,
@@ -1266,4 +1273,23 @@ test('administración convierte centímetros a milímetros y conserva decimales 
   await expect(page.getByLabel('Ancho (cm)', { exact: true })).toHaveValue('17');
   await expect(page.getByLabel('Alto (cm)', { exact: true })).toHaveValue('12.12');
   await expect(page.getByLabel('Profundidad (cm)', { exact: true })).toHaveValue('5.21');
+});
+
+
+test('catálogo y administración usan fondo oscuro con textos legibles', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('main.storefront-dark')).toBeVisible();
+  expect(await page.locator('body').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(0, 0, 0)');
+  await login(page, 0, 'admin-browser@example.com');
+  await menu(page, 'Administración');
+  await expect(page.getByRole('heading', { name: 'Administración', exact: true })).toBeVisible();
+  await expect(page.locator('main.storefront-dark')).toHaveCount(0);
+  const colors = await page.locator('body').evaluate((el) => ({
+    background: getComputedStyle(el).backgroundColor,
+    text: getComputedStyle(el).color,
+  }));
+  expect(colors.background).toBe('rgb(0, 0, 0)');
+  expect(colors.text).toBe('rgb(245, 245, 245)');
+  const headingColor = await page.getByRole('heading', { name: 'Administración', exact: true }).evaluate((el) => getComputedStyle(el).color);
+  expect(headingColor).toBe('rgb(245, 245, 245)');
 });

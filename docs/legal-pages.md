@@ -5,7 +5,7 @@ Datos públicos proporcionados por el responsable:
 - Nombre de la marca: Mundo 3D.
 - Responsable: Luis Alberto Gómez.
 - País de operación: Argentina.
-- Contacto público: gomito724@gmail.com.
+- Contacto público: somosmundo3d@gmail.com.ar.
 
 ## URLs para Google Auth Platform
 

@@ -1,3 +1,4 @@
+import { cartItemsSchema } from '@impresion3d/shared';
 import { useState, useEffect } from 'react';
 import {
   loadCart,
@@ -32,6 +33,15 @@ export function useCart(userId) {
     ready,
     count: items.reduce((sum, i) => sum + i.quantity, 0),
     add: (id) => update(addCartItem(items, id)),
+    addOffer: (line) => {
+      const next = [
+        ...items.filter((i) => i.productId !== line.productId),
+        line,
+      ];
+      if (next.length > 20)
+        throw new Error('El carrito admite hasta 20 productos distintos.');
+      update(cartItemsSchema.parse(next));
+    },
     quantity: (id, q) => update(changeCartQuantity(items, id, q)),
     remove: (id) => update(items.filter((i) => i.productId !== id)),
     clear: () => update([]),

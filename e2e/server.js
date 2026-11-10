@@ -28,6 +28,7 @@ await User.create({
 const products = await Product.create(
   Array.from({ length: 25 }, (_, i) => ({
     name: 'Pieza ' + String(i).padStart(2, '0'),
+    shortDescription: 'Una pieza decorativa para tu espacio.',
     description:
       'Producto de prueba\nDescripción completa conservada en la ficha.',
     ...(i === 0
@@ -85,6 +86,57 @@ host.post('/__test/expire-reauth', async (_req, res) => {
 host.get('/__test/mailbox/:email', (req, res) =>
   res.json(mailbox.get(req.params.email) || null),
 );
+// Isolated fixtures for offer selection tests, never deployed with the app.
+const offerFixtureIds = [
+  '6aebbe01d3ce05ca9019abcc',
+  '6aebd7f3acda2c45fbf8110e',
+  ...Array.from({ length: 5 }, (_, i) => 'e0000000000000000000000' + (i + 1)),
+  'e10000000000000000000001',
+  'e10000000000000000000002',
+];
+host.post('/__test/offers', async (_req, res) => {
+  const names = [
+    'Bandeja',
+    'Bola tejida',
+    'Papá Noel tejido',
+    'Reno tejido',
+    'Árbol tejido',
+    'Jengibre tejido',
+    'Oso tejido',
+    'Llavero Malvinas',
+    'Llavero River',
+  ];
+  await Product.bulkWrite(
+    offerFixtureIds.map((_id, i) => ({
+      updateOne: {
+        filter: { _id },
+        update: {
+          $set: {
+            name: names[i],
+            description: names[i],
+            category: 'Navidad',
+            active: true,
+            priceCents: 300000,
+            currency: 'ARS',
+            image: { url: '/images/offers/navidad-combo-640.webp' },
+          },
+        },
+        upsert: true,
+      },
+    })),
+  );
+  if (!(await User.exists({ email: 'offers-browser@example.com' })))
+    await User.create({
+      name: 'Cliente ofertas',
+      email: 'offers-browser@example.com',
+      passwordHash: await argon2.hash('NavegadorPrueba1!'),
+    });
+  res.sendStatus(204);
+});
+host.delete('/__test/offers', async (_req, res) => {
+  await Product.deleteMany({ _id: { $in: offerFixtureIds } });
+  res.sendStatus(204);
+});
 host.use(
   createApp({
     sessionStore,

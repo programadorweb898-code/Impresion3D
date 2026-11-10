@@ -1,3 +1,4 @@
+import { Brand } from './Brand.jsx';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 export function Navbar({
   user,
@@ -12,6 +13,8 @@ export function Navbar({
   onLogin,
   onLogout,
   onHowItWorks,
+  onAbout,
+  onDesign,
   cartButtonRef,
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -59,6 +62,7 @@ export function Navbar({
       setMobile(!media.matches);
       if (media.matches) setExpanded(false);
     };
+    resize();
     media.addEventListener('change', resize);
     return () => media.removeEventListener('change', resize);
   }, []);
@@ -72,14 +76,14 @@ export function Navbar({
       <header className="site-header" ref={headerRef}>
         <a
           className="brand"
+          aria-label="Mundo 3D, inicio"
           href="/"
           onClick={(e) => {
             e.preventDefault();
             choose(onCatalog);
           }}
         >
-          <span className="brand-icon">✳</span> Mundo{' '}
-          <span className="text-orange-600">3D</span>
+          <Brand />
         </a>
         <div className={'nav-collapse' + (expanded ? ' is-expanded' : '')}>
           <nav
@@ -105,6 +109,24 @@ export function Navbar({
               Catálogo
             </button>
             <a
+              href="/disenar"
+              aria-current={view === 'design' ? 'page' : undefined}
+              onClick={(event) => {
+                if (
+                  event.button === 0 &&
+                  !event.metaKey &&
+                  !event.ctrlKey &&
+                  !event.shiftKey &&
+                  !event.altKey
+                ) {
+                  event.preventDefault();
+                  choose(onDesign);
+                }
+              }}
+            >
+              Subí tu diseño
+            </a>
+            <a
               href="/#proceso"
               aria-current={showingProcess ? 'location' : undefined}
               onClick={(event) => {
@@ -121,6 +143,24 @@ export function Navbar({
               }}
             >
               Cómo funciona
+            </a>
+            <a
+              href="/sobre-nosotros"
+              aria-current={view === 'about' ? 'page' : undefined}
+              onClick={(event) => {
+                if (
+                  event.button === 0 &&
+                  !event.metaKey &&
+                  !event.ctrlKey &&
+                  !event.shiftKey &&
+                  !event.altKey
+                ) {
+                  event.preventDefault();
+                  choose(onAbout);
+                }
+              }}
+            >
+              Sobre nosotros
             </a>
             {user ? (
               <>

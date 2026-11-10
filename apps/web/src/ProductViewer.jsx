@@ -1,3 +1,4 @@
+import { legacySrgbPreviewIds } from './legacy-preview-colors.js';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -17,7 +18,11 @@ function release(object) {
     }
   });
 }
-export default function ProductViewer({ product }) {
+export default function ProductViewer({
+  product,
+  onMeasurements,
+  onLoadError,
+}) {
   const host = useRef(null),
     actions = useRef({});
   const [status, setStatus] = useState('loading'),
@@ -38,17 +43,19 @@ export default function ProductViewer({ product }) {
       renderer.setPixelRatio(
         Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2),
       );
-      renderer.setClearColor('#f0eee8');
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.setClearColor('#252b33');
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.NeutralToneMapping;
+      renderer.toneMappingExposure = 0.9;
       node.appendChild(renderer.domElement);
       renderer.domElement.setAttribute('aria-hidden', 'true');
       const scene = new THREE.Scene(),
         camera = new THREE.PerspectiveCamera(40, 1, 0.01, 1000);
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x726c62, 2.5));
-      const light = new THREE.DirectionalLight(0xffffff, 3);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x39424f, 0.7));
+      const light = new THREE.DirectionalLight(0xffffff, 2);
       light.position.set(3, 5, 4);
       scene.add(light);
-      const fill = new THREE.DirectionalLight(0xffffff, 1.5);
+      const fill = new THREE.DirectionalLight(0xffffff, 0.35);
       fill.position.set(-3, 1, -2);
       scene.add(fill);
       controls = new OrbitControls(camera, renderer.domElement);
@@ -126,29 +133,62 @@ export default function ProductViewer({ product }) {
         }
       });
       (async () => {
-        const response = await fetch(product.model.url, {
-          signal: abort.signal,
-          credentials: 'omit',
-        });
-        if (!response.ok) throw new Error('No se pudo descargar el modelo');
-        const buffer = await response.arrayBuffer();
-        if (product.model.format === 'stl') {
-          const geometry = new STLLoader().parse(buffer);
-          geometry.computeVertexNormals();
-          root = new THREE.Group();
-          root.add(
-            new THREE.Mesh(
-              geometry,
-              new THREE.MeshStandardMaterial({
-                color: '#b9b8b0',
-                roughness: 0.65,
-                metalness: 0,
-              }),
-            ),
+        if (product.model.buffer) {
+          const { parseLocalModel } = await import('./local-model.js');
+          root = await parseLocalModel(
+            product.model.buffer,
+            product.model.format,
           );
         } else {
-          root = (await new GLTFLoader().parseAsync(buffer, '')).scene;
+          const response = await fetch(product.model.url, {
+            signal: abort.signal,
+            credentials: 'omit',
+          });
+          if (!response.ok) throw new Error('No se pudo descargar el modelo');
+          const buffer = await response.arrayBuffer();
+          if (product.model.format === 'stl') {
+            const geometry = new STLLoader().parse(buffer);
+            geometry.computeVertexNormals();
+            root = new THREE.Group();
+            root.add(
+              new THREE.Mesh(
+                geometry,
+                new THREE.MeshStandardMaterial({
+                  color: '#b9b8b0',
+                  roughness: 0.65,
+                  metalness: 0,
+                }),
+              ),
+            );
+          } else {
+            root = (await new GLTFLoader().parseAsync(buffer, '')).scene;
+          }
         }
+        // These previews represent solid printed parts, including white PLA.
+        // Balanced lights retain color and relief; imported alpha must not ghost the shell.
+        const correctedMaterials = new WeakSet();
+        root.traverse((child) => {
+          if (!child.isMesh) return;
+          if (!child.geometry.getAttribute('normal'))
+            child.geometry.computeVertexNormals();
+          for (const material of Array.isArray(child.material)
+            ? child.material
+            : [child.material]) {
+            if (!material) continue;
+            if (
+              legacySrgbPreviewIds.has(product.model.publicId) &&
+              !correctedMaterials.has(material)
+            ) {
+              material.color?.convertSRGBToLinear();
+              correctedMaterials.add(material);
+            }
+            material.transparent = false;
+            material.opacity = 1;
+            material.depthWrite = true;
+            if ('transmission' in material) material.transmission = 0;
+            material.needsUpdate = true;
+          }
+        });
         if (disposed) {
           release(root);
           return;
@@ -161,6 +201,46 @@ export default function ProductViewer({ product }) {
           size.length() === 0
         )
           throw new Error('Modelo vacío');
+        let parts = [];
+        if (onMeasurements) {
+          root.updateMatrixWorld(true);
+          const measure = (name, box) => {
+            const size = box.getSize(new THREE.Vector3());
+            if (!box.isEmpty() && Number.isFinite(size.length()))
+              parts.push({
+                name: name || 'Pieza ' + (parts.length + 1),
+                width: size.x,
+                height: size.y,
+                depth: size.z,
+              });
+          };
+          if (root.userData.partBounds) {
+            for (const part of root.userData.partBounds)
+              measure(
+                part.name,
+                new THREE.Box3(
+                  new THREE.Vector3(...part.min),
+                  new THREE.Vector3(...part.max),
+                ).applyMatrix4(root.matrixWorld),
+              );
+          } else {
+            root.traverse((child) => {
+              if (child.isMesh)
+                measure(
+                  child.userData.name || child.name,
+                  new THREE.Box3().setFromObject(child, true),
+                );
+            });
+          }
+        }
+        onMeasurements?.({
+          width: size.x,
+          height: size.y,
+          depth: size.z,
+          colorStatus: root.userData.colorStatus || 'unknown',
+          componentCount: parts.length,
+          parts,
+        });
         const center = box.getCenter(new THREE.Vector3());
         root.position.sub(center);
         radius = size.length() / 2;
@@ -171,12 +251,17 @@ export default function ProductViewer({ product }) {
       })().catch((e) => {
         if (!disposed && e.name !== 'AbortError') {
           setStatus('error');
-          setError(
-            'No se pudo mostrar el modelo 3D. Intentá abrirlo nuevamente o consultanos por esta pieza.',
-          );
+          const message = product.model.buffer
+            ? e.message || 'No se pudo leer el archivo 3D.'
+            : 'No se pudo mostrar el modelo 3D. Intentá abrirlo nuevamente o consultanos por esta pieza.';
+          setError(message);
+          onLoadError?.(message);
         }
       });
     } catch {
+      onLoadError?.(
+        'Tu navegador no pudo iniciar el visor 3D. Probá con un navegador actualizado.',
+      );
       setStatus('error');
       setError(
         'Tu navegador no pudo iniciar el visor 3D. Probá con un navegador actualizado; podés seguir viendo la foto del producto.',
@@ -193,7 +278,14 @@ export default function ProductViewer({ product }) {
       node.replaceChildren();
       actions.current = {};
     };
-  }, [product.model.url, product.model.format]);
+  }, [
+    product.model.url,
+    product.model.format,
+    product.model.publicId,
+    product.model.buffer,
+    onMeasurements,
+    onLoadError,
+  ]);
   return (
     <div className="product-viewer">
       <div
@@ -254,8 +346,8 @@ export default function ProductViewer({ product }) {
       )}
       {product.dimensions && (
         <p className="small">
-          Medidas de la ficha: {product.dimensions.width} ×{' '}
-          {product.dimensions.height} × {product.dimensions.depth} mm.
+          Medidas de la ficha: ancho {product.dimensions.width ? `${product.dimensions.width} mm` : 'a confirmar'}, alto{' '}
+          {product.dimensions.height} mm, profundidad {product.dimensions.depth ? `${product.dimensions.depth} mm` : 'a confirmar'}.
         </p>
       )}
     </div>

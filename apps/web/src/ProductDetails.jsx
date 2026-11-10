@@ -7,7 +7,7 @@ const formatCentimeters = (value) =>
     ? new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(
         value / 10,
       ) + ' cm'
-    : '�';
+    : 'A confirmar';
 export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
   const [state, setState] = useState({
     id,
@@ -87,6 +87,9 @@ export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
         </dl>
         <p className="product-detail-price">
           {formatMoney(p.priceCents, p.currency)}
+        </p>
+        <p className="small product-order-note">
+          Hecho a pedido. Coordinamos el pago y la entrega con vos.
         </p>
         <div className="product-detail-actions">
           <button

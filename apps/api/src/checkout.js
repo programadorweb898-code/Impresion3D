@@ -1,5 +1,7 @@
+import { canonicalCartItem } from '@impresion3d/shared';
+import { cartCatalog } from './offers.js';
 import { createHash } from 'node:crypto';
-import { Product, Order } from './models.js';
+import { Order } from './models.js';
 function publicOrder(doc) {
   const value = doc.toObject();
   delete value.requestHash;
@@ -14,7 +16,7 @@ export async function submitCatalogOrder(req, res) {
         .update(
           JSON.stringify({
             items: items
-              .map(({ productId, quantity }) => ({ productId, quantity }))
+              .map(canonicalCartItem)
               .sort((a, b) => a.productId.localeCompare(b.productId)),
             notes,
           }),
@@ -37,10 +39,15 @@ export async function submitCatalogOrder(req, res) {
     return true;
   };
   if (requestId && (await replay())) return;
-  const products = await Product.find({
-    _id: { $in: items.map((i) => i.productId) },
-    active: true,
-  });
+  let products;
+  try {
+    products = await cartCatalog(items);
+  } catch (error) {
+    if (!error.offerError) throw error;
+    return res
+      .status(error.status)
+      .json({ message: error.message, code: 'PRODUCT_UNAVAILABLE' });
+  }
   const byId = new Map(products.map((p) => [String(p._id), p]));
   if (items.some((i) => !byId.has(i.productId)))
     return res.status(404).json({
@@ -68,7 +75,9 @@ export async function submitCatalogOrder(req, res) {
     const product = byId.get(productId);
     return {
       productId: product._id,
-      name: product.name,
+      name:
+        product.name + (product.offer ? ' — ' + product.selectionSummary : ''),
+      ...(product.offer ? { offer: product.offer } : {}),
       unitPriceCents: product.priceCents,
       quantity,
       dimensions: product.dimensions,

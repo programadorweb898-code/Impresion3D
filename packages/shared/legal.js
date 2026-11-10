@@ -4,8 +4,8 @@ export const legalSite = {
   name: 'Mundo 3D',
   responsible: 'Luis Alberto Gómez',
   country: 'Argentina',
-  email: 'gomito724@gmail.com',
-  updated: '2 de noviembre de 2026',
+  email: 'somosmundo3d@gmail.com.ar',
+  updated: '8 de noviembre de 2026',
 };
 export const legalPages = {
   privacy: {
@@ -18,13 +18,14 @@ export const legalPages = {
         id: 'responsable',
         title: '1. Responsable y contacto',
         paragraphs: [
-          'El responsable del tratamiento es Luis Alberto Gómez, quien opera Mundo 3D desde Argentina. Para consultas sobre privacidad y ejercicio de derechos, el contacto es gomito724@gmail.com.',
+          'El responsable del tratamiento es Luis Alberto Gómez, quien opera Mundo 3D desde Argentina. Para consultas sobre privacidad y ejercicio de derechos, el contacto es somosmundo3d@gmail.com.ar.',
         ],
       },
       {
         id: 'datos',
         title: '2. Datos que se tratan',
         items: [
+          'Solicitudes de presupuesto 3D: archivo original, nombre del archivo, cantidad, escala y medidas solicitadas, uso indicado, estado de revisión de colores y aceptación de continuar con colores pendientes. La vista previa se procesa localmente; el archivo se guarda solo al enviar la solicitud y su descarga requiere la cuenta del solicitante o acceso de administración. Para preparar el presupuesto, el responsable puede procesar una copia temporal en su PC vinculada con el sitio.',
           'Datos de cuenta: nombre, correo electrónico, identificador interno y estado de la cuenta. Si elegís email y contraseña, se conserva una representación protegida de la contraseña mediante hash, no su texto original.',
           'Acceso social: nombre, correo e identificador que proporciona Google o, cuando esté habilitado, Facebook. Google no comparte tu contraseña con Mundo 3D. No solicitamos acceso a Gmail, Drive, contactos ni al contenido privado de esas cuentas.',
           'Pedidos y consultas: productos, cantidades, importes, comentarios, estados y datos que nos comuniques para coordinar la fabricación o entrega. El sitio no procesa pagos online ni solicita números de tarjeta.',
@@ -48,7 +49,7 @@ export const legalPages = {
         ],
         items: [
           'Render: alojamiento del sitio y de su servidor.',
-          'MongoDB Atlas: almacenamiento de cuentas, sesiones y pedidos.',
+          'MongoDB Atlas: almacenamiento de cuentas, sesiones, pedidos y solicitudes de presupuesto, incluidos los archivos originales privados.',
           'Cloudinary: almacenamiento y entrega de imágenes y archivos de los productos.',
           'Google y, si se habilita, Meta/Facebook: identificación cuando elegís sus botones de acceso. El correo de contacto publicado utiliza Gmail.',
           'Resend, cuando se configura: envío de correos de cuenta, recuperación y avisos relacionados con pedidos.',
@@ -80,7 +81,7 @@ export const legalPages = {
         title: '7. Acceso, rectificación y otros derechos',
         paragraphs: [
           'De acuerdo con la Ley argentina 25.326 y las normas aplicables, podés solicitar acceso a tus datos, rectificación, actualización o supresión, y retirar los consentimientos que correspondan. El acceso a datos personales es gratuito en los casos y con la periodicidad previstos por la ley.',
-          'Enviá tu solicitud a gomito724@gmail.com indicando el derecho que querés ejercer y el correo de la cuenta. Podremos pedir información razonable para verificar tu identidad. No te solicitaremos la contraseña del sitio ni de Google. Atenderemos la solicitud conforme a los plazos y condiciones legales.',
+          'Enviá tu solicitud a somosmundo3d@gmail.com.ar indicando el derecho que querés ejercer y el correo de la cuenta. Podremos pedir información razonable para verificar tu identidad. No te solicitaremos la contraseña del sitio ni de Google. Atenderemos la solicitud conforme a los plazos y condiciones legales.',
           'La Agencia de Acceso a la Información Pública (AAIP) es la autoridad argentina de control en materia de protección de datos personales y recibe consultas y denuncias.',
         ],
         link: {
@@ -92,7 +93,7 @@ export const legalPages = {
         id: 'eliminacion-de-datos',
         title: '8. Cómo solicitar la eliminación de la cuenta',
         paragraphs: [
-          'Escribí a gomito724@gmail.com con el asunto “Eliminar mi cuenta de Mundo 3D”, preferentemente desde el correo asociado a la cuenta. Indicá que solicitás la eliminación de la cuenta y de los datos personales vinculados.',
+          'Escribí a somosmundo3d@gmail.com.ar con el asunto “Eliminar mi cuenta de Mundo 3D”, preferentemente desde el correo asociado a la cuenta. Indicá que solicitás la eliminación de la cuenta y de los datos personales vinculados.',
           'Luego de verificar tu identidad, gestionaremos la baja y la eliminación o disociación de los datos que corresponda. Si ciertos registros deben conservarse por una obligación legal o un reclamo pendiente, se informará el motivo.',
           'Si ingresaste con Google o Facebook, también podés quitar el permiso de Mundo 3D desde la configuración de aplicaciones conectadas de ese proveedor. Quitar el permiso y solicitar la eliminación en Mundo 3D son acciones diferentes; para pedir la eliminación en este sitio utilizá el correo indicado.',
         ],
@@ -104,7 +105,7 @@ export const legalPages = {
         title: '9. Cambios y consultas',
         paragraphs: [
           'Esta política puede actualizarse cuando cambien las funciones, los proveedores o las obligaciones aplicables. La fecha de actualización se muestra al inicio. Si un cambio requiere informar u obtener un consentimiento adicional, se realizará antes del nuevo tratamiento que lo requiera.',
-          'Para cualquier consulta, contactá a Luis Alberto Gómez en gomito724@gmail.com.',
+          'Para cualquier consulta, contactá a Luis Alberto Gómez en somosmundo3d@gmail.com.ar.',
         ],
       },
     ],
@@ -119,7 +120,7 @@ export const legalPages = {
         id: 'responsable',
         title: '1. Responsable del sitio',
         paragraphs: [
-          'Mundo 3D es administrado por Luis Alberto Gómez, quien opera desde Argentina. El correo de contacto para consultas, pedidos y reclamos es gomito724@gmail.com.',
+          'Mundo 3D es administrado por Luis Alberto Gómez, quien opera desde Argentina. El correo de contacto para consultas, pedidos y reclamos es somosmundo3d@gmail.com.ar.',
         ],
       },
       {
@@ -168,7 +169,7 @@ export const legalPages = {
         id: 'reclamos',
         title: '7. Garantías, devoluciones y revocación',
         paragraphs: [
-          'Podés comunicar defectos, diferencias con lo acordado o cualquier inconveniente al correo gomito724@gmail.com, indicando el pedido y el problema observado. Adjuntar fotografías puede ayudar a evaluarlo.',
+          'Podés comunicar defectos, diferencias con lo acordado o cualquier inconveniente al correo somosmundo3d@gmail.com.ar, indicando el pedido y el problema observado. Adjuntar fotografías puede ayudar a evaluarlo.',
           'Se respetan las garantías y los derechos de los consumidores establecidos por la Ley 24.240, el Código Civil y Comercial y las demás normas aplicables. Estas condiciones no eliminan ni reducen esos derechos.',
           'En las contrataciones a distancia, el derecho de revocación o arrepentimiento se aplica en los casos y plazos previstos legalmente, generalmente diez días corridos cuando corresponda. Los bienes confeccionados según especificaciones del consumidor o claramente personalizados pueden estar sujetos a excepciones legales; esa condición debe informarse antes de confirmar el encargo.',
           'Para ejercer un derecho o solicitar una devolución, contactá al responsable para gestionar el caso según corresponda.',
@@ -192,7 +193,7 @@ export const legalPages = {
         title: '9. Actualizaciones y normativa aplicable',
         paragraphs: [
           'Las actualizaciones de estas condiciones se publicarán en esta página con su fecha. Los cambios no se aplican retroactivamente para alterar una compra ya confirmada.',
-          'Se aplica la legislación argentina y se respetan las reglas de competencia y los mecanismos de protección del consumidor que correspondan. Para consultas sobre estas condiciones, escribí a gomito724@gmail.com.',
+          'Se aplica la legislación argentina y se respetan las reglas de competencia y los mecanismos de protección del consumidor que correspondan. Para consultas sobre estas condiciones, escribí a somosmundo3d@gmail.com.ar.',
         ],
       },
     ],
