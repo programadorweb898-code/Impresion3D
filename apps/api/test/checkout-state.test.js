@@ -65,26 +65,29 @@ test('changing delivery or destination creates a new checkout attempt while norm
   );
   const shipping = prepareCheckout(
     user,
-    { ...base, delivery: { method: 'shipping', postalCode: 'b1755abc' } },
+    { ...base, delivery: { method: 'shipping', streetAddress: 'Calle 123', city: 'Morón', postalCode: 'b1755abc', quoteId: 'a0c01234-3aae-42fc-991c-37e34ad84012' } },
     storage,
   );
   assert.notEqual(pickup.requestId, shipping.requestId);
   assert.equal(
     prepareCheckout(
       user,
-      { ...base, delivery: { method: 'shipping', postalCode: 'B1755ABC' } },
+      { ...base, delivery: { method: 'shipping', streetAddress: 'Calle 123', city: 'Morón', postalCode: 'B1755ABC', quoteId: 'a0c01234-3aae-42fc-991c-37e34ad84012' } },
       storage,
     ).requestId,
     shipping.requestId,
   );
   assert.deepEqual(pendingCheckout(user, storage).delivery, {
     method: 'shipping',
+    streetAddress: 'Calle 123',
+    city: 'Morón',
     postalCode: 'B1755ABC',
+    quoteId: 'a0c01234-3aae-42fc-991c-37e34ad84012',
   });
   assert.notEqual(
     prepareCheckout(
       user,
-      { ...base, delivery: { method: 'shipping', postalCode: '1000' } },
+      { ...base, delivery: { method: 'shipping', streetAddress: 'Calle 123', city: 'Morón', postalCode: '1000', quoteId: 'a0c01234-3aae-42fc-991c-37e34ad84012' } },
       storage,
     ).requestId,
     shipping.requestId,
