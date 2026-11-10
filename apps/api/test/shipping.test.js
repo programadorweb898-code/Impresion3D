@@ -6,6 +6,7 @@ import {
   createShippingService,
   confirmShippingQuote,
   storeShippingQuote,
+  reuseShippingQuote,
 } from '../src/shipping.js';
 
 test('tarifa, mínimo, envío gratis y límite de 30 km', () => {
@@ -63,6 +64,11 @@ test('la cotización queda vinculada a la sesión, domicilio, carrito y precios'
     oneWayMeters: 10000, roundTripMeters: 21000, costCents: 840000,
   });
   assert.equal(quote.totalCents, 2340000);
+  assert.equal(reuseShippingQuote(session, delivery, items, 1500000).quoteId, quote.quoteId);
+  assert.equal(reuseShippingQuote(session, {
+    ...delivery, city: 'La Plata',
+  }, items, 1500000), null);
+
   assert.equal(confirmShippingQuote(session,
     { ...delivery, quoteId: quote.quoteId }, items, 1500000).costCents, 840000);
   assert.throws(() => confirmShippingQuote(session,
