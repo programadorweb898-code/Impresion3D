@@ -88,6 +88,20 @@ export function createAdminRouter({
       res.json(product);
     },
   );
+  adminRouter.delete('/products/:id', async (req, res) => {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+    if (product.image?.publicId)
+      await imageStorage.remove(product.image.publicId).catch(() => {});
+    if (product.gallery?.angle?.publicId)
+      await imageStorage.remove(product.gallery.angle.publicId).catch(() => {});
+    if (product.gallery?.context?.publicId)
+      await imageStorage.remove(product.gallery.context.publicId).catch(() => {});
+    res.json({ message: 'Producto eliminado del catálogo' });
+  });
+
   adminRouter.get('/orders', async (req, res) => {
     const page = pageNumber(req, res);
     if (!page) return;

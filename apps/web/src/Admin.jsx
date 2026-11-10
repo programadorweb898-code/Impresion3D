@@ -128,6 +128,23 @@ export function Admin({ onCatalogChange, onPreview }) {
   useEffect(() => {
     load().catch((e) => setError(e.message));
   }, []);
+  async function deleteProduct(id) {
+    if (!window.confirm('¿Seguro que querés eliminar este producto del catálogo?')) {
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      await api('/admin/products/' + id, { method: 'DELETE' });
+      await Promise.all([load(data.page), onCatalogChange()]);
+      setNotice('Producto eliminado.');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function saveOrder(id, body) {
     setBusy(true);
     setError('');
@@ -451,6 +468,13 @@ export function Admin({ onCatalogChange, onPreview }) {
                 </p>
                 <button className="outline" onClick={() => setEditing(p)}>
                   Editar {p.name}
+                </button>
+                <button
+                  className="outline danger"
+                  onClick={() => deleteProduct(p._id)}
+                  disabled={busy}
+                >
+                  Eliminar {p.name}
                 </button>
               </article>
             ))}
