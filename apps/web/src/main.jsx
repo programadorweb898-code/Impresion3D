@@ -871,6 +871,23 @@ function App() {
                 </figure>
               </section>
               <OffersCarousel onOffer={openOffer} />
+              <section className="makerworld" aria-labelledby="makerworld-title">
+                <h2 id="makerworld-title">También publicamos en MakerWorld</h2>
+                <p>
+                  MakerWorld es una plataforma de diseños para imprimir en 3D.
+                  Si tenés tus propios diseños y querés que los fabriquemos,
+                  <a
+                    href="https://makerworld.com/es"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="primary"
+                  >
+                    entrá a MakerWorld
+                  </a>{' '}
+                  y envíanos tus archivos. Nosotros nos encargamos de imprimirlos
+                  y enviártelos.
+                </p>
+              </section>
               <section id="catalogo" className="catalog">
                 <div className="section-top">
                   <div>

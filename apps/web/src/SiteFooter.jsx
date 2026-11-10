@@ -34,6 +34,13 @@ export function SiteFooter({
             con impresión 3D.
           </p>
           <a
+            href="https://makerworld.com/es"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            MakerWorld <span aria-hidden="true">↗</span>
+          </a>
+          <a
             href={informationPages.about.path}
             onClick={(e) => internalLink(e, () => onInformation('about'))}
           >
