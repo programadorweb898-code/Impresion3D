@@ -5,7 +5,7 @@ test.use({ extraHTTPHeaders: { 'X-Forwarded-For': '198.19.88.15' } });
 test('el carrito cotiza entrega propia y guarda el total con envío', async ({ page }) => {
   await page.goto('/login');
   await page.getByLabel('Correo electrónico', { exact: true })
-    .fill('browser@example.com');
+    .fill('entrega-browser@example.com');
   await page.getByLabel('Contraseña', { exact: true })
     .fill('NavegadorPrueba1!');
   await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
