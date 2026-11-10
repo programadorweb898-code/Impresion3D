@@ -4,6 +4,8 @@ export function Cart({
   items,
   products,
   notes,
+  delivery = { method: 'pickup' },
+  onDelivery,
   onNotes,
   onQuantity,
   onRemove,
@@ -186,10 +188,89 @@ export function Cart({
                 {!confirmed || mixed ? '—' : money(total, currency)}
               </strong>
             </div>
+            <fieldset className="delivery-options" disabled={busy}>
+              <legend>¿Cómo querés recibir tu pedido?</legend>
+              <label className="delivery-choice">
+                <input
+                  type="radio"
+                  name="delivery-method"
+                  value="pickup"
+                  checked={delivery.method === 'pickup'}
+                  onChange={() => onDelivery({ method: 'pickup' })}
+                />
+                <span>
+                  <strong>Retirar en tienda — Gratis</strong>
+                  <small>
+                    CP 1755 · Dirección a coordinar al confirmar el pedido.
+                  </small>
+                </span>
+              </label>
+              <label className="delivery-choice">
+                <input
+                  type="radio"
+                  name="delivery-method"
+                  value="shipping"
+                  checked={delivery.method === 'shipping'}
+                  onChange={() =>
+                    onDelivery({ method: 'shipping', postalCode: '' })
+                  }
+                />
+                <span>
+                  <strong>Envío</strong>
+                  <small>
+                    Indicá tu código postal para coordinar la entrega.
+                  </small>
+                </span>
+              </label>
+              {delivery.method === 'shipping' ? (
+                <div className="delivery-details">
+                  <label htmlFor="delivery-postal-code">
+                    Código postal de destino
+                  </label>
+                  <input
+                    id="delivery-postal-code"
+                    type="text"
+                    autoComplete="postal-code"
+                    maxLength={8}
+                    required
+                    pattern="([0-9]{4}|[A-Za-z][0-9]{4}[A-Za-z]{3})"
+                    title="Ingresá 4 números o un CPA completo, como B1755ABC."
+                    placeholder="Ej.: 1755 o B1755ABC"
+                    value={delivery.postalCode || ''}
+                    onChange={(event) =>
+                      onDelivery({
+                        method: 'shipping',
+                        postalCode: event.target.value.toUpperCase(),
+                      })
+                    }
+                    aria-describedby="delivery-help"
+                  />
+                  <p id="delivery-help" className="small">
+                    Costo de envío a confirmar. Por ahora lo cotizamos al
+                    revisar tu pedido y te informamos el importe antes de
+                    confirmar. El total de productos no incluye el envío.
+                  </p>
+                </div>
+              ) : (
+                <p className="small">
+                  Retirá cuando te avisemos que tu pedido está listo. El retiro
+                  no tiene cargo.
+                </p>
+              )}
+            </fieldset>
+            <div className="delivery-total" aria-live="polite">
+              <span>
+                {delivery.method === 'pickup'
+                  ? 'Retiro: gratis · Total'
+                  : 'Envío: a confirmar · Subtotal sin envío'}
+              </span>
+              <strong>
+                {!confirmed || mixed ? '—' : money(total, currency)}
+              </strong>
+            </div>
             <p className="small">
-              El servidor confirma precios y disponibilidad al enviar. El plazo
-              y cualquier costo de entrega se acuerdan después de revisar la
-              solicitud.
+              Confirmamos precios y disponibilidad al enviar.
+              Coordinamos el pago y la entrega antes de confirmar el pedido.
             </p>
             <label>
               Comentarios para tu pedido

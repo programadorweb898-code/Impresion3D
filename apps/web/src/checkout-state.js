@@ -1,4 +1,8 @@
-import { orderSchema, canonicalCartItem } from '@impresion3d/shared';
+import {
+  orderSchema,
+  canonicalCartItem,
+  deliverySchema,
+} from '@impresion3d/shared';
 import { cartStorageKeyFor } from './cart-state.js';
 const keyFor = (userId) => {
   const key = cartStorageKeyFor(userId);
@@ -29,6 +33,7 @@ const signature = (body) =>
       .map(canonicalCartItem)
       .sort((a, b) => a.productId.localeCompare(b.productId)),
     notes: (body.notes || '').trim(),
+    ...(body.delivery ? { delivery: deliverySchema.parse(body.delivery) } : {}),
   });
 export function prepareCheckout(userId, body, storage = localStorage) {
   const previous = pendingCheckout(userId, storage);
