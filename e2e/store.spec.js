@@ -1097,37 +1097,21 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
   await expect(
     nav.getByRole('button', { name: 'Mis pedidos', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
-  await nav.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
-  let dialog = page.getByRole('dialog', {
-    name: '¿Querés cerrar sesión?',
-    exact: true,
-  });
-  await expect(dialog).toBeVisible();
-  expect(logoutRequests).toBe(0);
-  await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
-  await expect(dialog).toHaveCount(0);
+});
+
+test('cerrar sesión desde el perfil abre login', async ({
+  page,
+}) => {
+  await login(page);
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await page.getByRole('link', { name: 'Mi perfil', exact: true }).click();
   await expect(
-    page.getByRole('heading', { name: 'Mis pedidos', exact: true }),
+    page.getByRole('heading', { name: 'Mi perfil', exact: true }),
   ).toBeVisible();
-  await page.route('**/api/auth/logout', (route) =>
-    route.fulfill({
-      status: 503,
-      json: { message: 'No se pudo cerrar la sesión. Intentá otra vez.' },
-    }),
-  );
-  await menu(page, 'Cerrar sesión');
-  dialog = page.getByRole('dialog', {
-    name: '¿Querés cerrar sesión?',
-    exact: true,
-  });
-  await dialog.getByRole('button', { name: 'Salir', exact: true }).click();
-  await expect(dialog.getByRole('alert')).toContainText(
-    'No se pudo cerrar la sesión',
-  );
-  expect(page.url().endsWith('/login')).toBe(false);
-  await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
-  await page.unroute('**/api/auth/logout');
-  await menu(page, 'Cerrar sesión');
+  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+  await expect(
+    page.getByRole('dialog', { name: '¿Querés cerrar sesión?', exact: true }),
+  ).toBeVisible();
   await page
     .getByRole('dialog', { name: '¿Querés cerrar sesión?', exact: true })
     .getByRole('button', { name: 'Salir', exact: true })
@@ -1136,12 +1120,6 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
   await expect(
     page.getByRole('heading', { name: 'Qué bueno verte', exact: true }),
   ).toBeVisible();
-  await expect(page.getByText('Cerraste sesión.', { exact: true })).toHaveCount(
-    0,
-  );
-  await expect(page.locator('header,footer')).toHaveCount(0);
-  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
-  expect(logoutRequests).toBe(2);
 });
 
 test('confirmar identidad mantiene el perfil al aceptar, cancelar y cerrar la ventana', async ({

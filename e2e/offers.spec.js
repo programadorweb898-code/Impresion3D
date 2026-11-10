@@ -20,9 +20,9 @@ for (const width of [390, 1280]) {
     expect(
       await page.evaluate(
         () =>
-          document.querySelector('.home-offers').nextElementSibling?.className,
+          document.querySelector('.home-offers').nextElementSibling?.getAttribute('aria-labelledby'),
       ),
-    ).toContain('makerworld');
+    ).toBe('makerworld-title');
     const active = carousel.locator('.offer-slide.is-active');
     await expect(active).toContainText('Bandeja navideña + 4 adornos');
     await expect(active).toContainText('$35.000');
