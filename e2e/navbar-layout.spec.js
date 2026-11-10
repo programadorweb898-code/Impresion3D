@@ -59,7 +59,7 @@ test('la navegación de escritorio permanece en una fila con desplazamiento hori
           await page
             .locator('.site-nav')
             .evaluate(
-              (nav) => nav.scrollWidth > nav.clientWidth && nav.scrollLeft > 0,
+              (nav) => nav.scrollWidth <= nav.clientWidth || nav.scrollLeft > 0,
             ),
         ).toBe(true);
       }

@@ -850,22 +850,19 @@ function App() {
                     Hecho a pedido. Coordinamos pago y entrega con vos.
                   </p>
                 </div>
-                <figure className="hero-art">
-                  <p className="hero-art-heading">
-                    DE LA IDEA A LA ÚLTIMA CAPA
-                  </p>
+                <figure className="hero-art hero-brand-art">
                   <img
                     className="hero-photo"
-                    src="/images/hero-impresora-1000.webp"
-                    srcSet="/images/hero-impresora-640.webp 640w, /images/hero-impresora-1000.webp 1000w"
+                    src="/images/sm3d-portada-1000.webp"
+                    srcSet="/images/sm3d-portada-640.webp 640w, /images/sm3d-portada-1000.webp 1000w"
                     sizes="(max-width: 575px) 90vw, 45vw"
                     width="1024"
                     height="1024"
                     fetchPriority="high"
-                    alt="Impresora 3D terminando un florero escultórico blanco de líneas onduladas"
+                    alt="Logo SomosMundo3D en plateado y violeta neón, con un cubo y una boquilla de impresión 3D"
                   />
                   <figcaption className="hero-art-caption">
-                    <span>Diseño que cobra forma.</span>
+                    <span>SomosMundo3D · Diseño e impresión 3D.</span>
                     <span className="hero-caption-category">IMPRESIÓN 3D</span>
                   </figcaption>
                 </figure>
