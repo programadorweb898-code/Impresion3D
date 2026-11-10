@@ -20,6 +20,11 @@ const user = await User.create({
   passwordHash: await argon2.hash('NavegadorPrueba1!'),
 });
 await User.create({
+  name: 'Cliente entrega aislado',
+  email: 'entrega-browser@example.com',
+  passwordHash: await argon2.hash('NavegadorPrueba1!'),
+});
+await User.create({
   name: 'Admin navegador',
   email: 'admin-browser@example.com',
   role: 'admin',
