@@ -1,3 +1,4 @@
+import { rateLimitMessage } from './rate-limit-message.js';
 import { pageNumber, pageMetadata, pageSize as limit } from './pagination.js';
 import { validate } from './http-validation.js';
 import { Router } from 'express';
@@ -98,7 +99,9 @@ export function createAdminRouter({
     if (product.gallery?.angle?.publicId)
       await imageStorage.remove(product.gallery.angle.publicId).catch(() => {});
     if (product.gallery?.context?.publicId)
-      await imageStorage.remove(product.gallery.context.publicId).catch(() => {});
+      await imageStorage
+        .remove(product.gallery.context.publicId)
+        .catch(() => {});
     res.json({ message: 'Producto eliminado del catálogo' });
   });
   adminRouter.get('/orders', async (req, res) => {
@@ -169,6 +172,7 @@ export function createAdminRouter({
     limit: 10,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
+    message: rateLimitMessage,
   });
   adminRouter.post(
     '/products/:id/image',
@@ -275,20 +279,34 @@ export function createAdminRouter({
       if (!['angle', 'context'].includes(req.params.slot))
         return res.status(400).json({ message: 'Elegí Otro ángulo o En uso.' });
       if (!imageStorage)
-        return res.status(503).json({ message: 'La carga de fotos no está disponible. Intentá más tarde.' });
+        return res
+          .status(503)
+          .json({
+            message: 'La carga de fotos no está disponible. Intentá más tarde.',
+          });
       next();
     },
     imageUpload,
     async (req, res) => {
-      if (!req.file) return res.status(400).json({ message: 'Seleccioná una foto.' });
+      if (!req.file)
+        return res.status(400).json({ message: 'Seleccioná una foto.' });
       const current = await Product.findById(req.params.id);
-      if (!current) return res.status(404).json({ message: 'Producto no encontrado.' });
+      if (!current)
+        return res.status(404).json({ message: 'Producto no encontrado.' });
       const normalized = await normalizeImage(req.file.buffer);
       let image;
-      try { image = await imageStorage.upload(normalized.buffer); }
-      catch (error) {
-        console.warn(JSON.stringify({ event: 'gallery_upload_failed', reason: cloudinaryFailure(error).reason }));
-        return res.status(502).json({ message: 'No pudimos guardar la foto. Intentá más tarde.' });
+      try {
+        image = await imageStorage.upload(normalized.buffer);
+      } catch (error) {
+        console.warn(
+          JSON.stringify({
+            event: 'gallery_upload_failed',
+            reason: cloudinaryFailure(error).reason,
+          }),
+        );
+        return res
+          .status(502)
+          .json({ message: 'No pudimos guardar la foto. Intentá más tarde.' });
       }
       let product;
       try {
@@ -298,14 +316,25 @@ export function createAdminRouter({
           { new: true, runValidators: true },
         );
       } catch {
-        return res.status(503).json({ message: 'No pudimos confirmar el cambio. Actualizá la lista antes de reintentar.' });
+        return res
+          .status(503)
+          .json({
+            message:
+              'No pudimos confirmar el cambio. Actualizá la lista antes de reintentar.',
+          });
       }
       if (!product) {
         await imageStorage.remove(image.publicId).catch(() => {});
-        return res.status(409).json({ message: 'El producto cambió. Actualizá la lista y volvé a intentarlo.' });
+        return res
+          .status(409)
+          .json({
+            message:
+              'El producto cambió. Actualizá la lista y volvé a intentarlo.',
+          });
       }
       const previous = current.gallery?.[req.params.slot];
-      if (previous?.publicId) await imageStorage.remove(previous.publicId).catch(() => {});
+      if (previous?.publicId)
+        await imageStorage.remove(previous.publicId).catch(() => {});
       res.json({ gallery: product.gallery });
     },
   );

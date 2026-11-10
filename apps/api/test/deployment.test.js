@@ -15,6 +15,10 @@ await writeFile(
   path.join(directory, 'assets', 'app-test.js'),
   'console.log("test");',
 );
+await writeFile(
+  path.join(directory, '.env'),
+  'SESSION_SECRET=private-test-marker',
+);
 after(() => rm(directory, { recursive: true, force: true }));
 const app = createApp({
   sessionSecret: 'test-deployment-secret-at-least-32-characters',
@@ -59,6 +63,15 @@ test('assets versionados tienen caché y respuestas privadas no', async () => {
 test('readiness devuelve 503 sin conexión a MongoDB', async () => {
   await request(app).get('/api/ready').expect(503);
   await request(app).get('/api/health').expect(200);
+});
+
+test('archivos ocultos y rutas internas no revelan configuración ni código', async () => {
+  for (const url of ['/.env', '/.git/config', '/apps/api/src/server.js']) {
+    const response = await request(app).get(url);
+    assert.ok([200, 404].includes(response.status));
+    assert.ok(!response.text.includes('private-test-marker'));
+    assert.ok(!response.text.includes('mongoose.connect'));
+  }
 });
 test('páginas legales son públicas, incluyen el contenido en HTML sin ejecutar JavaScript y tienen contacto real', async () => {
   const privacy = await request(app)

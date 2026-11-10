@@ -1,4 +1,10 @@
-import { DesignRequest, SlicerWorker, SlicingJob } from './models.js';
+import {
+  Product,
+  Order,
+  DesignRequest,
+  SlicerWorker,
+  SlicingJob,
+} from './models.js';
 import mongoose from 'mongoose';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
@@ -52,11 +58,14 @@ if (staticDirectory && !existsSync(staticDirectory + 'index.html'))
 await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
 await Promise.all([
   ensureUserEmailIndex(),
+  Product.init(),
+  Order.init(),
   SocialIdentity.init(),
   DesignRequest.init(),
   SlicerWorker.init(),
   SlicingJob.init(),
 ]);
+console.info(JSON.stringify({ event: 'database_indexes_ready' }));
 await migrateCatalogCopy();
 await migrateSeasonalCuencos();
 const store = MongoStore.create({

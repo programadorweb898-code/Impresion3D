@@ -44,43 +44,43 @@ const socialSchema = new Schema(
 );
 socialSchema.index({ provider: 1, subject: 1 }, { unique: true });
 export const SocialIdentity = model('SocialIdentity', socialSchema);
-export const Product = model(
-  'Product',
-  new Schema(
-    {
-      name: { type: String, required: true },
-      description: String,
-      shortDescription: String,
-      category: String,
-      categories: { type: [String], default: undefined },
-      color: String,
-      priceCents: { type: Number, required: true, min: 0 },
-      currency: { type: String, default: 'ARS' },
-      dimensions: { width: Number, height: Number, depth: Number },
-      active: { type: Boolean, default: true },
-      historicalSalesCount: { type: Number, default: 0, min: 0 },
-      viewsCount: { type: Number, default: 0, min: 0 },
-      image: { url: String, publicId: String, width: Number, height: Number },
-      gallery: {
-        angle: { url: String, publicId: String, width: Number, height: Number },
-        context: {
-          url: String,
-          publicId: String,
-          width: Number,
-          height: Number,
-        },
-      },
-      model: {
+const productSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    description: String,
+    shortDescription: String,
+    category: String,
+    categories: { type: [String], default: undefined },
+    color: String,
+    priceCents: { type: Number, required: true, min: 0 },
+    currency: { type: String, default: 'ARS' },
+    dimensions: { width: Number, height: Number, depth: Number },
+    active: { type: Boolean, default: true },
+    historicalSalesCount: { type: Number, default: 0, min: 0 },
+    viewsCount: { type: Number, default: 0, min: 0 },
+    image: { url: String, publicId: String, width: Number, height: Number },
+    gallery: {
+      angle: { url: String, publicId: String, width: Number, height: Number },
+      context: {
         url: String,
         publicId: String,
-        format: { type: String, enum: ['glb', 'stl'] },
-        sourceFormat: { type: String, enum: ['3mf'] },
-        bytes: Number,
+        width: Number,
+        height: Number,
       },
     },
-    { timestamps: true },
-  ),
+    model: {
+      url: String,
+      publicId: String,
+      format: { type: String, enum: ['glb', 'stl'] },
+      sourceFormat: { type: String, enum: ['3mf'] },
+      bytes: Number,
+    },
+  },
+  { timestamps: true },
 );
+productSchema.index({ active: 1, priceCents: 1, _id: 1 });
+productSchema.index({ active: 1, createdAt: -1, _id: -1 });
+export const Product = model('Product', productSchema);
 const orderOfferSchema = new Schema(
   {
     id: String,
@@ -138,7 +138,8 @@ orderModel.index(
   { userId: 1, requestId: 1 },
   { unique: true, partialFilterExpression: { requestId: { $type: 'string' } } },
 );
-orderModel.index({ userId: 1, createdAt: -1 });
+orderModel.index({ userId: 1, createdAt: -1, _id: -1 });
+orderModel.index({ 'items.productId': 1 });
 orderModel.index({ createdAt: -1 });
 orderModel.index({ 'notification.state': 1, 'notification.dueAt': 1 });
 orderModel.index({ 'notification.state': 1, 'notification.leaseUntil': 1 });

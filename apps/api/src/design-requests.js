@@ -1,3 +1,4 @@
+import { createUploadCapacity } from './upload-capacity.js';
 import express from 'express';
 import mongoose from 'mongoose';
 import multer from 'multer';
@@ -130,6 +131,7 @@ const publicRequest = (r) => {
   };
 };
 export function designRequestsRouter(authenticated) {
+  const admitUpload = createUploadCapacity();
   const router = express.Router();
   router.use(authenticated);
   router.get('/', async (req, res) => {
@@ -175,6 +177,7 @@ export function designRequestsRouter(authenticated) {
       req.designUpload = true;
       next();
     },
+    admitUpload,
     multer({
       storage: multer.memoryStorage(),
       limits: {

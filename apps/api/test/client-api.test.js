@@ -57,7 +57,7 @@ test('una subida interrumpida informa el paso y nunca se reintenta automáticame
   );
   assert.equal(calls, 2);
 });
-test('errores HTTP conservan el mensaje y la referencia sin mostrar HTML', async () => {
+test('errores conservan diagnóstico aparte sin mostrar referencias ni códigos HTTP', async () => {
   globalThis.fetch = async () =>
     Response.json(
       { message: 'Error de almacenamiento' },
@@ -65,22 +65,34 @@ test('errores HTTP conservan el mensaje y la referencia sin mostrar HTML', async
     );
   await assert.rejects(
     () => api('/test'),
-    /Error de almacenamiento.*request-123/,
+    (error) => {
+      assert.equal(error.message, 'Error de almacenamiento');
+      assert.equal(error.requestId, 'request-123');
+      return true;
+    },
   );
   globalThis.fetch = async () =>
     new Response('<html>gateway</html>', { status: 502 });
-  await assert.rejects(() => api('/test'), /respuesta válida \(HTTP 502\)/);
+  await assert.rejects(() => api('/test'), /no está disponible temporalmente/);
+  globalThis.fetch = async () =>
+    new Response('Too many requests', { status: 429 });
+  await assert.rejects(() => api('/test'), /Esperá unos minutos/);
 });
 
 test('no refleja referencias inválidas ni el HTML de un proxy', async () => {
-  globalThis.fetch = async () => new Response('<html>gateway privado</html>', {
-    status: 502,
-    headers: { 'x-request-id': '<script>unsafe</script>' },
-  });
-  await assert.rejects(() => api('/test'), (error) => {
-    assert.match(error.message, /HTTP 502/);
-    assert.ok(!error.message.includes('script'));
-    assert.ok(!error.message.includes('gateway privado'));
-    return true;
-  });
+  globalThis.fetch = async () =>
+    new Response('<html>gateway privado</html>', {
+      status: 502,
+      headers: { 'x-request-id': '<script>unsafe</script>' },
+    });
+  await assert.rejects(
+    () => api('/test'),
+    (error) => {
+      assert.match(error.message, /no está disponible temporalmente/);
+      assert.ok(!error.message.includes('502'));
+      assert.ok(!error.message.includes('script'));
+      assert.ok(!error.message.includes('gateway privado'));
+      return true;
+    },
+  );
 });

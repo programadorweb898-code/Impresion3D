@@ -1,3 +1,4 @@
+import { rateLimitMessage } from './rate-limit-message.js';
 import { modelUpload, validateProductModel } from './product-models.js';
 import { Product } from './models.js';
 import { cloudinaryFailure } from './cloudinary-errors.js';
@@ -11,6 +12,7 @@ export function addModelRoutes(router, storage) {
       limit: 5,
       standardHeaders: 'draft-8',
       legacyHeaders: false,
+      message: rateLimitMessage,
     }),
     (req, res, next) => {
       req.productModelUpload = true;

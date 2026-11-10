@@ -1,3 +1,4 @@
+import { publicProductProjection } from './public-product.js';
 import { offersRouter } from './offers.js';
 import { slicerWorkerRouter, adminSlicingRouter } from './slicing.js';
 import {
@@ -189,7 +190,7 @@ export function createApp({
       { $inc: { viewsCount: 1 } },
       { new: true, timestamps: false },
     )
-      .select('-__v')
+      .select(publicProductProjection)
       .lean();
     if (!product)
       return res.status(404).json({ message: 'Producto no disponible.' });
