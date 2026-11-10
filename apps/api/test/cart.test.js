@@ -63,6 +63,13 @@ before(async () => {
   app = createApp({
     sessionSecret: 'cart-test-secret-with-at-least-32-characters',
     webOrigin: origin,
+    shippingService: {
+      quote: async (_delivery, subtotalCents) => ({
+        oneWayMeters: 10000,
+        roundTripMeters: 21000,
+        costCents: subtotalCents >= 12000000 ? 0 : 840000,
+      }),
+    },
   });
   alice = await account('cart-alice@example.com');
   bob = await account('cart-bob@example.com');
@@ -221,7 +228,7 @@ test('persistencia del carrito ignora datos corruptos y nunca guarda precios o c
   assert.equal(orderSchema.safeParse({ items: [] }).success, false);
 });
 
-test('delivery snapshots keep free pickup separate from shipping pending quotation and reject forged prices', async () => {
+test('el envío se cotiza antes de confirmar y nunca acepta precios del navegador', async () => {
   const product = await Product.create({
     name: 'Entrega prueba',
     priceCents: 10000,
@@ -229,44 +236,61 @@ test('delivery snapshots keep free pickup separate from shipping pending quotati
   });
   const base = { items: [{ productId: String(product._id), quantity: 1 }] };
   const pickup = await checkout(alice, {
-    ...base,
-    delivery: { method: 'pickup' },
-    requestId: randomUUID(),
+    ...base, delivery: { method: 'pickup' }, requestId: randomUUID(),
   });
   assert.equal(pickup.status, 201);
   assert.equal(pickup.body.delivery.costCents, 0);
   assert.equal(pickup.body.delivery.status, 'free_pickup');
-  assert.equal(pickup.body.delivery.originPostalCode, '1755');
   assert.equal(pickup.body.totalCents, 10000);
+
+  const delivery = {
+    method: 'shipping',
+    streetAddress: 'Av. Rivadavia 1234',
+    city: 'Morón',
+    postalCode: '1708',
+  };
+  const unquoted = await checkout(alice, {
+    ...base, delivery, requestId: randomUUID(),
+  });
+  assert.equal(unquoted.status, 400); // Falta quoteId: validación Zod.
+  const token = await csrf(alice);
+  const quoted = await alice.post('/api/shipping/quote')
+    .set('Origin', origin)
+    .set('x-csrf-token', token)
+    .send({ ...base, delivery });
+  assert.equal(quoted.status, 200, JSON.stringify(quoted.body));
+  assert.equal(quoted.body.costCents, 840000);
+  assert.equal(quoted.body.totalCents, 850000);
+
   const body = {
-    ...base,
-    delivery: { method: 'shipping', postalCode: ' b1755abc ' },
+    ...base, delivery: { ...delivery, quoteId: quoted.body.quoteId },
     requestId: randomUUID(),
   };
   const shipping = await checkout(alice, body);
   assert.equal(shipping.status, 201, JSON.stringify(shipping.body));
-  assert.equal(shipping.body.delivery.postalCode, 'B1755ABC');
-  assert.equal(shipping.body.delivery.status, 'pending_quote');
-  assert.equal(shipping.body.delivery.costCents, undefined);
-  assert.equal(shipping.body.totalCents, 10000);
-  const replay = await checkout(alice, body);
-  assert.equal(replay.status, 200);
-  assert.equal(replay.body._id, shipping.body._id);
-  assert.equal(
-    (await checkout(alice, { ...body, delivery: { method: 'pickup' } })).status,
-    409,
-  );
-  for (const delivery of [
-    { method: 'shipping', postalCode: 'abc' },
-    { method: 'shipping', postalCode: '12345' },
-    { method: 'shipping', postalCode: '1755', costCents: 0 },
-    { method: 'pickup', costCents: -100 },
-  ])
-    assert.equal((await checkout(alice, { ...base, delivery })).status, 400);
-  const listed = await alice.get('/api/orders').expect(200);
-  assert.equal(
-    listed.body.find((order) => order._id === shipping.body._id).delivery
-      .postalCode,
-    'B1755ABC',
-  );
+  assert.equal(shipping.body.delivery.status, 'quoted');
+  assert.equal(shipping.body.delivery.costCents, 840000);
+  assert.equal(shipping.body.delivery.oneWayMeters, 10000);
+  assert.equal(shipping.body.subtotalCents, 10000);
+  assert.equal(shipping.body.totalCents, 850000);
+  assert.equal((await checkout(alice, body)).body._id, shipping.body._id);
+
+  assert.equal((await checkout(alice, {
+    ...base, delivery: { ...body.delivery, streetAddress: 'Otro domicilio 555' },
+    requestId: randomUUID(),
+  })).body.code, 'DELIVERY_QUOTE_EXPIRED');
+  assert.equal((await checkout(bob, {
+    ...base, delivery: body.delivery, requestId: randomUUID(),
+  })).body.code, 'DELIVERY_QUOTE_EXPIRED');
+  for (const invalid of [
+    { ...body.delivery, costCents: 0 },
+    { ...body.delivery, postalCode: 'abc' },
+    { ...body.delivery, streetAddress: 'Sin número' },
+  ]) {
+    assert.equal((await checkout(alice, {
+      ...base, delivery: invalid, requestId: randomUUID(),
+    })).status, 400);
+  }
+  assert.equal((await alice.get('/api/orders')).body
+    .find((o) => o._id === shipping.body._id).totalCents, 850000);
 });
