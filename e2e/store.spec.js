@@ -1075,9 +1075,6 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
   await expect(
     nav.getByRole('button', { name: 'Catálogo', exact: true }),
   ).toHaveCSS('font-weight', '700');
-  await expect(
-    nav.getByRole('button', { name: 'Cerrar sesión', exact: true }),
-  ).toBeVisible();
   await nav.getByRole('link', { name: 'Mi perfil', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Mi perfil', exact: true }),

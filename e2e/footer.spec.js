@@ -42,7 +42,7 @@ for (const width of [390, 1280]) {
     await expect(
       page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 }),
     ).toBeVisible();
-    await expect(page.locator('.faq-list details')).toHaveCount(6);
+    await expect(page.locator('.faq-list details')).toHaveCount(7);
     await page.reload();
     await expect(
       page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 }),
