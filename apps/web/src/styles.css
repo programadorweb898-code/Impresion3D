@@ -2029,6 +2029,10 @@ summary:focus-visible {
   .site-header .site-nav {
     flex-wrap: nowrap;
     overflow-y: hidden;
+    scrollbar-width: none;
+  }
+  .site-header .site-nav::-webkit-scrollbar {
+    display: none;
   }
 }
 .site-header .site-nav > * {
