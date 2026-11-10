@@ -269,7 +269,7 @@ export function Cart({
               </strong>
             </div>
             <p className="small">
-              El servidor confirma precios y disponibilidad al enviar.
+              Confirmamos precios y disponibilidad al enviar.
               Coordinamos el pago y la entrega antes de confirmar el pedido.
             </p>
             <label>
