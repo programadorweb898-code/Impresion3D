@@ -97,6 +97,7 @@ export const statusLabels = {
   en_espera: 'En espera',
   en_preparacion: 'En preparación',
   finalizado: 'Finalizado',
+  cancelado: 'Cancelado',
 };
 export const statusTransitions = {
   en_espera: ['en_preparacion', 'cancelado'],

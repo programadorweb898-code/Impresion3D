@@ -70,11 +70,11 @@ test('páginas legales son públicas, incluyen el contenido en HTML sin ejecutar
     /<title>Política de privacidad \| Mundo 3D<\/title>/,
   );
   assert.match(privacy.text, /Luis Alberto Gómez/);
-  assert.match(privacy.text, /gomito724@gmail\.com/);
+  assert.match(privacy.text, /somosmundo3d@gmail\.com\.ar/);
   assert.match(privacy.text, /Ley argentina 25\.326/);
   assert.match(privacy.text, /id="eliminacion-de-datos"/);
   assert.match(privacy.text, /Solicitar eliminación de cuenta y datos/);
-  assert.match(privacy.text, /mailto:gomito724@gmail\.com\?subject=/);
+  assert.match(privacy.text, /mailto:somosmundo3d@gmail\.com\.ar\?subject=/);
   assert.doesNotMatch(privacy.text, /Tienda de prueba/);
   assert.equal(privacy.headers['set-cookie'], undefined);
   const terms = await request(app).get('/terminos-y-condiciones').expect(200);
