@@ -1364,7 +1364,7 @@ function App() {
                     ))}
                     <OrderDelivery delivery={o.delivery} />
                     <strong>
-                      {o.delivery?.method === 'shipping'
+                      {o.delivery?.status === 'pending_quote'
                         ? 'Productos (sin envío): '
                         : 'Total: '}
                       {money(o.totalCents, o.currency)}
