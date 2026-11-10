@@ -55,7 +55,7 @@ function OrderEditor({ order, onSave, busy }) {
       {order.notes && <p>Solicitud: {order.notes}</p>}
       <OrderDelivery delivery={order.delivery} />
       <p>
-        {order.delivery?.method === 'shipping' ? 'Productos (sin envío): ' : 'Total: '}
+        {order.delivery?.status === 'pending_quote' ? 'Productos (sin envío): ' : 'Total: '}
         {formatMoney(order.totalCents, order.currency)}
       </p>
       <ol>
