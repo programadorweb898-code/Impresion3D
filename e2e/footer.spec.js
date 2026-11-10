@@ -17,7 +17,7 @@ for (const width of [390, 1280]) {
       categories.getByRole('link', { name: 'Hogar', exact: true }),
     ).toHaveAttribute('href', '/?categoria=Hogar#catalogo');
     await expect(footer.locator('address')).toContainText(
-      'gomito724@gmail.com',
+      'somosmundo3d@gmail.com.ar',
     );
     await expect(footer.locator('address a[href^="tel:"]')).toHaveAttribute(
       'href',

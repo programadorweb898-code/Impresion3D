@@ -865,13 +865,13 @@ test('privacidad y condiciones se abren desde el footer sin sesión y conservan 
   await expect(
     page
       .locator('.legal-contact')
-      .getByRole('link', { name: 'gomito724@gmail.com', exact: true }),
-  ).toHaveAttribute('href', 'mailto:gomito724@gmail.com');
+      .getByRole('link', { name: 'somosmundo3d@gmail.com.ar', exact: true }),
+  ).toHaveAttribute('href', 'mailto:somosmundo3d@gmail.com.ar');
   await expect(page.locator('.site-header')).toBeVisible();
   await expect(page.locator('footer')).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'Solicitar eliminación de cuenta y datos' }),
-  ).toHaveAttribute('href', /^mailto:gomito724@gmail.com\?subject=/);
+  ).toHaveAttribute('href', /^mailto:somosmundo3d@gmail.com.ar\?subject=/);
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 844 });
     expect(
@@ -936,7 +936,7 @@ test('Google y visitantes pueden leer las páginas legales sin JavaScript ni aut
         'Luis Alberto Gómez',
       );
       await expect(page.locator('.legal-contact')).toContainText(
-        'gomito724@gmail.com',
+        'somosmundo3d@gmail.com.ar',
       );
       await expect(page).toHaveTitle(title + ' | Mundo 3D');
     }
