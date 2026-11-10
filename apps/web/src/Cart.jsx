@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { api } from './api.js';
 import { offerPath, selectionCount } from '@impresion3d/shared';
 import { formatMoney as money } from '@impresion3d/shared';
 export function Cart({
@@ -18,7 +20,50 @@ export function Cart({
   refreshing,
   catalogError,
 }) {
+  const [quote, setQuote] = useState(null);
+  const [quoting, setQuoting] = useState(false);
+  const [quoteError, setQuoteError] = useState('');
   const byId = new Map(products.map((p) => [p._id, p]));
+  const fingerprint = JSON.stringify(items.map((i) => [
+    i.productId, i.quantity, byId.get(i.productId)?.priceCents,
+  ]));
+  const quoted = quote && quote.fingerprint === fingerprint &&
+    quote.quoteId === delivery.quoteId &&
+    delivery.method === 'shipping';
+  function editDelivery(next) {
+    setQuote(null);
+    setQuoteError('');
+    onDelivery(next);
+  }
+  async function calculateShipping() {
+    setQuoting(true);
+    setQuoteError('');
+    setQuote(null);
+    try {
+      const destination = {
+        method: 'shipping',
+        streetAddress: (delivery.streetAddress || '').trim(),
+        city: (delivery.city || '').trim(),
+        postalCode: (delivery.postalCode || '').trim().toUpperCase(),
+      };
+      const result = await api('/shipping/quote', {
+        method: 'POST',
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            ...i, expectedUnitPriceCents: byId.get(i.productId)?.priceCents,
+          })),
+          delivery: destination,
+        }),
+      });
+      onDelivery({ ...destination, quoteId: result.quoteId });
+      setQuote({ ...result, fingerprint });
+    } catch (error) {
+      setQuoteError(error.message);
+      onDelivery({ ...delivery, quoteId: undefined });
+    } finally {
+      setQuoting(false);
+    }
+  }
   const confirmed = !refreshing && !catalogError;
   const rows = items.map((i) => {
     const product = byId.get(i.productId);
@@ -196,10 +241,10 @@ export function Cart({
                   name="delivery-method"
                   value="pickup"
                   checked={delivery.method === 'pickup'}
-                  onChange={() => onDelivery({ method: 'pickup' })}
+                  onChange={() => editDelivery({ method: 'pickup' })}
                 />
                 <span>
-                  <strong>Retirar en tienda — Gratis</strong>
+                  <strong>Retiro coordinado — Gratis</strong>
                   <small>
                     CP 1755 · Dirección a coordinar al confirmar el pedido.
                   </small>
@@ -212,18 +257,54 @@ export function Cart({
                   value="shipping"
                   checked={delivery.method === 'shipping'}
                   onChange={() =>
-                    onDelivery({ method: 'shipping', postalCode: '' })
+                    editDelivery({ method: 'shipping', streetAddress: '', city: '', postalCode: '' })
                   }
                 />
                 <span>
-                  <strong>Envío</strong>
+                  <strong>Entrega a domicilio en auto</strong>
                   <small>
-                    Indicá tu código postal para coordinar la entrega.
+                    Ingresá el domicilio para conocer el costo antes de confirmar.
                   </small>
                 </span>
               </label>
               {delivery.method === 'shipping' ? (
                 <div className="delivery-details">
+                  <label htmlFor="delivery-street-address">
+                    Calle y altura
+                  </label>
+                  <input
+                    id="delivery-street-address"
+                    type="text"
+                    autoComplete="street-address"
+                    required
+                    minLength={6}
+                    maxLength={120}
+                    placeholder="Ej.: San Martín 123"
+                    value={delivery.streetAddress || ''}
+                    onChange={(event) => editDelivery({
+                      method: 'shipping',
+                      streetAddress: event.target.value,
+                      city: delivery.city || '',
+                      postalCode: delivery.postalCode || '',
+                    })}
+                  />
+                  <label htmlFor="delivery-city">Localidad</label>
+                  <input
+                    id="delivery-city"
+                    type="text"
+                    autoComplete="address-level2"
+                    required
+                    minLength={2}
+                    maxLength={80}
+                    placeholder="Ej.: Morón"
+                    value={delivery.city || ''}
+                    onChange={(event) => editDelivery({
+                      method: 'shipping',
+                      streetAddress: delivery.streetAddress || '',
+                      city: event.target.value,
+                      postalCode: delivery.postalCode || '',
+                    })}
+                  />
                   <label htmlFor="delivery-postal-code">
                     Código postal de destino
                   </label>
@@ -238,18 +319,41 @@ export function Cart({
                     placeholder="Ej.: 1755 o B1755ABC"
                     value={delivery.postalCode || ''}
                     onChange={(event) =>
-                      onDelivery({
+                      editDelivery({
                         method: 'shipping',
+                        streetAddress: delivery.streetAddress || '',
+                        city: delivery.city || '',
                         postalCode: event.target.value.toUpperCase(),
                       })
                     }
                     aria-describedby="delivery-help"
                   />
                   <p id="delivery-help" className="small">
-                    Costo de envío a confirmar. Por ahora lo cotizamos al
-                    revisar tu pedido y te informamos el importe antes de
-                    confirmar. El total de productos no incluye el envío.
+                    Entregas propias hasta 30 km de ida desde Rafael Castillo.
+                    Envío gratis desde $120.000 en productos.
                   </p>
+                  <button
+                    type="button"
+                    className="outline"
+                    disabled={busy || quoting || refreshing || !!catalogError ||
+                      unavailable || mixed}
+                    onClick={calculateShipping}
+                  >
+                    {quoting ? 'Calculando distancia…' : 'Calcular envío'}
+                  </button>
+                  {quoteError && <p role="alert" className="error">{quoteError}</p>}
+                  {quoted && (
+                    <p role="status" className="small">
+                      Distancia de ida: {quote.oneWayKm} km.
+                      Recorrido ida y vuelta: {quote.roundTripKm} km.
+                      Envío: {quote.costCents === 0
+                        ? 'GRATIS'
+                        : money(quote.costCents, currency)}.
+                    </p>
+                  )}
+                  {!quoted && !quoteError && (
+                    <p className="small">Calculá el envío para confirmar el total.</p>
+                  )}
                 </div>
               ) : (
                 <p className="small">
@@ -259,13 +363,19 @@ export function Cart({
               )}
             </fieldset>
             <div className="delivery-total" aria-live="polite">
-              <span>
-                {delivery.method === 'pickup'
-                  ? 'Retiro: gratis · Total'
-                  : 'Envío: a confirmar · Subtotal sin envío'}
-              </span>
+              <span>Envío</span>
               <strong>
-                {!confirmed || mixed ? '—' : money(total, currency)}
+                {delivery.method === 'pickup' ? 'Gratis' :
+                  quoted ? (quote.costCents === 0 ? 'Gratis' :
+                    money(quote.costCents, currency)) : 'A calcular'}
+              </strong>
+            </div>
+            <div className="delivery-total" aria-live="polite">
+              <strong>Total a pagar</strong>
+              <strong>
+                {!confirmed || mixed || (delivery.method === 'shipping' && !quoted)
+                  ? '—'
+                  : money(total + (quoted ? quote.costCents : 0), currency)}
               </strong>
             </div>
             <p className="small">
@@ -285,7 +395,8 @@ export function Cart({
             <button
               className="primary"
               disabled={
-                busy || refreshing || catalogError || unavailable || mixed
+                busy || quoting || refreshing || catalogError || unavailable || mixed ||
+                (delivery.method === 'shipping' && !quoted)
               }
             >
               {busy ? 'Enviando pedido…' : 'Enviar pedido'}
