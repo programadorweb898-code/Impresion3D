@@ -116,9 +116,13 @@ const orderModel = new Schema(
             required: true,
           },
           postalCode: String,
+          streetAddress: String,
+          city: String,
           originPostalCode: String,
+          oneWayMeters: Number,
+          roundTripMeters: Number,
           costCents: { type: Number, min: 0 },
-          status: { type: String, enum: ['free_pickup', 'pending_quote'] },
+          status: { type: String, enum: ['free_pickup', 'pending_quote', 'quoted'] },
         },
         { _id: false },
       ),
@@ -126,6 +130,7 @@ const orderModel = new Schema(
     },
     requestId: { type: String, select: false },
     requestHash: { type: String, select: false },
+    subtotalCents: { type: Number, min: 0 },
     totalCents: { type: Number, required: true },
     currency: { type: String, required: true },
     notes: String,
@@ -161,6 +166,15 @@ orderModel.index({ createdAt: -1 });
 orderModel.index({ 'notification.state': 1, 'notification.dueAt': 1 });
 orderModel.index({ 'notification.state': 1, 'notification.leaseUntil': 1 });
 export const Order = model('Order', orderModel);
+
+const shippingUsageSchema = new Schema({
+  _id: String, // Día UTC YYYY-MM-DD; contador global de consultas a Google.
+  count: { type: Number, default: 0, min: 0 },
+  expiresAt: { type: Date, required: true },
+});
+shippingUsageSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+export const ShippingUsage = model('ShippingUsage', shippingUsageSchema);
+
 
 const designRequestSchema = new Schema(
   {
