@@ -1379,7 +1379,7 @@ header > nav {
   inset: 0 0 auto;
   width: 100%;
   max-height: 100dvh;
-  overflow-y: hidden;
+  overflow: hidden;
   z-index: 20;
   background: #faf9f6;
   box-shadow: 0 2px 12px #272a270a;
@@ -1651,7 +1651,6 @@ header > nav {
     transition-delay: 0s;
   }
   .site-header .nav-collapse.is-expanded .site-nav {
-    overflow-y: auto;
     overscroll-behavior-y: contain;
   }
   .site-header .site-nav,
