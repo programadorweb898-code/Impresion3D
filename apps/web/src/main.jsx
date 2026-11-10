@@ -49,6 +49,9 @@ import {
   initializeNavigation,
   navigatePage,
   returnToPreviousPage,
+  savedScrollPosition,
+  rememberScrollPosition,
+  traverseHistory,
 } from './navigation.js';
 const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
@@ -115,10 +118,11 @@ function App() {
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [category, setCategory] = useState(() => catalogContext().category),
-    [search, setSearch] = useState(''),
-    [priceMin, setPriceMin] = useState(''),
-    [priceMax, setPriceMax] = useState(''),
-    [sort, setSort] = useState('relevance'),
+    [search, setSearch] = useState(() => catalogContext().search),
+    [priceMin, setPriceMin] = useState(() => catalogContext().priceMin),
+    [priceMax, setPriceMax] = useState(() => catalogContext().priceMax),
+    [sort, setSort] = useState(() => catalogContext().sort),
+    [loadedCatalogKey, setLoadedCatalogKey] = useState(null),
     [cartNotes, setCartNotes] = useState(''),
     [viewing, setViewing] = useState(null),
     [navigationVersion, setNavigationVersion] = useState(0);
@@ -139,18 +143,85 @@ function App() {
     }
   }, [user?.id]);
   const cartButtonRef = useRef(null);
-  const scrollTarget = useRef(location.hash.slice(1) || null);
+  const catalogQueryKey = JSON.stringify([
+    catalogPage.page,
+    category,
+    search,
+    priceMin,
+    priceMax,
+    sort,
+  ]);
+  const scrollTarget = useRef(
+    savedScrollPosition() || location.hash.slice(1) || null,
+  );
+  const lastHistoryUrl = useRef(null);
+  function saveCatalogContext() {
+    rememberCatalog(catalogPage.page, category, {
+      search,
+      priceMin,
+      priceMax,
+      sort,
+    });
+  }
   useLayoutEffect(() => {
     const previous = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';
+    window.addEventListener('pagehide', rememberScrollPosition);
     return () => {
       window.history.scrollRestoration = previous;
+      window.removeEventListener('pagehide', rememberScrollPosition);
     };
   }, []);
   useLayoutEffect(() => {
-    const target =
-      scrollTarget.current && document.getElementById(scrollTarget.current);
-    if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    const target = scrollTarget.current;
+    const html = document.documentElement;
+    html.removeAttribute('data-scroll-restoring');
+    if (target && typeof target === 'object') {
+      let observer, timer;
+      const restore = () => {
+        if (
+          scrollTarget.current !== target ||
+          document.querySelector('main [data-page-loading]')
+        )
+          return;
+        window.scrollTo({ left: target.x, top: target.y, behavior: 'instant' });
+        scrollTarget.current = null;
+        html.removeAttribute('data-scroll-restoring');
+        observer?.disconnect();
+        clearTimeout(timer);
+      };
+      html.setAttribute('data-scroll-restoring', '');
+      restore();
+      if (scrollTarget.current === target) {
+        observer = new MutationObserver(restore);
+        observer.observe(document.getElementById('root'), {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          attributeFilter: ['data-page-loading'],
+        });
+        timer = setTimeout(() => {
+          if (scrollTarget.current === target) {
+            window.scrollTo({
+              left: target.x,
+              top: target.y,
+              behavior: 'instant',
+            });
+            scrollTarget.current = null;
+          }
+          html.removeAttribute('data-scroll-restoring');
+          observer.disconnect();
+        }, 10000);
+      }
+      return () => {
+        observer?.disconnect();
+        clearTimeout(timer);
+        html.removeAttribute('data-scroll-restoring');
+      };
+    }
+    const element = target && document.getElementById(target);
+    if (element)
+      element.scrollIntoView({ behavior: 'instant', block: 'start' });
     else window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     scrollTarget.current = null;
   }, [view, loginPage, detailId, navigationVersion]);
@@ -216,6 +287,7 @@ function App() {
           .then((data) => {
             if (!active) return;
             setProducts(data.products);
+            setLoadedCatalogKey(catalogQueryKey);
             setCatalogPage((current) => ({
               ...current,
               pages: data.pages,
@@ -224,7 +296,10 @@ function App() {
             }));
           })
           .catch((e) => {
-            if (active) setError(e.message);
+            if (active) {
+              setError(e.message);
+              setLoadedCatalogKey(catalogQueryKey);
+            }
           })
           .finally(() => {
             if (active) setLoading(false);
@@ -262,17 +337,17 @@ function App() {
     initializeNavigation();
     const onNavigate = (event) => {
       if (
-        event.type === 'popstate' &&
-        currentPage().view === 'catalog' &&
-        ['#proceso', '#catalogo'].includes(location.hash)
-      ) {
-        window.history.replaceState(
-          window.history.state,
-          '',
-          location.pathname + location.search,
-        );
-      }
-      scrollTarget.current = null;
+        event.type === 'hashchange' &&
+        lastHistoryUrl.current === location.href
+      )
+        return;
+      lastHistoryUrl.current = location.href;
+      scrollTarget.current =
+        event.type === 'popstate'
+          ? traverseHistory()
+          : ['#catalogo', '#proceso'].includes(location.hash)
+            ? location.hash.slice(1)
+            : null;
       setNavigationVersion((current) => current + 1);
       const isLogin = location.pathname === '/login';
       setLoginPage(isLogin);
@@ -285,9 +360,10 @@ function App() {
       if (page.view === 'catalog') {
         const saved = catalogContext();
         setCategory(saved.category);
-        setSearch('');
-        setPriceMin('');
-        setPriceMax('');
+        setSearch(saved.search);
+        setPriceMin(saved.priceMin);
+        setPriceMax(saved.priceMax);
+        setSort(saved.sort);
         setCatalogPage((current) => ({ ...current, page: saved.page }));
       }
       const emailToken =
@@ -304,7 +380,7 @@ function App() {
     };
   }, []);
   function openLogin() {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     if (['product', 'offer'].includes(view) && !loginDestination.current)
       loginDestination.current = view;
     dismissCartToast();
@@ -349,7 +425,7 @@ function App() {
       : legalSite.name + ' · Ideas que toman forma';
   }, [view, detailId]);
   function openSection(id) {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     navigatePage('catalog', '/#' + id);
     scrollTarget.current = id;
     setView('catalog');
@@ -358,7 +434,7 @@ function App() {
     setNavigationVersion((current) => current + 1);
   }
   function openInformation(key) {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     closeAuth();
     navigatePage(key, informationPages[key].path);
     setView(key);
@@ -368,7 +444,7 @@ function App() {
     setNavigationVersion((current) => current + 1);
   }
   function openCategory(nextCategory) {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     closeAuth();
     const path =
       nextCategory === 'Todos'
@@ -393,7 +469,7 @@ function App() {
     setLogoutPrompt(true);
   }
   function openDesign() {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     navigatePage('design', '/disenar');
     setView('design');
     setError('');
@@ -402,7 +478,7 @@ function App() {
     setNavigationVersion((current) => current + 1);
   }
   function openLegal(key) {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     navigatePage(key, legalPages[key].path);
     setView(key);
     setError('');
@@ -411,7 +487,7 @@ function App() {
     setNavigationVersion((current) => current + 1);
   }
   function openOffer(id, replace = false) {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     navigatePage('offer', offerPath(id), { replace });
     setDetailId(id);
     setView('offer');
@@ -440,7 +516,7 @@ function App() {
     }
   }
   function openProduct(id, replace = false) {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     navigatePage('product', '/descripcion/' + encodeURIComponent(id), {
       replace,
     });
@@ -455,7 +531,7 @@ function App() {
     if (!returnToPreviousPage()) showCatalog({ replace: true });
   }
   function openAdmin() {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     navigatePage('admin', '/');
     scrollTarget.current = null;
     setNavigationVersion((current) => current + 1);
@@ -463,7 +539,7 @@ function App() {
     setError('');
   }
   function openProfile() {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     closeAuth();
     navigatePage('profile', '/perfil');
     setView('profile');
@@ -505,7 +581,7 @@ function App() {
     }
   }
   async function history(page = 1) {
-    if (view === 'catalog') rememberCatalog(catalogPage.page, category);
+    if (view === 'catalog') saveCatalogContext();
     navigatePage('orders', '/');
     scrollTarget.current = null;
     setNavigationVersion((current) => current + 1);
@@ -759,13 +835,19 @@ function App() {
             />
           ) : view === 'design' ? (
             <Suspense
-              fallback={<p role="status">Cargando tu espacio de diseño…</p>}
+              fallback={
+                <p role="status" data-page-loading>
+                  Cargando tu espacio de diseño…
+                </p>
+              }
             >
               <DesignUpload />
             </Suspense>
           ) : view === 'offer' ? (
             !authReady || (user && !cart.ready) ? (
-              <p role="status">Cargando oferta…</p>
+              <p role="status" data-page-loading>
+                Cargando oferta…
+              </p>
             ) : (
               <OfferDetails
                 key={detailId}
@@ -805,12 +887,18 @@ function App() {
                 onConfirmed={() => setProfileToken('')}
               />
             ) : (
-              <p role="status" className="profile-page">
+              <p role="status" className="profile-page" data-page-loading>
                 Comprobando tu sesión…
               </p>
             )
           ) : view === 'admin' && user?.role === 'admin' ? (
-            <Suspense fallback={<p role="status">Cargando administración…</p>}>
+            <Suspense
+              fallback={
+                <p role="status" data-page-loading>
+                  Cargando administración…
+                </p>
+              }
+            >
               <Admin onCatalogChange={reloadCatalog} onPreview={setViewing} />
             </Suspense>
           ) : view === 'catalog' ? (
@@ -888,7 +976,13 @@ function App() {
                   Ir a MakerWorld
                 </a>
               </section>
-              <section id="catalogo" className="catalog">
+              <section
+                id="catalogo"
+                className="catalog"
+                data-page-loading={
+                  catalogQueryKey !== loadedCatalogKey || undefined
+                }
+              >
                 <div className="section-top">
                   <div>
                     <p className="eyebrow">LA COLECCIÓN</p>

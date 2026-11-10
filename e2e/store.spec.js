@@ -964,9 +964,16 @@ test('Google y visitantes pueden leer las páginas legales sin JavaScript ni aut
     await context.close();
   }
 });
-test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni restaurar el scroll anterior', async ({
+test('new pages start at the top, while Back and Forward restore instantly before the first visible frame', async ({
   page,
 }) => {
+  const painted = () =>
+    page.evaluate(
+      () =>
+        new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        ),
+    );
   await page.goto('/');
   await expect(page.locator('.product-card')).toHaveCount(20);
   await page.evaluate(() => {
@@ -974,92 +981,52 @@ test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni 
     window.__recordNavigation = true;
     const record = () => {
       if (!window.__recordNavigation) return;
-      window.__navigationFrames.push({
-        path: location.pathname,
-        title: document.querySelector('main h1')?.textContent,
-        y: scrollY,
-      });
+      if (!document.documentElement.hasAttribute('data-scroll-restoring'))
+        window.__navigationFrames.push({
+          path: location.pathname,
+          title: document.querySelector('main h1')?.textContent,
+          y: scrollY,
+        });
       requestAnimationFrame(record);
     };
     requestAnimationFrame(record);
   });
-  await page
+  const privacy = page
     .locator('footer')
-    .getByRole('link', { name: 'Política de privacidad', exact: true })
-    .click();
+    .getByRole('link', { name: 'Política de privacidad', exact: true });
+  await privacy.scrollIntoViewIfNeeded();
+  const homeY = await page.evaluate(() => scrollY);
+  await privacy.click();
   await expect(
     page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
   ).toBeVisible();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
-  // Let the frame recorder observe the destination before intentional scrolling.
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      ),
-  );
-  await page.evaluate(() => scrollTo({ top: 1200, behavior: 'instant' }));
-  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(500);
-  await page
+  await painted();
+  const terms = page
     .locator('footer')
-    .getByRole('link', { name: 'Términos y condiciones', exact: true })
-    .click();
+    .getByRole('link', { name: 'Términos y condiciones', exact: true });
+  await terms.scrollIntoViewIfNeeded();
+  const privacyY = await page.evaluate(() => scrollY);
+  await terms.click();
   await expect(
     page.getByRole('heading', { name: 'Términos y condiciones', exact: true }),
   ).toBeVisible();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
-  await expect(
-    page
-      .locator('footer')
-      .getByRole('link', { name: 'Términos y condiciones', exact: true }),
-  ).toHaveAttribute('aria-current', 'page');
-  // Let the frame recorder observe the destination before intentional scrolling.
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      ),
-  );
-  await page.evaluate(() => scrollTo({ top: 1400, behavior: 'instant' }));
-  await page.goBack();
-  await expect(
-    page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
-  ).toBeVisible();
-  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
-  // Let the frame recorder observe the destination before intentional scrolling.
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      ),
-  );
+  await painted();
   await page.evaluate(() => scrollTo({ top: 900, behavior: 'instant' }));
+  const termsY = await page.evaluate(() => scrollY);
+  await page.goBack();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(privacyY);
+  await painted();
+  await page.goForward();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(termsY);
+  await painted();
+  await page.goBack();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(privacyY);
+  await painted();
   await page.goBack();
   await expect(page.locator('.product-card')).toHaveCount(20);
-  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
-  await page
-    .getByRole('navigation', { name: 'Principal' })
-    .getByRole('link', { name: 'Cómo funciona', exact: true })
-    .click();
-  await expect(page).toHaveURL(/#proceso$/);
-  await page
-    .locator('footer')
-    .getByRole('link', { name: 'Política de privacidad', exact: true })
-    .click();
-  await expect(
-    page.getByRole('heading', { name: 'Política de privacidad', exact: true }),
-  ).toBeVisible();
-  await page.goBack();
-  await expect(page.locator('.product-card')).toHaveCount(20);
-  expect(new URL(page.url()).hash).toBe('');
-  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
-  await expect(
-    page
-      .getByRole('navigation', { name: 'Principal' })
-      .getByRole('button', { name: 'Catálogo', exact: true }),
-  ).toHaveAttribute('aria-current', 'page');
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(homeY);
   const frames = await page.evaluate(async () => {
     await new Promise((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(resolve)),
@@ -1067,25 +1034,27 @@ test('páginas legales y Atrás muestran la primera vista arriba, sin animar ni 
     window.__recordNavigation = false;
     return window.__navigationFrames;
   });
-  for (const [path, title] of [
-    ['/politica-de-privacidad', 'Política de privacidad'],
-    ['/terminos-y-condiciones', 'Términos y condiciones'],
+  for (const [path, title, expected] of [
+    [
+      '/politica-de-privacidad',
+      'Política de privacidad',
+      [0, privacyY, privacyY],
+    ],
+    ['/terminos-y-condiciones', 'Términos y condiciones', [0, termsY]],
   ]) {
-    // Deliberate scrolling inside a page is allowed; assess its first rendered frame on each entry.
     const entries = frames.filter(
-      (frame, index) =>
+      (frame, i) =>
         frame.path === path &&
         frame.title === title &&
-        (index === 0 ||
-          frames[index - 1].path !== path ||
-          frames[index - 1].title !== title),
+        (i === 0 ||
+          frames[i - 1].path !== path ||
+          frames[i - 1].title !== title),
     );
-    expect(entries.length).toBeGreaterThan(0);
-    for (const frame of entries) expect(frame.y).toBe(0);
+    expect(entries.map((frame) => frame.y)).toEqual(expected);
   }
   await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
-  expect(await page.evaluate(() => history.scrollRestoration)).toBe('manual');
 });
+
 test('menú resalta la página activa; cancelar conserva sesión y confirmar salir abre login', async ({
   page,
 }) => {

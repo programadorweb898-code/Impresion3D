@@ -43,7 +43,7 @@ export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
   }, [id]);
   if (state.id !== id || state.loading)
     return (
-      <section className="product-details">
+      <section className="product-details" data-page-loading>
         <p role="status">Cargando producto…</p>
       </section>
     );

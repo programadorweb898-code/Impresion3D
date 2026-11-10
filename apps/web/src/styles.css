@@ -3572,3 +3572,8 @@ footer .footer-legal a {
     height: 44px;
   }
 }
+
+/* Restore history positions before revealing asynchronously loaded pages. */
+html[data-scroll-restoring] #root {
+  visibility: hidden;
+}

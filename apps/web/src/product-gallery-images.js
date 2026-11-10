@@ -6,7 +6,7 @@ export function productGalleryImages(product) {
   const original = product.image?.url;
   const scene = scenes[product._id];
   const context = product.gallery?.context?.url ||
-    (scene?.source === original ? scene.url : null);
+    (scene?.source === original ? scene?.url : null);
   return [
     original && { id: 'principal', url: original, label: 'Principal' },
     context && { id: 'context', url: context, label: 'En uso' },
