@@ -182,6 +182,7 @@ export function Navbar({
                   className="profile-link"
                   href="/perfil"
                   aria-label="Mi perfil"
+                  title="Perfil"
                   aria-current={view === 'profile' ? 'page' : undefined}
                   onClick={(e) => {
                     e.preventDefault();
@@ -202,7 +203,6 @@ export function Navbar({
                     <circle cx="12" cy="8" r="3.6" />
                     <path d="M4.5 20.5c0-3.9 3.4-6.5 7.5-6.5s7.5 2.6 7.5 6.5" />
                   </svg>
-                  <span className="profile-label">Perfil</span>
                 </a>
               </>
             ) : (

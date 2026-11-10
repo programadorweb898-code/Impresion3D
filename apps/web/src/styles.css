@@ -1191,6 +1191,7 @@ header > nav {
   justify-content: flex-end;
   flex-wrap: wrap;
 }
+/* Profile pill: icon only. Label shown via native title tooltip on hover. */
 .profile-link {
   display: inline-flex;
   align-items: center;
@@ -1206,34 +1207,9 @@ header > nav {
   color: white;
   border-color: #303d30;
 }
-/* Profile pill: icon only until the pointer or the keyboard reaches it. */
-.profile-label {
-  display: inline-block;
-  max-width: 0;
-  opacity: 0;
-  overflow: hidden;
-  /* Cancels the pill's 8px gap while the label is hidden, so the icon stays centred. */
-  margin-left: -8px;
-  transition:
-    max-width 220ms ease,
-    opacity 150ms ease,
-    margin-left 220ms ease;
-}
-@media (hover: hover) {
-  .profile-link:hover .profile-label {
-    max-width: 6rem;
-    opacity: 1;
-    margin-left: 0;
-  }
-  .profile-link:hover {
-    background: var(--surface-raised);
-    border-color: #87a97a;
-  }
-}
-.profile-link:focus-visible .profile-label {
-  max-width: 6rem;
-  opacity: 1;
-  margin-left: 0;
+.profile-link:focus-visible {
+  background: var(--surface-raised);
+  border-color: #87a97a;
 }
 @media (max-width: 575.98px) {
   .profile-label {
@@ -1403,7 +1379,7 @@ header > nav {
   inset: 0 0 auto;
   width: 100%;
   max-height: 100dvh;
-  overflow-y: auto;
+  overflow-y: hidden;
   z-index: 20;
   background: #faf9f6;
   box-shadow: 0 2px 12px #272a270a;
@@ -1425,9 +1401,6 @@ header > nav {
   gap: 22px;
   min-width: 0;
   width: auto;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: thin;
   padding: 6px 3px;
   font-size: 14px;
 }
