@@ -2,6 +2,7 @@ import { canonicalCartItem } from '@impresion3d/shared';
 import { cartCatalog } from './offers.js';
 import { createHash } from 'node:crypto';
 import { Order } from './models.js';
+import { confirmShippingQuote } from './shipping.js';
 function publicOrder(doc) {
   const value = doc.toObject();
   delete value.requestHash;
@@ -93,14 +94,35 @@ export async function submitCatalogOrder(req, res) {
       message:
         'Un producto no tiene un precio válido. Consultanos antes de enviar el pedido.',
     });
+  const subtotalCents = snapshots.reduce(
+    (sum, item) => sum + item.unitPriceCents * item.quantity, 0,
+  );
+  if (!Number.isSafeInteger(subtotalCents))
+    return res.status(400).json({ message: 'El subtotal no es válido.' });
+  let shippingQuote;
+  if (delivery?.method === 'shipping') {
+    try {
+      if (products[0].currency !== 'ARS')
+        return res.status(400).json({
+          message: 'La entrega propia solo está disponible para pedidos en ARS.',
+        });
+      shippingQuote = confirmShippingQuote(
+        req.session, delivery, items, subtotalCents,
+      );
+    } catch (error) {
+      if (error.status)
+        return res.status(error.status).json({
+          code: error.code, message: error.message,
+        });
+      throw error;
+    }
+  }
   try {
     const order = await Order.create({
       userId: req.session.userId,
       items: snapshots,
-      totalCents: snapshots.reduce(
-        (sum, i) => sum + i.unitPriceCents * i.quantity,
-        0,
-      ),
+      subtotalCents,
+      totalCents: subtotalCents + (shippingQuote?.costCents || 0),
       currency: products[0].currency,
       notes,
       ...(delivery
@@ -110,7 +132,15 @@ export async function submitCatalogOrder(req, res) {
               originPostalCode: '1755',
               ...(delivery.method === 'pickup'
                 ? { costCents: 0, status: 'free_pickup' }
-                : { postalCode: delivery.postalCode, status: 'pending_quote' }),
+                : {
+                    postalCode: delivery.postalCode,
+                    streetAddress: delivery.streetAddress,
+                    city: delivery.city,
+                    costCents: shippingQuote.costCents,
+                    oneWayMeters: shippingQuote.oneWayMeters,
+                    roundTripMeters: shippingQuote.roundTripMeters,
+                    status: 'quoted',
+                  }),
             },
           }
         : {}),
