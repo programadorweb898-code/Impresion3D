@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
+const DeliveryLocation = lazy(() => import('./DeliveryLocation.jsx'));
 import { api } from './api.js';
 import { offerPath, selectionCount } from '@impresion3d/shared';
 import { formatMoney as money } from '@impresion3d/shared';
@@ -6,7 +7,12 @@ export function Cart({
   items,
   products,
   notes,
-  delivery = { method: 'pickup' },
+  delivery = {
+    method: 'shipping',
+    streetAddress: '',
+    city: '',
+    postalCode: '',
+  },
   onDelivery,
   onNotes,
   onQuantity,
@@ -24,16 +30,22 @@ export function Cart({
   const [quoting, setQuoting] = useState(false);
   const [quoteError, setQuoteError] = useState('');
   const byId = new Map(products.map((p) => [p._id, p]));
-  const fingerprint = JSON.stringify(items.map((i) => [
-    i.productId, i.quantity, byId.get(i.productId)?.priceCents,
-  ]));
-  const quoted = quote && quote.fingerprint === fingerprint &&
+  const fingerprint = JSON.stringify(
+    items.map((i) => [
+      i.productId,
+      i.quantity,
+      byId.get(i.productId)?.priceCents,
+    ]),
+  );
+  const quoted =
+    quote &&
+    quote.fingerprint === fingerprint &&
     quote.quoteId === delivery.quoteId &&
     delivery.method === 'shipping';
   function editDelivery(next) {
     setQuote(null);
     setQuoteError('');
-    onDelivery(next);
+    onDelivery({ ...next, method: 'shipping', quoteId: undefined });
   }
   async function calculateShipping() {
     setQuoting(true);
@@ -45,12 +57,15 @@ export function Cart({
         streetAddress: (delivery.streetAddress || '').trim(),
         city: (delivery.city || '').trim(),
         postalCode: (delivery.postalCode || '').trim().toUpperCase(),
+        provinceId: delivery.provinceId,
+        localityId: delivery.localityId,
       };
       const result = await api('/shipping/quote', {
         method: 'POST',
         body: JSON.stringify({
           items: items.map((i) => ({
-            ...i, expectedUnitPriceCents: byId.get(i.productId)?.priceCents,
+            ...i,
+            expectedUnitPriceCents: byId.get(i.productId)?.priceCents,
           })),
           delivery: destination,
         }),
@@ -112,7 +127,7 @@ export function Cart({
               disabled={busy || refreshing}
               onClick={onRefresh}
             >
-              Actualizar catálogo
+              Actualizar precios y disponibilidad
             </button>
             <button type="button" disabled={busy} onClick={onContinue}>
               Seguir eligiendo
@@ -164,59 +179,61 @@ export function Cart({
                       {money(product.priceCents, product.currency)}
                     </p>
                   )}
-                  {product?.offer ? (
-                    <>
-                      <p className="cart-offer-selection">
-                        {product.selectionSummary}
-                      </p>
-                      <a
-                        className="cart-offer-edit"
-                        href={offerPath(product.offer.id)}
-                        onClick={(event) => {
-                          if (
-                            onOffer &&
-                            event.button === 0 &&
-                            !event.metaKey &&
-                            !event.ctrlKey &&
-                            !event.shiftKey &&
-                            !event.altKey
-                          ) {
-                            event.preventDefault();
-                            onOffer(product.offer.id);
+                  <div className="cart-item-actions">
+                    {product?.offer ? (
+                      <>
+                        <p className="cart-offer-selection">
+                          {product.selectionSummary}
+                        </p>
+                        <a
+                          className="cart-offer-edit"
+                          href={offerPath(product.offer.id)}
+                          onClick={(event) => {
+                            if (
+                              onOffer &&
+                              event.button === 0 &&
+                              !event.metaKey &&
+                              !event.ctrlKey &&
+                              !event.shiftKey &&
+                              !event.altKey
+                            ) {
+                              event.preventDefault();
+                              onOffer(product.offer.id);
+                            }
+                          }}
+                        >
+                          Editar selección
+                        </a>
+                      </>
+                    ) : (
+                      <label>
+                        Cantidad de {name}
+                        <select
+                          aria-label={'Cantidad de ' + name}
+                          value={quantity}
+                          disabled={busy}
+                          onChange={(e) =>
+                            onQuantity(productId, Number(e.target.value))
                           }
-                        }}
-                      >
-                        Editar selección
-                      </a>
-                    </>
-                  ) : (
-                    <label>
-                      Cantidad de {name}
-                      <select
-                        aria-label={'Cantidad de ' + name}
-                        value={quantity}
-                        disabled={busy}
-                        onChange={(e) =>
-                          onQuantity(productId, Number(e.target.value))
-                        }
-                      >
-                        {Array.from({ length: 20 }, (_, n) => (
-                          <option key={n + 1} value={n + 1}>
-                            {n + 1}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
-                  <button
-                    type="button"
-                    disabled={busy}
-                    className="remove-item"
-                    aria-label={'Quitar ' + name}
-                    onClick={() => onRemove(productId)}
-                  >
-                    Quitar
-                  </button>
+                        >
+                          {Array.from({ length: 20 }, (_, n) => (
+                            <option key={n + 1} value={n + 1}>
+                              {n + 1}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+                    <button
+                      type="button"
+                      disabled={busy}
+                      className="remove-item"
+                      aria-label={'Quitar ' + name}
+                      onClick={() => onRemove(productId)}
+                    >
+                      Quitar
+                    </button>
+                  </div>
                 </div>
                 {product && (
                   <strong className="cart-subtotal">
@@ -234,153 +251,123 @@ export function Cart({
               </strong>
             </div>
             <fieldset className="delivery-options" disabled={busy || quoting}>
-              <legend>¿Cómo querés recibir tu pedido?</legend>
-              <label className="delivery-choice">
+              <legend>Entrega a domicilio</legend>
+              <p className="small">
+                Ingresá el domicilio para conocer el costo antes de confirmar.
+              </p>
+              <div className="delivery-details">
+                <label htmlFor="delivery-street-address">Calle y altura</label>
                 <input
-                  type="radio"
-                  name="delivery-method"
-                  value="pickup"
-                  checked={delivery.method === 'pickup'}
-                  onChange={() => editDelivery({ method: 'pickup' })}
-                />
-                <span>
-                  <strong>Retiro coordinado — Gratis</strong>
-                  <small>
-                    CP 1755 · Dirección a coordinar al confirmar el pedido.
-                  </small>
-                </span>
-              </label>
-              <label className="delivery-choice">
-                <input
-                  type="radio"
-                  name="delivery-method"
-                  value="shipping"
-                  checked={delivery.method === 'shipping'}
-                  onChange={() =>
-                    editDelivery({ method: 'shipping', streetAddress: '', city: '', postalCode: '' })
+                  id="delivery-street-address"
+                  type="text"
+                  autoComplete="street-address"
+                  required
+                  minLength={6}
+                  maxLength={120}
+                  placeholder="Ej.: San Martín 123"
+                  value={delivery.streetAddress || ''}
+                  onChange={(event) =>
+                    editDelivery({
+                      ...delivery,
+                      streetAddress: event.target.value,
+                    })
                   }
                 />
-                <span>
-                  <strong>Entrega a domicilio en auto</strong>
-                  <small>
-                    Ingresá el domicilio para conocer el costo antes de confirmar.
-                  </small>
-                </span>
-              </label>
-              {delivery.method === 'shipping' ? (
-                <div className="delivery-details">
-                  <label htmlFor="delivery-street-address">
-                    Calle y altura
-                  </label>
-                  <input
-                    id="delivery-street-address"
-                    type="text"
-                    autoComplete="street-address"
-                    required
-                    minLength={6}
-                    maxLength={120}
-                    placeholder="Ej.: San Martín 123"
-                    value={delivery.streetAddress || ''}
-                    onChange={(event) => editDelivery({
-                      method: 'shipping',
-                      streetAddress: event.target.value,
-                      city: delivery.city || '',
-                      postalCode: delivery.postalCode || '',
-                    })}
+                <Suspense fallback={<p role="status">Cargando localidades…</p>}>
+                  <DeliveryLocation
+                    delivery={delivery}
+                    onChange={editDelivery}
                   />
-                  <label htmlFor="delivery-city">Localidad</label>
-                  <input
-                    id="delivery-city"
-                    type="text"
-                    autoComplete="address-level2"
-                    required
-                    minLength={2}
-                    maxLength={80}
-                    placeholder="Ej.: Morón"
-                    value={delivery.city || ''}
-                    onChange={(event) => editDelivery({
-                      method: 'shipping',
-                      streetAddress: delivery.streetAddress || '',
-                      city: event.target.value,
-                      postalCode: delivery.postalCode || '',
-                    })}
-                  />
-                  <label htmlFor="delivery-postal-code">
-                    Código postal de destino
-                  </label>
-                  <input
-                    id="delivery-postal-code"
-                    type="text"
-                    autoComplete="postal-code"
-                    maxLength={8}
-                    required
-                    pattern="([0-9]{4}|[A-Za-z][0-9]{4}[A-Za-z]{3})"
-                    title="Ingresá 4 números o un CPA completo, como B1755ABC."
-                    placeholder="Ej.: 1755 o B1755ABC"
-                    value={delivery.postalCode || ''}
-                    onChange={(event) =>
-                      editDelivery({
-                        method: 'shipping',
-                        streetAddress: delivery.streetAddress || '',
-                        city: delivery.city || '',
-                        postalCode: event.target.value.toUpperCase(),
-                      })
-                    }
-                    aria-describedby="delivery-help"
-                  />
-                  <p id="delivery-help" className="small">
-                    Entregas propias hasta 30 km de ida desde Rafael Castillo.
-                    Envío gratis desde $120.000 en productos.
-                  </p>
-                  <button
-                    type="button"
-                    className="outline"
-                    disabled={busy || quoting || refreshing || !!catalogError ||
-                      unavailable || mixed}
-                    onClick={calculateShipping}
-                  >
-                    {quoting ? 'Calculando distancia…' : 'Calcular envío'}
-                  </button>
-                  {quoteError && <p role="alert" className="error">{quoteError}</p>}
-                  {quoted && (
-                    <p role="status" className="small">
-                      Distancia de ida: {quote.oneWayKm} km.
-                      Recorrido ida y vuelta: {quote.roundTripKm} km.
-                      Envío: {quote.costCents === 0
-                        ? 'GRATIS'
-                        : money(quote.costCents, currency)}.
-                    </p>
-                  )}
-                  {!quoted && !quoteError && (
-                    <p className="small">Calculá el envío para confirmar el total.</p>
-                  )}
-                </div>
-              ) : (
-                <p className="small">
-                  Retirá cuando te avisemos que tu pedido está listo. El retiro
-                  no tiene cargo.
+                </Suspense>
+                <label htmlFor="delivery-postal-code">
+                  Código postal de destino
+                </label>
+                <input
+                  id="delivery-postal-code"
+                  type="text"
+                  autoComplete="postal-code"
+                  maxLength={8}
+                  required
+                  pattern="([0-9]{4}|[A-Za-z][0-9]{4}[A-Za-z]{3})"
+                  title="Ingresá 4 números o un CPA completo, como B1755ABC."
+                  placeholder="Ej.: 1755 o B1755ABC"
+                  value={delivery.postalCode || ''}
+                  onChange={(event) =>
+                    editDelivery({
+                      ...delivery,
+                      postalCode: event.target.value.toUpperCase(),
+                    })
+                  }
+                  aria-describedby="delivery-help"
+                />
+                <p id="delivery-help" className="small">
+                  Entregas propias hasta 30 km de ida desde Rafael Castillo.
+                  Envío gratis desde $120.000 en productos.
                 </p>
-              )}
+                <button
+                  type="button"
+                  className="outline"
+                  disabled={
+                    busy ||
+                    quoting ||
+                    refreshing ||
+                    !!catalogError ||
+                    unavailable ||
+                    mixed ||
+                    !delivery.localityId ||
+                    !delivery.provinceId ||
+                    !delivery.streetAddress?.trim() ||
+                    !delivery.postalCode?.trim()
+                  }
+                  onClick={calculateShipping}
+                >
+                  {quoting ? 'Calculando distancia…' : 'Calcular envío'}
+                </button>
+                {quoteError && (
+                  <p role="alert" className="error">
+                    {quoteError}
+                  </p>
+                )}
+                {quoted && (
+                  <p role="status" className="small">
+                    Distancia de ida: {quote.oneWayKm} km. Recorrido ida y
+                    vuelta: {quote.roundTripKm} km. Envío:{' '}
+                    {quote.costCents === 0
+                      ? 'GRATIS'
+                      : money(quote.costCents, currency)}
+                    .
+                  </p>
+                )}
+                {!quoted && !quoteError && (
+                  <p className="small">
+                    Calculá el envío para confirmar el total.
+                  </p>
+                )}
+              </div>
             </fieldset>
             <div className="delivery-total" aria-live="polite">
               <span>Envío</span>
               <strong>
-                {delivery.method === 'pickup' ? 'Gratis' :
-                  quoted ? (quote.costCents === 0 ? 'Gratis' :
-                    money(quote.costCents, currency)) : 'A calcular'}
+                {quoted
+                  ? quote.costCents === 0
+                    ? 'Gratis'
+                    : money(quote.costCents, currency)
+                  : 'A calcular'}
               </strong>
             </div>
             <div className="delivery-total" aria-live="polite">
               <strong>Total a pagar</strong>
               <strong>
-                {!confirmed || mixed || (delivery.method === 'shipping' && !quoted)
+                {!confirmed ||
+                mixed ||
+                !quoted
                   ? '—'
                   : money(total + (quoted ? quote.costCents : 0), currency)}
               </strong>
             </div>
             <p className="small">
-              Confirmamos precios y disponibilidad al enviar.
-              Coordinamos el pago y la entrega antes de confirmar el pedido.
+              Confirmamos precios y disponibilidad al enviar. Coordinamos el
+              pago y la entrega antes de confirmar el pedido.
             </p>
             <label>
               Comentarios para tu pedido
@@ -395,8 +382,13 @@ export function Cart({
             <button
               className="primary"
               disabled={
-                busy || quoting || refreshing || catalogError || unavailable || mixed ||
-                (delivery.method === 'shipping' && !quoted)
+                busy ||
+                quoting ||
+                refreshing ||
+                catalogError ||
+                unavailable ||
+                mixed ||
+                !quoted
               }
             >
               {busy ? 'Enviando pedido…' : 'Enviar pedido'}

@@ -3626,3 +3626,29 @@ html[data-scroll-restoring] #root {
   color: #161616;
   background: #fff;
 }
+
+/* Actions stay separate even when a product name or quantity wraps. */
+.cart-item-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+}
+.cart-item-actions > label {
+  margin: 0;
+}
+.cart-item-actions .remove-item {
+  margin: 0;
+  padding: 10px 12px;
+  flex-shrink: 0;
+}
+.cart-item-actions .cart-offer-selection {
+  flex-basis: 100%;
+  margin: 0;
+}
+.delivery-details select {
+  width: 100%;
+  max-width: 100%;
+  color: #161616;
+  background: #fff;
+}

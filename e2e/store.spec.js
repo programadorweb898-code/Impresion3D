@@ -1,3 +1,4 @@
+import { quoteDelivery } from './shipping-helper.js';
 import { test, expect } from '@playwright/test';
 import { createHash } from 'node:crypto';
 test.beforeEach(async ({ page }, testInfo) => {
@@ -72,6 +73,7 @@ test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio
   await page
     .getByRole('button', { name: 'Abrir carrito, 1 productos' })
     .click();
+  await quoteDelivery(page);
   await page
     .getByRole('button', { name: 'Enviar pedido', exact: true })
     .click();
@@ -343,6 +345,7 @@ test('pedido con respuesta perdida conserva clave y comentarios al recargar; his
     await route.fetch();
     await route.abort('failed');
   });
+  await quoteDelivery(page);
   await page
     .getByRole('button', { name: 'Enviar pedido', exact: true })
     .click();
@@ -360,6 +363,7 @@ test('pedido con respuesta perdida conserva clave y comentarios al recargar; his
   const sent = page.waitForRequest(
     (r) => r.url().endsWith('/api/orders') && r.method() === 'POST',
   );
+  await quoteDelivery(page);
   await page
     .getByRole('button', { name: 'Enviar pedido', exact: true })
     .click();
@@ -405,6 +409,7 @@ test('carrito combina páginas y recupera disponibilidad al volver a iniciar ses
     .getByRole('button', { name: 'Abrir carrito, 2 productos' })
     .click();
   await expect(page.locator('.cart-item')).toHaveCount(2);
+  await quoteDelivery(page);
   await expect(
     page.getByRole('button', { name: 'Enviar pedido', exact: true }),
   ).toBeEnabled();
@@ -576,6 +581,7 @@ test('carrito espera disponibilidad sin alertas falsas al abrirlo y al agregar o
       drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
     ).toBeDisabled();
     release();
+    await quoteDelivery(page);
     await expect(
       drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
     ).toBeEnabled();
@@ -629,13 +635,17 @@ test('fallo de catálogo informa conexión sin marcar piezas como no disponibles
     await route.continue();
   });
   await drawer
-    .getByRole('button', { name: 'Actualizar catálogo', exact: true })
+    .getByRole('button', {
+      name: 'Actualizar precios y disponibilidad',
+      exact: true,
+    })
     .click();
   await expect(drawer.getByRole('status')).toContainText(
     'Actualizando precios y disponibilidad',
   );
   await expect(drawer.getByRole('alert')).toHaveCount(0);
   release();
+  await quoteDelivery(page);
   await expect(
     drawer.getByRole('button', { name: 'Enviar pedido', exact: true }),
   ).toBeEnabled();

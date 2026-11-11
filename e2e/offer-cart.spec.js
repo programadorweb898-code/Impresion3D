@@ -1,3 +1,4 @@
+import { quoteDelivery } from './shipping-helper.js';
 import { createHash } from 'node:crypto';
 import { test, expect } from '@playwright/test';
 test.beforeEach(async ({ request, page }, testInfo) => {
@@ -93,11 +94,13 @@ test('combo elige cuatro adornos, bloquea menos o más, guarda carrito y envía 
   const response = page.waitForResponse(
     (r) => r.url().endsWith('/api/orders') && r.request().method() === 'POST',
   );
+  await quoteDelivery(page);
   await page
     .getByRole('button', { name: 'Enviar pedido', exact: true })
     .click();
   const order = await (await response).json();
-  expect(order.totalCents).toBe(3500000);
+  expect(order.subtotalCents).toBe(3500000);
+  expect(order.totalCents).toBe(4340000);
   expect(order.items[0].offer.selections).toHaveLength(4);
   await expect(
     page.getByRole('heading', { name: 'Mis pedidos', exact: true }),

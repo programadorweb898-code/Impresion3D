@@ -1,11 +1,11 @@
 # Entregas propias — SomosMundo3D
 
-El carrito admite retiro coordinado sin costo y entrega por auto propio a domicilio.
+El carrito ofrece únicamente entrega por auto propio a domicilio. Los pedidos históricos conservan su modalidad original.
 **Zipnova no está integrado ni es necesario para este servicio.**
 
 ## Cotización y condiciones
 
-El comprador ingresa calle y altura, localidad y CP de destino. Al elegir
+El comprador ingresa calle y altura y CP de destino, y selecciona provincia y localidad del listado oficial de Georef. El catálogo local contiene 4.037 localidades de las 24 jurisdicciones; no depende de consultas externas mientras el cliente busca. La selección no modifica el límite de cobertura de 30 km. Al elegir
 «Calcular envío», el backend llama a Google Maps Routes API para recorrer en auto
 **origen → domicilio → origen**, con parada intermedia en el domicilio. Se cobran
 $400 ARS por km de recorrido total, con mínimo $2.000 ARS. En compras de productos
@@ -44,3 +44,14 @@ privada de origen. No se factura ni cobra online: el total sirve para coordinar 
 > Nota: La disponibilidad del camino y la precisión de una dirección dependen
 > de Google Maps. La interfaz requiere calle con altura y CP; el resultado debe
 > confirmarse antes del reparto.
+
+## Listado de localidades
+
+Fuente: [Servicio oficial Georef](https://www.argentina.gob.ar/georef).
+Copia consultada el 10/11/2026 mediante `localidades?max=5000&campos=id,nombre,provincia,departamento&orden=nombre`.
+Se conserva en `packages/shared/localities.json`; la interfaz lo carga al abrir el carrito.
+Cada opción incluye partido o departamento para distinguir nombres repetidos.
+El servidor comprueba los IDs y su correspondencia con la provincia y el nombre;
+la cotización se invalida al cambiar esa selección. Provincia y localidad se
+conservan en el pedido junto al domicilio. No se completan códigos postales a partir
+de la localidad porque una localidad puede tener varios.
