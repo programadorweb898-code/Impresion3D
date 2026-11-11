@@ -567,7 +567,7 @@ test('carrito espera disponibilidad sin alertas falsas al abrirlo y al agregar o
       .getByRole('button', { name: `Abrir carrito, ${i + 1} productos` })
       .click();
     const drawer = page.getByRole('dialog');
-    await expect(drawer.getByRole('status')).toContainText(
+    await expect(drawer.getByRole('status').filter({ hasText: 'Actualizando precios y disponibilidad' })).toContainText(
       'Actualizando precios y disponibilidad',
     );
     await expect(drawer.getByRole('alert')).toHaveCount(0);
@@ -640,7 +640,7 @@ test('fallo de catálogo informa conexión sin marcar piezas como no disponibles
       exact: true,
     })
     .click();
-  await expect(drawer.getByRole('status')).toContainText(
+  await expect(drawer.getByRole('status').filter({ hasText: 'Actualizando precios y disponibilidad' })).toContainText(
     'Actualizando precios y disponibilidad',
   );
   await expect(drawer.getByRole('alert')).toHaveCount(0);
