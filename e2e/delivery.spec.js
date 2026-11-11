@@ -29,6 +29,9 @@ test('el carrito cotiza entrega propia y guarda el total con envío', async ({
     cart.getByRole('button', { name: 'Enviar pedido', exact: true }),
   ).toBeDisabled();
   await quoteDelivery(page);
+  await expect(
+    cart.getByRole('option', { name: 'Merlo — Merlo', exact: true }),
+  ).toHaveCount(1);
   await expect(cart).toContainText('Distancia de ida: 10 km');
   await expect(cart).toContainText('Recorrido ida y vuelta: 21 km');
   await expect(cart.locator('.delivery-total').last()).not.toContainText('—');

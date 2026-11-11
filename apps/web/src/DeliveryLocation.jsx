@@ -11,7 +11,15 @@ const searchable = (value) =>
     .toLocaleLowerCase('es');
 export default function DeliveryLocation({ delivery, onChange }) {
   const [search, setSearch] = useState('');
-  const localities = provinceLocalities(delivery.provinceId);
+  // Georef includes both census localities and components with identical labels.
+  // Keep one option per name/department, preserving an already selected ID.
+  const byLabel = new Map();
+  for (const item of provinceLocalities(delivery.provinceId)) {
+    const key = JSON.stringify([item.name, item.department]);
+    if (!byLabel.has(key) || item.id === delivery.localityId)
+      byLabel.set(key, item);
+  }
+  const localities = [...byLabel.values()];
   const filtered = localities.filter((item) =>
     searchable(item.name + ' ' + item.department).includes(
       searchable(search.trim()),
