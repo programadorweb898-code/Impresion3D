@@ -3577,3 +3577,52 @@ footer .footer-legal a {
 html[data-scroll-restoring] #root {
   visibility: hidden;
 }
+
+.delivery-options {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  border: 1px solid var(--line, #ccc);
+  border-radius: 12px;
+}
+.delivery-options legend {
+  padding: 0 0.4rem;
+  font-weight: 700;
+}
+.cart-summary .delivery-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin: 0.8rem 0;
+  cursor: pointer;
+}
+.delivery-choice input[type='radio'] {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  margin: 0.15rem 0 0;
+  accent-color: #2546db;
+}
+.delivery-choice small {
+  display: block;
+  margin-top: 0.25rem;
+  line-height: 1.5;
+}
+.delivery-details {
+  margin-top: 1rem;
+}
+.delivery-total {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--line, #ccc);
+}
+.order-delivery {
+  margin: 0.75rem 0;
+}
+
+.delivery-details input {
+  color: #161616;
+  background: #fff;
+}

@@ -42,7 +42,7 @@ export const commonQuestions = [
   {
     question: '¿Cómo se coordinan el pago y la entrega?',
     answer:
-      'Coordinamos personalmente el medio de pago y la modalidad de retiro o envío antes de confirmar el pedido. El sitio no cobra pagos online. Si corresponde un costo de envío, te lo informamos antes de confirmar.',
+      'Podés elegir retiro coordinado gratuito en Rafael Castillo (CP 1755) o entrega propia en auto hasta 30 km de ida. Para cotizar la entrega ingresá calle y altura, localidad y CP. El carrito suma productos más envío antes de enviar el pedido. El envío es gratis desde $120.000 en productos. El sitio no cobra pagos online.',
   },
   {
     question: '¿Qué pasa si el modelo no tiene colores definidos?',

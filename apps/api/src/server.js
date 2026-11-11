@@ -4,6 +4,7 @@ import {
   DesignRequest,
   SlicerWorker,
   SlicingJob,
+  ShippingUsage,
 } from './models.js';
 import mongoose from 'mongoose';
 import { fileURLToPath } from 'node:url';
@@ -64,6 +65,7 @@ await Promise.all([
   DesignRequest.init(),
   SlicerWorker.init(),
   SlicingJob.init(),
+  ShippingUsage.init(),
 ]);
 console.info(JSON.stringify({ event: 'database_indexes_ready' }));
 await migrateCatalogCopy();

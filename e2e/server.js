@@ -20,6 +20,11 @@ const user = await User.create({
   passwordHash: await argon2.hash('NavegadorPrueba1!'),
 });
 await User.create({
+  name: 'Cliente entrega aislado',
+  email: 'entrega-browser@example.com',
+  passwordHash: await argon2.hash('NavegadorPrueba1!'),
+});
+await User.create({
   name: 'Admin navegador',
   email: 'admin-browser@example.com',
   role: 'admin',
@@ -146,6 +151,13 @@ host.use(
     // This server binds localhost and is never deployed.
     trustProxy: true,
     staticDirectory: resolve('apps/web/dist'),
+    shippingService: {
+      quote: async (_destination, subtotalCents) => ({
+        oneWayMeters: 10000,
+        roundTripMeters: 21000,
+        costCents: subtotalCents >= 12000000 ? 0 : 840000,
+      }),
+    },
     accountServices: {
       providers: {
         google: {

@@ -19,11 +19,13 @@ import session from 'express-session';
 import { rateLimit } from 'express-rate-limit';
 import argon2 from 'argon2';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import { loginSchema, registerSchema, orderSchema } from '@impresion3d/shared';
+import { loginSchema, registerSchema, orderSchema, shippingQuoteSchema } from '@impresion3d/shared';
 import { User, Product } from './models.js';
 import { listProducts, listOrders } from './list-routes.js';
 import { createAdminRouter } from './admin.js';
 import { submitCatalogOrder } from './checkout.js';
+import { cartCatalog } from './offers.js';
+import { createShippingService, storeShippingQuote, reuseShippingQuote } from './shipping.js';
 import { sendVerification } from './email-verification.js';
 import {
   createAccountAccess,
@@ -41,6 +43,7 @@ export function createApp({
   accountServices = createAccountServices(),
   notifyOrder,
   buildCommit,
+  shippingService = createShippingService(),
 }) {
   const app = express();
   app.use(observePublicDocuments());
@@ -304,6 +307,60 @@ export function createApp({
     }),
   );
   app.use('/api/offers', offersRouter(authenticated));
+  const shippingQuoteLimit = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 15,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { message: 'Demasiadas cotizaciones seguidas. Volvé a intentar en unos minutos.' },
+  });
+  app.post(
+    '/api/shipping/quote',
+    authenticated,
+    shippingQuoteLimit,
+    validate(shippingQuoteSchema),
+    async (req, res) => {
+      const { items, delivery } = req.body;
+      let products;
+      try {
+        products = await cartCatalog(items);
+      } catch (error) {
+        if (!error.offerError) throw error;
+        return res.status(error.status).json({
+          code: 'PRODUCT_UNAVAILABLE', message: error.message,
+        });
+      }
+      const byId = new Map(products.map((p) => [String(p._id), p]));
+      if (items.some((item) => !byId.has(item.productId)))
+        return res.status(404).json({
+          code: 'PRODUCT_UNAVAILABLE', message: 'Actualizá el carrito antes de cotizar el envío.',
+        });
+      if (new Set(products.map((p) => p.currency)).size !== 1 ||
+          products[0].currency !== 'ARS')
+        return res.status(400).json({ message: 'Las entregas propias se cotizan en pesos argentinos.' });
+      if (items.some((i) =>
+        i.expectedUnitPriceCents !== undefined &&
+        i.expectedUnitPriceCents !== byId.get(i.productId).priceCents))
+        return res.status(409).json({
+          code: 'PRICE_CHANGED', message: 'Cambió un precio. Actualizá el carrito.',
+        });
+      const subtotalCents = items.reduce(
+        (sum, i) => sum + byId.get(i.productId).priceCents * i.quantity, 0,
+      );
+      if (!Number.isSafeInteger(subtotalCents))
+        return res.status(400).json({ message: 'No pudimos calcular el subtotal.' });
+      const cached = reuseShippingQuote(req.session, delivery, items, subtotalCents);
+      if (cached) return res.json(cached);
+      try {
+        const calculated = await shippingService.quote(delivery, subtotalCents);
+        res.json(storeShippingQuote(req.session, delivery, items, subtotalCents, calculated));
+      } catch (error) {
+        if (error.status)
+          return res.status(error.status).json({ code: error.code, message: error.message });
+        throw error;
+      }
+    },
+  );
   app.get('/api/orders', authenticated, listOrders);
   app.post(
     '/api/orders',

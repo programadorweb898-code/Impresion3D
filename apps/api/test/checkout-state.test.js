@@ -48,3 +48,48 @@ test('recarga recupera clave, comentarios y precios originales; separa usuarios 
     first.requestId,
   );
 });
+
+test('changing delivery or destination creates a new checkout attempt while normalized replays keep their key', () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.get(key),
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+  const user = 'a'.repeat(24),
+    base = { items: [{ productId: 'c'.repeat(24), quantity: 1 }], notes: '' };
+  const pickup = prepareCheckout(
+    user,
+    { ...base, delivery: { method: 'pickup' } },
+    storage,
+  );
+  const shipping = prepareCheckout(
+    user,
+    { ...base, delivery: { method: 'shipping', streetAddress: 'Calle 123', city: 'Morón', postalCode: 'b1755abc', quoteId: 'a0c01234-3aae-42fc-991c-37e34ad84012' } },
+    storage,
+  );
+  assert.notEqual(pickup.requestId, shipping.requestId);
+  assert.equal(
+    prepareCheckout(
+      user,
+      { ...base, delivery: { method: 'shipping', streetAddress: 'Calle 123', city: 'Morón', postalCode: 'B1755ABC', quoteId: 'a0c01234-3aae-42fc-991c-37e34ad84012' } },
+      storage,
+    ).requestId,
+    shipping.requestId,
+  );
+  assert.deepEqual(pendingCheckout(user, storage).delivery, {
+    method: 'shipping',
+    streetAddress: 'Calle 123',
+    city: 'Morón',
+    postalCode: 'B1755ABC',
+    quoteId: 'a0c01234-3aae-42fc-991c-37e34ad84012',
+  });
+  assert.notEqual(
+    prepareCheckout(
+      user,
+      { ...base, delivery: { method: 'shipping', streetAddress: 'Calle 123', city: 'Morón', postalCode: '1000', quoteId: 'a0c01234-3aae-42fc-991c-37e34ad84012' } },
+      storage,
+    ).requestId,
+    shipping.requestId,
+  );
+});

@@ -56,9 +56,33 @@ const checkoutItemsSchema = z
   .min(1, 'El carrito está vacío.')
   .max(20)
   .refine(distinctItems, 'No repitas el mismo producto en el carrito.');
+export const postalCodeSchema = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(
+    /^(?:[0-9]{4}|[A-Z][0-9]{4}[A-Z]{3})$/,
+    'Usá un código postal de 4 números o un CPA completo, como B1755ABC.',
+  );
+export const shippingAddressSchema = z.strictObject({
+  method: z.literal('shipping'),
+  streetAddress: z.string().trim().min(6).max(120)
+    .regex(/[0-9]/, 'Ingresá calle y altura del domicilio.'),
+  city: z.string().trim().min(2).max(80),
+  postalCode: postalCodeSchema,
+});
+export const shippingQuoteSchema = z.strictObject({
+  items: checkoutItemsSchema,
+  delivery: shippingAddressSchema,
+});
+export const deliverySchema = z.discriminatedUnion('method', [
+  z.strictObject({ method: z.literal('pickup') }),
+  shippingAddressSchema.extend({ quoteId: z.uuid() }),
+]);
 export const orderSchema = z.union([
   z.object({
     items: checkoutItemsSchema,
+    delivery: deliverySchema.optional(),
     notes: notesSchema,
     requestId: z.uuid().optional(),
   }),

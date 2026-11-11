@@ -1,3 +1,4 @@
+import { OrderDelivery } from './OrderDelivery.jsx';
 import { WorkerConnections } from './SlicingControls.jsx';
 import DesignQuote from './DesignQuote.jsx';
 import DesignRequests from './DesignRequests.jsx';
@@ -52,7 +53,11 @@ function OrderEditor({ order, onSave, busy }) {
         </p>
       ))}
       {order.notes && <p>Solicitud: {order.notes}</p>}
-      <p>Total: {formatMoney(order.totalCents, order.currency)}</p>
+      <OrderDelivery delivery={order.delivery} />
+      <p>
+        {order.delivery?.status === 'pending_quote' ? 'Productos (sin envío): ' : 'Total: '}
+        {formatMoney(order.totalCents, order.currency)}
+      </p>
       <ol>
         {order.history.map((h, i) => (
           <li key={i}>
