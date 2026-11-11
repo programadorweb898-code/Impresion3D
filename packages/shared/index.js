@@ -66,9 +66,21 @@ export const postalCodeSchema = z
   );
 export const shippingAddressSchema = z.strictObject({
   method: z.literal('shipping'),
-  streetAddress: z.string().trim().min(6).max(120)
+  streetAddress: z
+    .string()
+    .trim()
+    .min(6)
+    .max(120)
     .regex(/[0-9]/, 'Ingresá calle y altura del domicilio.'),
-  city: z.string().trim().min(2).max(80),
+  city: z.string().trim().min(2).max(120),
+  provinceId: z
+    .string()
+    .regex(/^[0-9]{2}$/)
+    .optional(),
+  localityId: z
+    .string()
+    .regex(/^[0-9]{8,10}$/)
+    .optional(),
   postalCode: postalCodeSchema,
 });
 export const shippingQuoteSchema = z.strictObject({

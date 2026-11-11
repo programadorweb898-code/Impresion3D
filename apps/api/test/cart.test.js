@@ -236,25 +236,36 @@ test('el envío se cotiza antes de confirmar y nunca acepta precios del navegado
   });
   const base = { items: [{ productId: String(product._id), quantity: 1 }] };
   const pickup = await checkout(alice, {
-    ...base, delivery: { method: 'pickup' }, requestId: randomUUID(),
+    ...base,
+    delivery: { method: 'pickup' },
+    requestId: randomUUID(),
   });
-  assert.equal(pickup.status, 201);
-  assert.equal(pickup.body.delivery.costCents, 0);
-  assert.equal(pickup.body.delivery.status, 'free_pickup');
-  assert.equal(pickup.body.totalCents, 10000);
+  assert.equal(pickup.status, 400);
+  assert.equal(pickup.body.code, 'DELIVERY_METHOD_UNAVAILABLE');
 
   const delivery = {
     method: 'shipping',
     streetAddress: 'Av. Rivadavia 1234',
     city: 'Morón',
+    provinceId: '06',
+    localityId: '0656801004',
     postalCode: '1708',
   };
   const unquoted = await checkout(alice, {
-    ...base, delivery, requestId: randomUUID(),
+    ...base,
+    delivery,
+    requestId: randomUUID(),
   });
   assert.equal(unquoted.status, 400); // Falta quoteId: validación Zod.
   const token = await csrf(alice);
-  const quoted = await alice.post('/api/shipping/quote')
+  const invalidLocality = await alice
+    .post('/api/shipping/quote')
+    .set('Origin', origin)
+    .set('x-csrf-token', token)
+    .send({ ...base, delivery: { ...delivery, provinceId: '02' } });
+  assert.equal(invalidLocality.status, 400);
+  const quoted = await alice
+    .post('/api/shipping/quote')
     .set('Origin', origin)
     .set('x-csrf-token', token)
     .send({ ...base, delivery });
@@ -263,34 +274,61 @@ test('el envío se cotiza antes de confirmar y nunca acepta precios del navegado
   assert.equal(quoted.body.totalCents, 850000);
 
   const body = {
-    ...base, delivery: { ...delivery, quoteId: quoted.body.quoteId },
+    ...base,
+    delivery: { ...delivery, quoteId: quoted.body.quoteId },
     requestId: randomUUID(),
   };
   const shipping = await checkout(alice, body);
   assert.equal(shipping.status, 201, JSON.stringify(shipping.body));
   assert.equal(shipping.body.delivery.status, 'quoted');
+  assert.equal(shipping.body.delivery.province, 'Buenos Aires');
+  assert.equal(shipping.body.delivery.localityId, '0656801004');
   assert.equal(shipping.body.delivery.costCents, 840000);
   assert.equal(shipping.body.delivery.oneWayMeters, 10000);
   assert.equal(shipping.body.subtotalCents, 10000);
   assert.equal(shipping.body.totalCents, 850000);
   assert.equal((await checkout(alice, body)).body._id, shipping.body._id);
 
-  assert.equal((await checkout(alice, {
-    ...base, delivery: { ...body.delivery, streetAddress: 'Otro domicilio 555' },
-    requestId: randomUUID(),
-  })).body.code, 'DELIVERY_QUOTE_EXPIRED');
-  assert.equal((await checkout(bob, {
-    ...base, delivery: body.delivery, requestId: randomUUID(),
-  })).body.code, 'DELIVERY_QUOTE_EXPIRED');
+  assert.equal(
+    (
+      await checkout(alice, {
+        ...base,
+        delivery: { ...body.delivery, streetAddress: 'Otro domicilio 555' },
+        requestId: randomUUID(),
+      })
+    ).body.code,
+    'DELIVERY_QUOTE_EXPIRED',
+  );
+  assert.equal(
+    (
+      await checkout(bob, {
+        ...base,
+        delivery: body.delivery,
+        requestId: randomUUID(),
+      })
+    ).body.code,
+    'DELIVERY_QUOTE_EXPIRED',
+  );
   for (const invalid of [
     { ...body.delivery, costCents: 0 },
     { ...body.delivery, postalCode: 'abc' },
     { ...body.delivery, streetAddress: 'Sin número' },
   ]) {
-    assert.equal((await checkout(alice, {
-      ...base, delivery: invalid, requestId: randomUUID(),
-    })).status, 400);
+    assert.equal(
+      (
+        await checkout(alice, {
+          ...base,
+          delivery: invalid,
+          requestId: randomUUID(),
+        })
+      ).status,
+      400,
+    );
   }
-  assert.equal((await alice.get('/api/orders')).body
-    .find((o) => o._id === shipping.body._id).totalCents, 850000);
+  assert.equal(
+    (await alice.get('/api/orders')).body.find(
+      (o) => o._id === shipping.body._id,
+    ).totalCents,
+    850000,
+  );
 });

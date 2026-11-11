@@ -125,7 +125,12 @@ function App() {
     [sort, setSort] = useState(() => catalogContext().sort),
     [loadedCatalogKey, setLoadedCatalogKey] = useState(null),
     [cartNotes, setCartNotes] = useState(''),
-    [cartDelivery, setCartDelivery] = useState({ method: 'pickup' }),
+    [cartDelivery, setCartDelivery] = useState({
+      method: 'shipping',
+      streetAddress: '',
+      city: '',
+      postalCode: '',
+    }),
     [viewing, setViewing] = useState(null),
     [navigationVersion, setNavigationVersion] = useState(0);
   const cart = useCart(user?.id);
@@ -136,13 +141,22 @@ function App() {
   const dismissCartToast = useCallback(() => setCartToast(null), []);
   useEffect(() => {
     if (!user?.id) {
-      setCartDelivery({ method: 'pickup' });
+      setCartDelivery({
+        method: 'shipping',
+        streetAddress: '',
+        city: '',
+        postalCode: '',
+      });
       return;
     }
     try {
       const pending = pendingCheckout(user.id);
       setCartNotes(pending?.notes || '');
-      setCartDelivery(pending?.delivery || { method: 'pickup' });
+      setCartDelivery(
+        pending?.delivery?.method === 'shipping'
+          ? pending.delivery
+          : { method: 'shipping', streetAddress: '', city: '', postalCode: '' },
+      );
     } catch {
       setError(
         'No pudimos recuperar el envío pendiente. Revisá Mis pedidos antes de enviar.',

@@ -1,3 +1,8 @@
+import {
+  localityProvinces,
+  provinceLocalities,
+  validDeliveryLocality,
+} from '@impresion3d/shared/localities';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -10,25 +15,47 @@ import {
 } from '../src/shipping.js';
 
 test('tarifa, mínimo, envío gratis y límite de 30 km', () => {
-  assert.equal(calculateDeliveryCost({
-    oneWayMeters: 10000, roundTripMeters: 21000, subtotalCents: 1500000,
-  }), 840000);
-  assert.equal(calculateDeliveryCost({
-    oneWayMeters: 800, roundTripMeters: 1700, subtotalCents: 500000,
-  }), 200000);
-  assert.equal(calculateDeliveryCost({
-    oneWayMeters: 30000, roundTripMeters: 60500, subtotalCents: 12000000,
-  }), 0);
-  assert.throws(() => calculateDeliveryCost({
-    oneWayMeters: 30001, roundTripMeters: 60500, subtotalCents: 12000000,
-  }), { code: 'DELIVERY_OUT_OF_RANGE' });
+  assert.equal(
+    calculateDeliveryCost({
+      oneWayMeters: 10000,
+      roundTripMeters: 21000,
+      subtotalCents: 1500000,
+    }),
+    840000,
+  );
+  assert.equal(
+    calculateDeliveryCost({
+      oneWayMeters: 800,
+      roundTripMeters: 1700,
+      subtotalCents: 500000,
+    }),
+    200000,
+  );
+  assert.equal(
+    calculateDeliveryCost({
+      oneWayMeters: 30000,
+      roundTripMeters: 60500,
+      subtotalCents: 12000000,
+    }),
+    0,
+  );
+  assert.throws(
+    () =>
+      calculateDeliveryCost({
+        oneWayMeters: 30001,
+        roundTripMeters: 60500,
+        subtotalCents: 12000000,
+      }),
+    { code: 'DELIVERY_OUT_OF_RANGE' },
+  );
   assert.equal(SHIPPING_POLICY.dailyQuoteLimit, 250);
 });
 
 test('solicita a Google ida y vuelta sin exponer origen privado', async () => {
   let headers, requestBody;
   const service = createShippingService({
-    apiKey: 'testing-secret', originAddress: 'origen privado, Argentina',
+    apiKey: 'testing-secret',
+    originAddress: 'origen privado, Argentina',
     reserve: async () => true,
     fetchImpl: async (_url, options) => {
       headers = options.headers;
@@ -36,57 +63,166 @@ test('solicita a Google ida y vuelta sin exponer origen privado', async () => {
       return {
         ok: true,
         json: async () => ({
-          routes: [{ distanceMeters: 21000, legs: [
-            { distanceMeters: 10000 }, { distanceMeters: 11000 },
-          ] }],
+          routes: [
+            {
+              distanceMeters: 21000,
+              legs: [{ distanceMeters: 10000 }, { distanceMeters: 11000 }],
+            },
+          ],
         }),
       };
     },
   });
-  const calculated = await service.quote({
-    streetAddress: 'Calle 123', city: 'Morón', postalCode: '1708',
-  }, 1500000);
+  const calculated = await service.quote(
+    {
+      streetAddress: 'Calle 123',
+      city: 'Morón',
+      postalCode: '1708',
+      provinceId: '06',
+      localityId: '0656801004',
+    },
+    1500000,
+  );
   assert.equal(calculated.costCents, 840000);
-  assert.equal(headers['X-Goog-FieldMask'], 'routes.distanceMeters,routes.legs.distanceMeters');
+  assert.equal(
+    headers['X-Goog-FieldMask'],
+    'routes.distanceMeters,routes.legs.distanceMeters',
+  );
   assert.deepEqual(requestBody.origin, requestBody.destination);
   assert.equal(requestBody.intermediates.length, 1);
+  assert.match(
+    requestBody.intermediates[0].address,
+    /Morón, Morón, Buenos Aires, 1708, Argentina/,
+  );
   assert.equal(JSON.stringify(calculated).includes('origen privado'), false);
 });
 
 test('la cotización queda vinculada a la sesión, domicilio, carrito y precios', () => {
   const session = {};
   const delivery = {
-    method: 'shipping', streetAddress: 'Calle 123',
-    city: 'Morón', postalCode: '1708',
+    method: 'shipping',
+    streetAddress: 'Calle 123',
+    city: 'Morón',
+    postalCode: '1708',
   };
   const items = [{ productId: 'a'.repeat(24), quantity: 1 }];
   const quote = storeShippingQuote(session, delivery, items, 1500000, {
-    oneWayMeters: 10000, roundTripMeters: 21000, costCents: 840000,
+    oneWayMeters: 10000,
+    roundTripMeters: 21000,
+    costCents: 840000,
   });
   assert.equal(quote.totalCents, 2340000);
-  assert.equal(reuseShippingQuote(session, delivery, items, 1500000).quoteId, quote.quoteId);
-  assert.equal(reuseShippingQuote(session, {
-    ...delivery, city: 'La Plata',
-  }, items, 1500000), null);
+  assert.equal(
+    reuseShippingQuote(session, delivery, items, 1500000).quoteId,
+    quote.quoteId,
+  );
+  assert.equal(
+    reuseShippingQuote(
+      session,
+      {
+        ...delivery,
+        city: 'La Plata',
+      },
+      items,
+      1500000,
+    ),
+    null,
+  );
 
-  assert.equal(confirmShippingQuote(session,
-    { ...delivery, quoteId: quote.quoteId }, items, 1500000).costCents, 840000);
-  assert.throws(() => confirmShippingQuote(session,
-    { ...delivery, quoteId: quote.quoteId }, items, 1500001), { code: 'DELIVERY_QUOTE_EXPIRED' });
-  assert.throws(() => confirmShippingQuote(session,
-    { ...delivery, streetAddress: 'Calle 999', quoteId: quote.quoteId },
-    items, 1500000), { code: 'DELIVERY_QUOTE_EXPIRED' });
+  assert.equal(
+    confirmShippingQuote(
+      session,
+      { ...delivery, quoteId: quote.quoteId },
+      items,
+      1500000,
+    ).costCents,
+    840000,
+  );
+  assert.throws(
+    () =>
+      confirmShippingQuote(
+        session,
+        { ...delivery, quoteId: quote.quoteId },
+        items,
+        1500001,
+      ),
+    { code: 'DELIVERY_QUOTE_EXPIRED' },
+  );
+  assert.throws(
+    () =>
+      confirmShippingQuote(
+        session,
+        { ...delivery, streetAddress: 'Calle 999', quoteId: quote.quoteId },
+        items,
+        1500000,
+      ),
+    { code: 'DELIVERY_QUOTE_EXPIRED' },
+  );
   session.deliveryQuote.expiresAt = Date.now() - 1;
-  assert.throws(() => confirmShippingQuote(session,
-    { ...delivery, quoteId: quote.quoteId }, items, 1500000),
-  { code: 'DELIVERY_QUOTE_EXPIRED' });
+  assert.throws(
+    () =>
+      confirmShippingQuote(
+        session,
+        { ...delivery, quoteId: quote.quoteId },
+        items,
+        1500000,
+      ),
+    { code: 'DELIVERY_QUOTE_EXPIRED' },
+  );
 });
 
 test('sin clave API no se inventan cotizaciones', async () => {
   const service = createShippingService({
-    apiKey: '', originAddress: '', reserve: async () => true,
+    apiKey: '',
+    originAddress: '',
+    reserve: async () => true,
   });
-  await assert.rejects(service.quote({
-    streetAddress: 'Calle 123', city: 'Morón', postalCode: '1708',
-  }, 10000), { code: 'DELIVERY_UNAVAILABLE' });
+  await assert.rejects(
+    service.quote(
+      {
+        streetAddress: 'Calle 123',
+        city: 'Morón',
+        postalCode: '1708',
+      },
+      10000,
+    ),
+    { code: 'DELIVERY_UNAVAILABLE' },
+  );
+});
+
+test('catálogo oficial: 24 jurisdicciones, selecciones coherentes y cotización invalidada al cambiar IDs', () => {
+  assert.equal(localityProvinces.length, 24);
+  assert.equal(
+    localityProvinces.reduce(
+      (sum, p) => sum + provinceLocalities(p.id).length,
+      0,
+    ),
+    4037,
+  );
+  const delivery = {
+    method: 'shipping',
+    streetAddress: 'Calle 123',
+    city: 'Morón',
+    postalCode: '1708',
+    provinceId: '06',
+    localityId: '0656801004',
+  };
+  assert.equal(validDeliveryLocality(delivery), true);
+  for (const invalid of [
+    { ...delivery, provinceId: '02' },
+    { ...delivery, city: 'Otro nombre' },
+    { ...delivery, localityId: '00000000' },
+    { ...delivery, provinceId: undefined },
+  ])
+    assert.equal(validDeliveryLocality(invalid), false);
+  const session = {},
+    items = [{ productId: 'a'.repeat(24), quantity: 1 }];
+  const quote = storeShippingQuote(session, delivery, items, 10000, {
+    costCents: 200000,
+  });
+  const changed = { ...delivery, localityId: 'otro', quoteId: quote.quoteId };
+  assert.equal(reuseShippingQuote(session, changed, items, 10000), null);
+  assert.throws(() => confirmShippingQuote(session, changed, items, 10000), {
+    code: 'DELIVERY_QUOTE_EXPIRED',
+  });
 });

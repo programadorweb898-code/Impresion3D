@@ -1,3 +1,7 @@
+import {
+  validDeliveryLocality,
+  getLocality,
+} from '@impresion3d/shared/localities';
 import { canonicalCartItem } from '@impresion3d/shared';
 import { cartCatalog } from './offers.js';
 import { createHash } from 'node:crypto';
@@ -41,6 +45,20 @@ export async function submitCatalogOrder(req, res) {
     return true;
   };
   if (requestId && (await replay())) return;
+  if (delivery?.method === 'pickup')
+    return res
+      .status(400)
+      .json({
+        code: 'DELIVERY_METHOD_UNAVAILABLE',
+        message:
+          'Solo realizamos entregas a domicilio. Actualizá el carrito y calculá el envío.',
+      });
+  if (delivery && !validDeliveryLocality(delivery))
+    return res
+      .status(400)
+      .json({
+        message: 'Elegí una provincia y una localidad válidas de la lista.',
+      });
   let products;
   try {
     products = await cartCatalog(items);
@@ -95,7 +113,8 @@ export async function submitCatalogOrder(req, res) {
         'Un producto no tiene un precio válido. Consultanos antes de enviar el pedido.',
     });
   const subtotalCents = snapshots.reduce(
-    (sum, item) => sum + item.unitPriceCents * item.quantity, 0,
+    (sum, item) => sum + item.unitPriceCents * item.quantity,
+    0,
   );
   if (!Number.isSafeInteger(subtotalCents))
     return res.status(400).json({ message: 'El subtotal no es válido.' });
@@ -104,15 +123,20 @@ export async function submitCatalogOrder(req, res) {
     try {
       if (products[0].currency !== 'ARS')
         return res.status(400).json({
-          message: 'La entrega propia solo está disponible para pedidos en ARS.',
+          message:
+            'La entrega propia solo está disponible para pedidos en ARS.',
         });
       shippingQuote = confirmShippingQuote(
-        req.session, delivery, items, subtotalCents,
+        req.session,
+        delivery,
+        items,
+        subtotalCents,
       );
     } catch (error) {
       if (error.status)
         return res.status(error.status).json({
-          code: error.code, message: error.message,
+          code: error.code,
+          message: error.message,
         });
       throw error;
     }
@@ -136,6 +160,8 @@ export async function submitCatalogOrder(req, res) {
                     postalCode: delivery.postalCode,
                     streetAddress: delivery.streetAddress,
                     city: delivery.city,
+                    localityId: delivery.localityId,
+                    province: getLocality(delivery.localityId)?.province,
                     costCents: shippingQuote.costCents,
                     oneWayMeters: shippingQuote.oneWayMeters,
                     roundTripMeters: shippingQuote.roundTripMeters,

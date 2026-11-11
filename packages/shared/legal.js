@@ -163,7 +163,7 @@ export const legalPages = {
         title: '6. Fabricación y entrega',
         paragraphs: [
           'Los plazos de fabricación y entrega se informan para cada pedido según el diseño, la cantidad y la disponibilidad. Las estimaciones mostradas en el seguimiento no reemplazan la fecha y las condiciones acordadas.',
-          'La modalidad de retiro o envío se define antes de confirmar el pedido. Si surge un inconveniente que afecte lo acordado, se informará para resolverlo de acuerdo con la normativa aplicable.',
+          'La entrega se realiza a domicilio y sus condiciones se definen antes de confirmar el pedido. Si surge un inconveniente que afecte lo acordado, se informará para resolverlo de acuerdo con la normativa aplicable.',
         ],
       },
       {

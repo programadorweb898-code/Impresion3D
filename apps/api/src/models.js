@@ -118,11 +118,16 @@ const orderModel = new Schema(
           postalCode: String,
           streetAddress: String,
           city: String,
+          localityId: String,
+          province: String,
           originPostalCode: String,
           oneWayMeters: Number,
           roundTripMeters: Number,
           costCents: { type: Number, min: 0 },
-          status: { type: String, enum: ['free_pickup', 'pending_quote', 'quoted'] },
+          status: {
+            type: String,
+            enum: ['free_pickup', 'pending_quote', 'quoted'],
+          },
         },
         { _id: false },
       ),
@@ -174,7 +179,6 @@ const shippingUsageSchema = new Schema({
 });
 shippingUsageSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 export const ShippingUsage = model('ShippingUsage', shippingUsageSchema);
-
 
 const designRequestSchema = new Schema(
   {
