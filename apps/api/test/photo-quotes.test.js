@@ -7,6 +7,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { randomUUID } from 'node:crypto';
 import { createApp } from '../src/app.js';
 import { User, PhotoQuote } from '../src/models.js';
+import { normalizeArgentineWhatsApp } from '../src/photo-quotes.js';
 
 const origin = 'http://localhost:5173';
 let mongo, app, customer, other, admin, image;
@@ -25,7 +26,7 @@ const metadata = (overrides = {}) => ({
   quantity: 2,
   approximateSize: '15 cm de alto',
   details: 'Dos colores y una base',
-  contact: { method: 'whatsapp', value: '+5491155555555' },
+  contact: { method: 'whatsapp', value: '11 5555-5555' },
   contactConsent: true,
   ...overrides,
 });
@@ -56,6 +57,25 @@ before(async () => {
 after(async () => {
   await mongoose.disconnect();
   await mongo?.stop();
+});
+
+test('normaliza WhatsApp argentino sin pedir prefijo internacional', () => {
+  for (const input of [
+    '11 5555-5555',
+    '1155555555',
+    '011 5555-5555',
+    '11 15 5555-5555',
+    '011 15 5555-5555',
+    '+5491155555555',
+    '+54 11 5555-5555',
+  ]) {
+    assert.equal(normalizeArgentineWhatsApp(input), '+5491155555555', input);
+  }
+  assert.equal(normalizeArgentineWhatsApp('351 555-5555'), '+5493515555555');
+  assert.equal(normalizeArgentineWhatsApp('351 15 555-5555'), '+5493515555555');
+  for (const input of ['011123456', '1234567', '111111111111111111', '+12125550123', 'abc1155555555', '']) {
+    assert.equal(normalizeArgentineWhatsApp(input), null, input);
+  }
 });
 
 test('guarda imagen privada, contacto y evita duplicados ante reintentos', async () => {
