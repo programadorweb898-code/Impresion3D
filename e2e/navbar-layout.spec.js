@@ -81,3 +81,71 @@ test('la navegación de escritorio permanece en una fila con desplazamiento hori
     .locator('.site-header')
     .screenshot({ path: test.info().outputPath('desktop-navbar-admin.png') });
 });
+
+
+test('móvil muestra buscador entre logo y carrito y navega por categorías y FAQ', async ({ page }) => {
+  for (const width of [320, 390, 575]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/');
+    const search = page.getByRole('search').getByRole('searchbox', { name: 'Buscar productos' });
+    await expect(search).toBeVisible();
+    const positions = await page.evaluate(() => {
+      const box = (selector) => document.querySelector(selector).getBoundingClientRect();
+      return {
+        logoRight: box('.site-header .brand').right,
+        searchLeft: box('.header-product-search').left,
+        searchRight: box('.header-product-search').right,
+        cartLeft: box('.cart-icon-button').left,
+        width: document.documentElement.scrollWidth,
+        viewport: innerWidth,
+      };
+    });
+    expect(positions.searchLeft).toBeGreaterThanOrEqual(positions.logoRight - 1);
+    expect(positions.cartLeft).toBeGreaterThanOrEqual(positions.searchRight - 1);
+    expect(positions.width).toBeLessThanOrEqual(positions.viewport);
+    await page.getByRole('button', { name: 'Abrir menú' }).click();
+    await page.getByRole('button', { name: 'Categorías' }).click();
+    await expect(page.locator('.nav-category-mobile-list')).toBeVisible();
+    await expect(page.locator('.nav-category-mobile-list').getByRole('link', { name: 'Hogar' })).toBeVisible();
+    await page.locator('.nav-category-mobile-list').getByRole('link', { name: 'Hogar' }).click();
+    await expect(page).toHaveURL(/categoria=Hogar/);
+    await page.getByRole('button', { name: 'Abrir menú' }).click();
+    await page.getByRole('link', { name: 'FAQ', exact: true }).click();
+    await expect(page).toHaveURL('/faq');
+    await expect(page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 })).toBeVisible();
+  }
+});
+
+test('escritorio presenta categorías desplegables, FAQ y búsqueda reutilizable', async ({ page }) => {
+  for (const width of [768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    await expect(page.getByRole('navigation', { name: 'Principal' })
+      .getByRole('link', { name: 'FAQ', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Categorías' }).click();
+    const popup = page.locator('.nav-category-popover');
+    await expect(popup).toBeVisible();
+    await expect(popup.getByRole('link', { name: 'Todos los productos' })).toBeVisible();
+    await popup.getByRole('link', { name: 'Hogar', exact: true }).click();
+    await expect(page).toHaveURL(/categoria=Hogar/);
+    await expect(popup).toHaveCount(0);
+    await page.getByRole('searchbox', { name: 'Buscar productos' }).fill('Pieza 00');
+    await expect(page.locator('.product-card')).toHaveCount(1);
+    await page.getByRole('navigation', { name: 'Principal' })
+      .getByRole('link', { name: 'FAQ', exact: true }).click();
+    await expect(page).toHaveURL('/faq');
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 })).toBeVisible();
+  }
+  await page.goto('/preguntas-frecuentes');
+  await expect(page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 })).toBeVisible();
+});
+
+test('los filtros avanzados quedan ocultos hasta pulsar el icono', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#catalog-filter-options')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Mostrar filtros' }).click();
+  await expect(page.locator('#catalog-filter-options')).toBeVisible();
+  await page.getByRole('button', { name: 'Ocultar filtros' }).click();
+  await expect(page.locator('#catalog-filter-options')).toHaveCount(0);
+});
