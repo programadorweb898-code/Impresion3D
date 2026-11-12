@@ -5087,3 +5087,46 @@ html[data-scroll-restoring] #root {
   line-height: 1.4;
   text-align: left;
 }
+
+/* Confirmación breve, descartable y sin bloquear el siguiente presupuesto. */
+.photo-quote-success-toast {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #775ca0;
+  border-radius: 12px;
+  background: #292037;
+  color: #f6efff;
+  font-size: 14px;
+  line-height: 1.5;
+  animation: photo-quote-toast-life 1.5s ease both;
+}
+.photo-quote-toast-close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -5px -7px -5px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font-size: 24px;
+  cursor: pointer;
+}
+.photo-quote-toast-close:hover,
+.photo-quote-toast-close:focus-visible {
+  background: #4a385f;
+}
+@keyframes photo-quote-toast-life {
+  0% { opacity: 0; transform: translateY(8px); }
+  15%, 75% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .photo-quote-success-toast { animation: none; }
+}
