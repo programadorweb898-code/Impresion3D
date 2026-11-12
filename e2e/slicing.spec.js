@@ -1,12 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { loginDesign, openAdminQuotes } from './design-auth.js';
 import { tetraStl } from '../apps/api/test/helpers/model-fixtures.js';
+import { randomUUID } from 'node:crypto';
 
 test('vincula PC, encola laminado y conserva la aprobación del precio en administración', async ({
   page,
   browser,
 }) => {
   await openAdminQuotes(page);
+  await page.getByText('Herramientas técnicas del taller', { exact: true }).click();
+  await page.getByText('Ver solicitudes antiguas con modelos 3D', { exact: true }).click();
   await page
     .getByRole('button', { name: 'Generar código de conexión', exact: true })
     .click();
@@ -27,25 +30,28 @@ test('vincula PC, encola laminado y conserva la aprobación del precio en admini
   });
   const client = await customerContext.newPage();
   await loginDesign(client);
-  await client.goto('/disenar');
-  await client.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'para-laminar.stl',
-    mimeType: 'application/octet-stream',
-    buffer: tetraStl(),
+  const csrf = (await (await client.request.get('/api/csrf')).json()).token;
+  const oldModel = await client.request.post('/api/design-requests', {
+    headers: { Origin: 'http://127.0.0.1:3100', 'x-csrf-token': csrf },
+    multipart: {
+      metadata: JSON.stringify({
+        requestId: randomUUID(),
+        quantity: 2,
+        scale: 1,
+        dimensions: { width: 1, height: 1, depth: 1 },
+        colorStatus: 'missing',
+        acceptedMissingColor: true,
+        usage: 'Solicitud histórica de prueba',
+      }),
+      model: {
+        name: 'para-laminar.stl',
+        mimeType: 'application/octet-stream',
+        buffer: tetraStl(),
+      },
+    },
   });
-  await expect(client.getByLabel('Ancho (cm)', { exact: true })).toBeVisible();
-  await client.getByLabel('Cantidad', { exact: true }).fill('2');
-  await client
-    .getByRole('button', { name: 'Solicitar presupuesto', exact: true })
-    .click();
-  await client
-    .getByRole('dialog')
-    .getByRole('button', { name: 'Enviar', exact: true })
-    .click();
-  await expect(
-    client.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ }),
-  ).toBeVisible();
-  await page
+  expect(oldModel.status()).toBe(201);
+  await page.locator('.design-request-list')
     .getByRole('button', { name: 'Actualizar solicitudes', exact: true })
     .click();
   const row = page
@@ -75,7 +81,7 @@ test('vincula PC, encola laminado y conserva la aprobación del precio en admini
     },
   );
   expect(result.status()).toBe(204);
-  await page
+  await page.locator('.design-request-list')
     .getByRole('button', { name: 'Actualizar solicitudes', exact: true })
     .click();
   await expect(row).toContainText('Laminado recibido');
