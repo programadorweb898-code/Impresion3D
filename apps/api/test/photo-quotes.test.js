@@ -91,7 +91,8 @@ test('validaciones: imagen auténtica, datos y consentimiento de contacto', asyn
   assert.equal((await send(other, metadata({ contact: { method: 'whatsapp', value: '011123456' } }))).status, 400);
   assert.equal((await send(other, metadata({ contact: { method: 'email', value: 'sin-arroba' } }))).status, 400);
   assert.equal((await send(other, metadata(), Buffer.from('not really an image'))).status, 400);
-  const email = await send(other, metadata({ contact: { method: 'email', value: 'cliente@example.com' } }));
+  const emailAgent = await register('photo-email@example.com');
+  const email = await send(emailAgent, metadata({ contact: { method: 'email', value: 'cliente@example.com' } }));
   assert.equal(email.status, 201);
   assert.equal(email.body.contact.method, 'email');
 });
