@@ -120,6 +120,16 @@ test('con sesión acepta foto, tamaño y canal de respuesta, sin requerir archiv
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Solicitar presupuesto', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ })).toBeVisible();
+  await expect(input).toHaveValue('');
+  await expect(page.locator('.photo-quote-preview')).toHaveCount(0);
+  await expect(page.getByLabel('Cantidad')).toHaveValue('1');
+  await expect(page.getByLabel('Tamaño aproximado')).toHaveValue('');
+  await expect(page.getByLabel('Detalles del pedido')).toHaveValue('');
+  await expect(page.getByRole('radio', { name: 'Correo electrónico' })).toBeChecked();
+  await expect(page.getByLabel('Tu correo electrónico')).toHaveValue('');
+  await expect(page.getByRole('checkbox')).not.toBeChecked();
+  await expect(page.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ })).toHaveCount(0, { timeout: 4000 });
+  await expect(page.getByRole('button', { name: 'Solicitar presupuesto', exact: true })).toBeDisabled();
   const item = page.locator('.photo-quote-row').first();
   await expect(item).toContainText('15 cm de alto');
   await expect(item).toContainText('WhatsApp');
@@ -141,6 +151,23 @@ test('con sesión acepta foto, tamaño y canal de respuesta, sin requerir archiv
       })),
   }));
   expect(widthCheck.documentWidth, JSON.stringify(widthCheck.offenders)).toBeLessThanOrEqual(widthCheck.viewportWidth);
+});
+
+test('la confirmación puede cerrarse manualmente sin borrar la solicitud', async ({ page }) => {
+  await loginDesign(page);
+  await page.goto('/disenar');
+  await page.locator('input[type="file"]').setInputFiles({
+    name: 'referencia.png',
+    mimeType: 'image/png',
+    buffer: await photo(),
+  });
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Solicitar presupuesto', exact: true }).click();
+  const toast = page.locator('.photo-quote-success-toast');
+  await expect(toast).toBeVisible();
+  await toast.getByRole('button', { name: 'Cerrar notificación' }).click();
+  await expect(toast).toHaveCount(0);
+  await expect(page.locator('.photo-quote-row').first()).toBeVisible();
 });
 
 test('el selector rechaza archivos distintos a fotografías y superiores a 5 MB', async ({ page }) => {
