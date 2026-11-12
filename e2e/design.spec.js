@@ -116,7 +116,7 @@ test('con sesión acepta foto, tamaño y canal de respuesta, sin requerir archiv
   await page.getByLabel('Tamaño aproximado').fill('15 cm de alto');
   await page.getByLabel('Detalles del pedido').fill('Quiero conservar el color');
   await page.getByRole('radio', { name: 'WhatsApp' }).check();
-  await page.getByLabel('Tu número de WhatsApp').fill('+5491155555555');
+  await page.getByLabel('Tu número de WhatsApp').fill('11 5555-5555');
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Solicitar presupuesto', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ })).toBeVisible();
