@@ -5,6 +5,7 @@ test('catalog product Back link and browser Back restore the card and filters wi
 }) => {
   await page.goto('/');
   await expect(page.locator('.product-card')).toHaveCount(10);
+  await page.getByRole('button', { name: 'Mostrar filtros' }).click();
   await page.getByLabel('Ordenar por').selectOption('price-desc');
   await expect(page.locator('.grid-products')).toHaveAttribute(
     'aria-busy',
