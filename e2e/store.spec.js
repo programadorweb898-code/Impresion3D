@@ -391,7 +391,7 @@ test('carrito combina páginas y recupera disponibilidad al volver a iniciar ses
     .getByRole('button', { name: 'Agregar al carrito' })
     .click();
   await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
-  await expect(page.locator('.product-card')).toHaveCount(5);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await page
     .locator('.product-card')
     .first()
