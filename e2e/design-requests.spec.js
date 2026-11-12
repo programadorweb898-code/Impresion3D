@@ -1,207 +1,84 @@
 import { test, expect } from '@playwright/test';
+import sharp from 'sharp';
 import { loginDesign, openAdminQuotes } from './design-auth.js';
-import { tetraStl } from '../apps/api/test/helpers/model-fixtures.js';
-import { coloredThreeMf } from '../apps/api/test/helpers/three-mf-fixtures.js';
 
-test('solicitud privada: proporciones, cancelar sin enviar, original descargable y presupuesto administrativo', async ({
-  page,
-  browser,
+const image = () => sharp({
+  create: { width: 180, height: 130, channels: 3, background: '#cf4225' },
+}).png().toBuffer();
+
+async function upload(page, title) {
+  await page.goto('/disenar');
+  await page.locator('input[type="file"]').setInputFiles({
+    name: 'referencia.png',
+    mimeType: 'image/png',
+    buffer: await image(),
+  });
+  await page.getByLabel('Cantidad').fill('3');
+  await page.getByLabel('Tamaño aproximado').fill('20 cm');
+  await page.getByLabel('Detalles del pedido').fill(title);
+}
+
+test('la consulta por foto se administra y puede responderse manualmente por WhatsApp', async ({
+  page, browser,
 }) => {
   await loginDesign(page);
-  await page.goto('/disenar');
-  const bytes = tetraStl();
-  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'pieza-pendiente.stl',
-    mimeType: 'application/octet-stream',
-    buffer: bytes,
-  });
-  await expect(page.getByLabel('Ancho (cm)', { exact: true })).toHaveValue(
-    '0.1',
-  );
-  await page.getByLabel('Ancho (cm)', { exact: true }).fill('0.2');
-  await page.getByLabel('Cantidad', { exact: true }).fill('3');
-  await expect(page.getByLabel('Alto (cm)', { exact: true })).toHaveValue(
-    '0.2',
-  );
-  await expect(
-    page.getByLabel('Profundidad (cm)', { exact: true }),
-  ).toHaveValue('0.2');
-  await page.getByLabel('Profundidad (cm)', { exact: true }).fill('0.2');
-  await page
-    .getByRole('button', { name: 'Solicitar presupuesto', exact: true })
-    .click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog).toContainText('Hay partes sin color asignado');
-  const warningBox = await dialog.boundingBox();
-  expect(warningBox.y).toBeGreaterThan(0);
-  expect(warningBox.height).toBeLessThan(800);
-  await page.screenshot({
-    path: test.info().outputPath('solicitud-aviso-color.png'),
-    fullPage: false,
-  });
-  await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
-  await expect(dialog).not.toBeVisible();
-  await expect(
-    page.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ }),
-  ).toHaveCount(0);
-  await page
-    .getByRole('button', { name: 'Solicitar presupuesto', exact: true })
-    .click();
-  await dialog.getByRole('button', { name: 'Enviar', exact: true }).click();
-  await expect(
-    page.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ }),
-  ).toBeVisible();
-  const row = page
-    .locator('.design-request-row')
-    .filter({ hasText: 'pieza-pendiente.stl' })
-    .first();
-  await expect(row).toContainText('3 unidad(es)');
-  await expect(row).toContainText('0,2 × 0,2 × 0,2');
-  const downloadUrl = await row
-    .getByRole('link', { name: 'Descargar archivo original' })
-    .getAttribute('href');
-  const original = await page.request.get(downloadUrl);
-  expect(await original.body()).toEqual(bytes);
-  const adminContext = await browser.newContext({
-    viewport: { width: 390, height: 844 },
-    hasTouch: true,
-  });
+  await upload(page, 'Consulta de adorno personalizado en color rojo');
+  await page.getByRole('radio', { name: 'WhatsApp' }).check();
+  await page.getByLabel('Tu número de WhatsApp').fill('+5491170001234');
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Solicitar presupuesto' }).click();
+  await expect(page.getByText(/Solicitud #.*recibida/).first()).toBeVisible();
+  const personalRow = page.locator('.photo-quote-row')
+    .filter({ hasText: 'Consulta de adorno personalizado en color rojo' }).first();
+  await expect(personalRow.locator('img')).toBeVisible();
+
+  const adminContext = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
   const adminPage = await adminContext.newPage();
   await openAdminQuotes(adminPage);
-  const adminRow = adminPage
-    .locator('.design-request-row')
-    .filter({ hasText: 'pieza-pendiente.stl' })
-    .first();
-  await adminRow
-    .getByLabel('Estado de solicitud')
-    .selectOption('presupuestado');
-  await adminRow.getByLabel('Presupuesto total (ARS)').fill('4500');
-  await adminRow
-    .getByLabel('Respuesta al cliente')
-    .fill('Precio por las tres unidades.');
-  await adminRow.getByRole('button', { name: 'Guardar respuesta' }).click();
-  await expect(adminRow).toContainText('Presupuestada');
-  await page
-    .getByRole('button', { name: 'Actualizar solicitudes', exact: true })
-    .click();
-  await expect(row).toContainText('4.500');
-  await expect(row).toContainText('Precio por las tres unidades.');
+  const adminRow = adminPage.locator('.photo-quote-row')
+    .filter({ hasText: 'Consulta de adorno personalizado en color rojo' }).first();
+  await expect(adminRow).toContainText('+5491170001234');
+  await expect(adminRow.locator('img')).toBeVisible();
+  await adminRow.getByLabel('Estado').selectOption('presupuestado');
+  await adminRow.getByLabel('Presupuesto total (ARS)').fill('6500');
+  await adminRow.getByLabel('Respuesta y condiciones').fill('Podemos realizarlo en color rojo.');
+  await adminRow.getByRole('button', { name: 'Guardar presupuesto' }).click();
+  await expect(adminRow).toContainText('6.500');
+  const link = adminRow.getByRole('link', { name: 'Responder por WhatsApp' });
+  await expect(link).toHaveAttribute('href', /wa\.me\/5491170001234/);
+  expect(decodeURIComponent(await link.getAttribute('href'))).toContain('Podemos realizarlo en color rojo.');
+
+  await page.getByRole('button', { name: 'Actualizar solicitudes' }).click();
+  await expect(personalRow).toContainText('6.500');
+  await expect(personalRow).toContainText('Podemos realizarlo en color rojo.');
   await adminContext.close();
 });
 
-test('blanco explícito no es falta de color; color parcialmente ausente y formatos desconocidos se distinguen', async ({
-  page,
+test('la consulta por email conserva dirección y abre correo preparado para respuesta', async ({
+  page, browser,
 }) => {
   await loginDesign(page);
-  await page.goto('/disenar');
-  const input = page.getByLabel('Archivo de diseño 3D');
-  const upload = async (name, buffer) => {
-    await input.setInputFiles({
-      name,
-      mimeType: 'application/octet-stream',
-      buffer,
-    });
-    await expect(page.getByLabel('Ancho (cm)', { exact: true })).toBeVisible();
-  };
-  await upload(
-    'blanco.3mf',
-    coloredThreeMf({
-      transformXml: (x) => x.replace('#161616FF', '#FFFFFFFF'),
-    }),
-  );
-  await page
-    .getByRole('button', { name: 'Solicitar presupuesto', exact: true })
-    .click();
-  await expect(
-    page.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ }),
-  ).toBeVisible();
-  await expect(page.getByRole('dialog')).not.toBeVisible();
-  await upload(
-    'parcial.3mf',
-    coloredThreeMf({
-      transformXml: (x) => x.replace(' pid="9" pindex="1"', ''),
-    }),
-  );
-  await page
-    .getByRole('button', { name: 'Solicitar presupuesto', exact: true })
-    .click();
-  await expect(page.getByRole('dialog')).toContainText(
-    'Hay partes sin color asignado',
-  );
-  await page
-    .getByRole('dialog')
-    .getByRole('button', { name: 'Cancelar', exact: true })
-    .click();
-  await upload(
-    'pintado-avanzado.3mf',
-    coloredThreeMf({
-      transformXml: (x) =>
-        x.replace('<triangle ', '<triangle paint_color="ZZ" '),
-    }),
-  );
-  await page
-    .getByRole('button', { name: 'Solicitar presupuesto', exact: true })
-    .click();
-  await expect(page.getByRole('dialog')).toContainText(
-    'No pudimos verificar todos los colores',
-  );
-});
+  await upload(page, 'Producto personalizado para cocina');
+  await page.getByRole('radio', { name: 'Correo electrónico' }).check();
+  await page.getByLabel('Tu correo electrónico').fill('respuesta-personal@example.com');
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Solicitar presupuesto' }).click();
+  await expect(page.getByText(/Solicitud #.*recibida/).first()).toBeVisible();
 
-test('una respuesta tardía no marca un archivo nuevo como enviado', async ({
-  page,
-}) => {
-  await loginDesign(page);
-  await page.goto('/disenar');
-  let release;
-  let received;
-  const seen = new Promise((resolve) => {
-    received = resolve;
-  });
-  await page.route('**/api/design-requests', async (route) => {
-    if (route.request().method() !== 'POST') return route.continue();
-    const pending = new Promise((resolve) => {
-      release = resolve;
-    });
-    received();
-    await pending;
-    await route.fulfill({
-      status: 201,
-      contentType: 'application/json',
-      body: JSON.stringify({ _id: '1234567890abcdef12345678' }),
-    });
-  });
-  const input = page.getByLabel('Archivo de diseño 3D');
-  await input.setInputFiles({
-    name: 'anterior.stl',
-    mimeType: 'application/octet-stream',
-    buffer: tetraStl(),
-  });
-  await expect(page.getByLabel('Ancho (cm)', { exact: true })).toBeVisible();
-  await page
-    .getByRole('button', { name: 'Solicitar presupuesto', exact: true })
-    .click();
-  await page
-    .getByRole('dialog')
-    .getByRole('button', { name: 'Enviar', exact: true })
-    .click();
-  await seen;
-  await input.setInputFiles({
-    name: 'nuevo.3mf',
-    mimeType: 'application/octet-stream',
-    buffer: coloredThreeMf(),
-  });
-  await expect(page.locator('.design-measurements h2')).toHaveText('nuevo.3mf');
-  const response = page.waitForResponse(
-    (r) =>
-      r.url().endsWith('/api/design-requests') &&
-      r.request().method() === 'POST',
-  );
-  release();
-  await response;
-  await expect(
-    page.getByRole('button', { name: 'Solicitar presupuesto', exact: true }),
-  ).toBeEnabled();
-  await expect(
-    page.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ }),
-  ).toHaveCount(0);
+  const context = await browser.newContext();
+  const adminPage = await context.newPage();
+  await openAdminQuotes(adminPage);
+  const adminRow = adminPage.locator('.photo-quote-row')
+    .filter({ hasText: 'Producto personalizado para cocina' }).first();
+  await expect(adminRow).toContainText('respuesta-personal@example.com');
+  await adminRow.getByLabel('Estado').selectOption('presupuestado');
+  await adminRow.getByLabel('Presupuesto total (ARS)').fill('7500');
+  await adminRow.getByLabel('Respuesta y condiciones').fill('Precio sujeto a confirmación de tamaño.');
+  await adminRow.getByRole('button', { name: 'Guardar presupuesto' }).click();
+  const link = adminRow.getByRole('link', { name: 'Responder por email' });
+  await expect(link).toHaveAttribute('href', /^mailto:/);
+  const href = decodeURIComponent(await link.getAttribute('href'));
+  expect(href).toContain('respuesta-personal@example.com');
+  expect(href).toContain('7.500');
+  await context.close();
 });
