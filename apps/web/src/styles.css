@@ -3755,3 +3755,31 @@ html[data-scroll-restoring] #root {
   .photo-quote-form,
   .photo-quote-row { padding: 1rem; }
 }
+
+/* Grid children and native file controls must shrink on narrow screens. */
+.photo-quote-page,
+.photo-quote-form,
+.photo-quote-row,
+.photo-quote-list,
+.photo-quote-row-layout,
+.photo-quote-grid {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.photo-quote-row-layout > *,
+.photo-quote-grid > *,
+.photo-quote-form > *,
+.photo-quote-row > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.photo-quote-preview,
+.photo-quote-thumb {
+  box-sizing: border-box;
+}
+.photo-quote-form,
+.photo-quote-row {
+  overflow-wrap: anywhere;
+}
