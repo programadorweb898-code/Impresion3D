@@ -62,6 +62,10 @@ test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio
   await expect(
     page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
   ).toBeEnabled();
+  await expect.poll(async () => {
+    const response = await page.request.get('/api/auth/me');
+    return response.status();
+  }).toBe(200);
   const original = await (await page.request.get('/api/auth/me')).json();
   expect(original.role).toBe('customer');
   expect(original.email).toBeUndefined();
