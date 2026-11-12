@@ -11,7 +11,7 @@ export const siteContact = {
 };
 export const informationPages = {
   about: { path: '/sobre-nosotros', title: 'Sobre nosotros' },
-  faq: { path: '/preguntas-frecuentes', title: 'Preguntas frecuentes' },
+  faq: { path: '/faq', title: 'Preguntas frecuentes' },
 };
 export const commonQuestions = [
   {
