@@ -70,4 +70,6 @@ test('returning to a previous category waits for its content before revealing th
     page.locator('.nav-category-trigger'),
   ).toHaveAttribute('data-selected-category', 'Todos');
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(originalY);
+  // Resolve any delayed intercepted requests before Playwright tears down the test.
+  await page.unrouteAll({ behavior: 'wait' });
 });
