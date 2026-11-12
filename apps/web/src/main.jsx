@@ -925,6 +925,55 @@ function App() {
             </Suspense>
           ) : view === 'catalog' ? (
             <>
+              <section
+                className="custom-design-feature"
+                aria-labelledby="custom-design-feature-title"
+              >
+                <div className="custom-design-feature__info">
+                  <p className="custom-design-feature__kicker">
+                    <span className="custom-design-feature__dot" aria-hidden="true" />
+                    NOVEDAD · DISEÑO PERSONALIZADO
+                  </p>
+                  <h2 id="custom-design-feature-title">
+                    ¿Tenés una idea? <span>Hagámosla en 3D.</span>
+                  </h2>
+                  <p>
+                    Enviá una foto o imagen de referencia y contanos qué
+                    necesitás. Analizamos si se puede imprimir y te respondemos
+                    con un presupuesto por WhatsApp o email. Sin archivos 3D.
+                  </p>
+                </div>
+                <div className="custom-design-feature__action">
+                  <ol className="custom-design-feature__steps" aria-label="Cómo funciona">
+                    <li><strong>01</strong> Subí una imagen</li>
+                    <li><strong>02</strong> Contanos los detalles</li>
+                    <li><strong>03</strong> Recibí tu presupuesto</li>
+                  </ol>
+                  <a
+                    className="custom-design-feature__cta"
+                    href="/disenar"
+                    onClick={(event) => {
+                      if (
+                        event.button === 0 &&
+                        !event.metaKey &&
+                        !event.ctrlKey &&
+                        !event.shiftKey &&
+                        !event.altKey
+                      ) {
+                        event.preventDefault();
+                        openDesign();
+                      }
+                    }}
+                  >
+                    Solicitar diseño personalizado
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                  <p className="custom-design-feature__note">
+                    Consulta sin compromiso de compra. Necesitás iniciar sesión
+                    para enviarla.
+                  </p>
+                </div>
+              </section>
               <section className="hero">
                 <div>
                   <p className="eyebrow">DISEÑO QUE TOMA FORMA</p>
