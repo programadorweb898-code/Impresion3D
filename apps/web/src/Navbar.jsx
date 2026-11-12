@@ -159,6 +159,7 @@ export function Navbar({
               ref={categoryButtonRef}
               className="nav-category-trigger"
               aria-expanded={categoriesOpen}
+              data-selected-category={category}
               aria-controls={categoriesOpen ? (mobile ? 'nav-category-mobile' : 'nav-category-desktop') : undefined}
               onClick={toggleCategories}
             >
