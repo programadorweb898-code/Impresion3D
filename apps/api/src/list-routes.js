@@ -1,7 +1,7 @@
 import { publicProductProjection } from './public-product.js';
 import { Product, Order } from './models.js';
 import { relevancePipeline } from './relevance.js';
-import { pageNumber, pageMetadata, pageSize as limit } from './pagination.js';
+import { pageNumber, pageMetadata, pageSize as limit, catalogPageSize } from './pagination.js';
 export async function listProducts(req, res) {
   const page = pageNumber(req, res);
   if (!page) return;
@@ -67,13 +67,13 @@ export async function listProducts(req, res) {
   const products =
     sortKey === 'relevance'
       ? await Product.aggregate([
-          ...relevancePipeline(filter, page, limit),
+          ...relevancePipeline(filter, page, catalogPageSize),
           { $project: publicProductProjection },
         ])
       : await Product.find(filter)
           .sort(sort)
-          .skip((page - 1) * limit)
-          .limit(limit)
+          .skip((page - 1) * catalogPageSize)
+          .limit(catalogPageSize)
           .select(publicProductProjection)
           .lean();
   // Keep old open tabs compatible, with bounded responses.
@@ -85,7 +85,7 @@ export async function listProducts(req, res) {
   ]);
   res.json({
     products,
-    ...pageMetadata(page, total),
+    ...pageMetadata(page, total, catalogPageSize),
     categories: [...new Set([...primaryCategories, ...additionalCategories])]
       .filter(Boolean)
       .sort(),
