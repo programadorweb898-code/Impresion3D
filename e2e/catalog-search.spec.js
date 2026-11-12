@@ -58,9 +58,8 @@ test('las pestañas reutilizan la búsqueda dinámica y permiten volver a buscar
     if (url.pathname === '/api/products') requests.push(url);
   });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Abrir menú' }).click();
   await page.getByRole('button', { name: 'Categorías' }).click();
-  const category = page.locator('.nav-category-mobile-list a').nth(1);
+  const category = page.locator('.nav-category-popover a').nth(1);
   const label = (await category.textContent()).trim();
   await category.click();
   await expect
@@ -73,9 +72,8 @@ test('las pestañas reutilizan la búsqueda dinámica y permiten volver a buscar
     )
     .toBe(true);
   await page.getByLabel('Buscar productos', { exact: true }).fill('Pieza 00');
-  await page.getByRole('button', { name: 'Abrir menú' }).click();
   await page.getByRole('button', { name: 'Categorías' }).click();
-  await expect(page.locator('.nav-category-mobile-list a').first()).toHaveAttribute(
+  await expect(page.locator('.nav-category-popover a').first()).toHaveAttribute(
     'aria-current',
     'page',
   );
@@ -134,9 +132,8 @@ test('Halloween y Cuencos pueden compartir productos sin duplicarlos', async ({
   });
   await page.goto('/');
   for (const category of ['Halloween', 'Cuencos']) {
-    await page.getByRole('button', { name: 'Abrir menú' }).click();
-    await page.getByRole('button', { name: 'Categorías' }).click();
-    await page.locator('.nav-category-mobile-list')
+      await page.getByRole('button', { name: 'Categorías' }).click();
+    await page.locator('.nav-category-popover')
       .getByRole('link', { name: category, exact: true }).click();
     await expect(page.locator('.product-card')).toHaveCount(2);
     await expect(
