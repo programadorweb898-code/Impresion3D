@@ -89,7 +89,7 @@ export function Navbar({
               }
             }}
           >
-            Subí tu diseño
+            Presupuesto personalizado
           </a>
           <a
             href="/#proceso"
