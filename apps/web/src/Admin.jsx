@@ -334,24 +334,7 @@ export function Admin({ onCatalogChange, onPreview }) {
           ) : (
             <p className="empty">Todavía no hay solicitudes.</p>
           )}
-          <div className="filters">
-            <button
-              disabled={data.page <= 1 || busy}
-              onClick={() =>
-                load(data.page - 1).catch((e) => setError(e.message))
-              }
-            >
-              Anterior
-            </button>
-            <button
-              disabled={data.page >= data.pages || busy}
-              onClick={() =>
-                load(data.page + 1).catch((e) => setError(e.message))
-              }
-            >
-              Siguiente
-            </button>
-          </div>
+          <Pagination page={data.page} pages={data.pages} busy={busy || loading} onPage={(page) => load(page)} />
         </>
       ) : (
         <>
