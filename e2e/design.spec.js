@@ -46,6 +46,7 @@ test('Diseño personalizado tiene textos horizontales y formulario amplio en mó
   for (const width of [320, 390, 575, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/disenar');
+    await expect(page.locator('.photo-quote-form')).toBeVisible();
     const layout = await page.evaluate(() => {
       const rect = (selector) => document.querySelector(selector).getBoundingClientRect();
       const heading = document.querySelector('.photo-quote-page h1');
