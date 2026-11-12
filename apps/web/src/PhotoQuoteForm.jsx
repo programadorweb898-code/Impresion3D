@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 import PhotoQuotes from './PhotoQuotes.jsx';
 
@@ -8,6 +8,7 @@ const accepted = ['image/jpeg', 'image/png', 'image/webp'];
 export default function PhotoQuoteForm() {
   const [user, setUser] = useState(undefined);
   const [file, setFile] = useState(null);
+  const fileInputRef = useRef(null);
   const [preview, setPreview] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [approximateSize, setApproximateSize] = useState('');
@@ -52,8 +53,13 @@ export default function PhotoQuoteForm() {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  useEffect(() => {
+    if (!sent) return;
+    const timeout = window.setTimeout(() => setSent(null), 1500);
+    return () => window.clearTimeout(timeout);
+  }, [sent]);
+
   function changed() {
-    setSent(null);
     setError('');
     setRequestId(crypto.randomUUID());
   }
@@ -74,7 +80,7 @@ export default function PhotoQuoteForm() {
 
   async function submit(event) {
     event.preventDefault();
-    if (!file || !user || !consent || busy || sent) return;
+    if (!file || !user || !consent || busy) return;
     setBusy(true);
     setError('');
     const metadata = {
@@ -94,6 +100,16 @@ export default function PhotoQuoteForm() {
     try {
       const response = await api('/photo-quotes', { method: 'POST', body });
       setSent(response);
+      setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setQuantity(1);
+      setApproximateSize('');
+      setDetails('');
+      setMethod('email');
+      setEmail('');
+      setPhone('');
+      setConsent(false);
+      setRequestId(crypto.randomUUID());
       setRefresh((value) => value + 1);
     } catch (cause) {
       if (cause.status === 401) setUser(null);
@@ -179,9 +195,10 @@ export default function PhotoQuoteForm() {
                   <span>Elegí una foto, captura o ilustración de lo que tenés en mente.</span>
                   <input
                     type="file"
+                    ref={fileInputRef}
                     accept="image/jpeg,image/png,image/webp"
                     required={!file}
-                    disabled={busy || !!sent}
+                    disabled={busy}
                     onChange={(event) => selectPhoto(event.target.files?.[0])}
                   />
                   <span className="photo-quote-file-help">JPG, PNG o WebP · Hasta 5 MB</span>
@@ -209,7 +226,7 @@ export default function PhotoQuoteForm() {
                       step="1"
                       required
                       value={quantity}
-                      disabled={busy || !!sent}
+                      disabled={busy}
                       onChange={(event) => { setQuantity(event.target.value); changed(); }}
                     />
                   </label>
@@ -220,7 +237,7 @@ export default function PhotoQuoteForm() {
                       maxLength="120"
                       placeholder="Ej.: 15 cm de alto"
                       value={approximateSize}
-                      disabled={busy || !!sent}
+                      disabled={busy}
                       onChange={(event) => { setApproximateSize(event.target.value); changed(); }}
                     />
                   </label>
@@ -232,7 +249,7 @@ export default function PhotoQuoteForm() {
                     maxLength={1500}
                     placeholder="Colores, materiales, para qué lo querés, detalles importantes..."
                     value={details}
-                    disabled={busy || !!sent}
+                    disabled={busy}
                     onChange={(event) => { setDetails(event.target.value); changed(); }}
                   />
                 </label>
@@ -245,11 +262,11 @@ export default function PhotoQuoteForm() {
                 </legend>
                 <div className="photo-quote-radio">
                   <label className={method === 'email' ? 'is-selected' : ''}>
-                    <input type="radio" name="quote-contact" checked={method === 'email'} disabled={busy || !!sent} onChange={() => { setMethod('email'); changed(); }} />
+                    <input type="radio" name="quote-contact" checked={method === 'email'} disabled={busy} onChange={() => { setMethod('email'); changed(); }} />
                     Correo electrónico
                   </label>
                   <label className={method === 'whatsapp' ? 'is-selected' : ''}>
-                    <input type="radio" name="quote-contact" checked={method === 'whatsapp'} disabled={busy || !!sent} onChange={() => { setMethod('whatsapp'); changed(); }} />
+                    <input type="radio" name="quote-contact" checked={method === 'whatsapp'} disabled={busy} onChange={() => { setMethod('whatsapp'); changed(); }} />
                     WhatsApp
                   </label>
                 </div>
@@ -262,7 +279,7 @@ export default function PhotoQuoteForm() {
                       maxLength={254}
                       required
                       value={email}
-                      disabled={busy || !!sent}
+                      disabled={busy}
                       onChange={(event) => { setEmail(event.target.value); changed(); }}
                     />
                     <span className="photo-quote-field-help">Usamos este email únicamente para responder la consulta.</span>
@@ -278,7 +295,7 @@ export default function PhotoQuoteForm() {
                       maxLength={32}
                       required
                       value={phone}
-                      disabled={busy || !!sent}
+                      disabled={busy}
                       onChange={(event) => { setPhone(event.target.value); changed(); }}
                     />
                     <span className="photo-quote-field-help">Código de área y número, sin 0 ni 15. Ejemplo: 11 5555-5555.</span>
@@ -292,7 +309,7 @@ export default function PhotoQuoteForm() {
                     type="checkbox"
                     required
                     checked={consent}
-                    disabled={busy || !!sent}
+                    disabled={busy}
                     onChange={(event) => { setConsent(event.target.checked); changed(); }}
                   />
                   <span>Acepto que Somos Mundo 3D use este contacto únicamente para responder mi solicitud de presupuesto.</span>
@@ -300,15 +317,16 @@ export default function PhotoQuoteForm() {
                 <p className="photo-quote-field-help">
                   La imagen es una referencia. Confirmaremos si es posible imprimir el diseño antes de acordar el precio. Enviar la solicitud no confirma una compra.
                 </p>
-                <button className="photo-quote-submit" type="submit" disabled={busy || !file || !!sent}>
-                  {busy ? 'Enviando solicitud…' : sent ? 'Solicitud enviada' : 'Solicitar presupuesto'}
+                <button className="photo-quote-submit" type="submit" disabled={busy || !file}>
+                  {busy ? 'Enviando solicitud…' : 'Solicitar presupuesto'}
                   <span aria-hidden="true">↗</span>
                 </button>
                 {error && <p className="error" role="alert">{error}</p>}
                 {sent && (
-                  <p className="notice" role="status">
-                    Solicitud #{String(sent._id).slice(-6).toUpperCase()} recibida. Podés consultar el estado y la respuesta más abajo.
-                  </p>
+                  <div className="photo-quote-success-toast" role="status" aria-live="polite">
+                    <span>Solicitud #{String(sent._id).slice(-6).toUpperCase()} recibida. Podés consultar el estado y la respuesta más abajo.</span>
+                    <button type="button" className="photo-quote-toast-close" aria-label="Cerrar notificación" onClick={() => setSent(null)}>×</button>
+                  </div>
                 )}
               </div>
             </form>
