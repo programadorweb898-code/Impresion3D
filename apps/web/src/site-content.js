@@ -22,7 +22,7 @@ export const commonQuestions = [
   {
     question: '¿Puedo solicitar una impresión con una foto?',
     answer:
-      'Sí. En “Presupuesto personalizado” iniciá sesión, subí una imagen JPG, PNG o WebP, indicá la cantidad y contanos los detalles. Evaluamos si es viable imprimirlo y te enviamos un presupuesto.',
+      'Sí. En “Diseño personalizado” iniciá sesión, subí una imagen JPG, PNG o WebP, indicá la cantidad y contanos los detalles. Evaluamos si es viable imprimirlo y te enviamos un presupuesto.',
   },
   {
     question: '¿Cuánto tarda la fabricación?',

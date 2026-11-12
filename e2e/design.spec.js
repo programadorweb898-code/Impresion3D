@@ -6,10 +6,43 @@ const photo = () => sharp({
   create: { width: 160, height: 120, channels: 3, background: '#8244bb' },
 }).png().toBuffer();
 
+
+test('Home destaca la novedad con enlace directo sin tapar el hero, en móvil y escritorio', async ({ page }) => {
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/');
+    const feature = page.locator('.custom-design-feature');
+    await expect(feature).toBeVisible();
+    await expect(feature.getByRole('heading', { name: /Hagámosla en 3D/ })).toBeVisible();
+    const cta = feature.getByRole('link', { name: 'Solicitar diseño personalizado' });
+    await expect(cta).toHaveAttribute('href', '/disenar');
+    const bounds = await page.evaluate(() => {
+      const promo = document.querySelector('.custom-design-feature').getBoundingClientRect();
+      const hero = document.querySelector('.hero').getBoundingClientRect();
+      return {
+        pageWidth: document.documentElement.scrollWidth,
+        viewportWidth: innerWidth,
+        promoBottom: promo.bottom,
+        heroTop: hero.top,
+        promoWidth: promo.width,
+      };
+    });
+    expect(bounds.pageWidth).toBeLessThanOrEqual(bounds.viewportWidth);
+    expect(bounds.promoWidth).toBeGreaterThan(240);
+    expect(bounds.heroTop).toBeGreaterThanOrEqual(bounds.promoBottom - 1);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.locator('.custom-design-feature')
+    .getByRole('link', { name: 'Solicitar diseño personalizado' }).click();
+  await expect(page).toHaveURL('/disenar');
+  await expect(page.getByRole('heading', { name: 'Convertí tu idea en impresión 3D' })).toBeVisible();
+});
+
 test('la página invita a enviar una foto y exige iniciar sesión', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
-  await page.getByRole('link', { name: 'Presupuesto personalizado', exact: true }).click();
+  await page.getByRole('link', { name: 'Diseño personalizado', exact: true }).click();
   await expect(page).toHaveURL('/disenar');
   await expect(page.getByRole('heading', { name: 'Convertí tu idea en impresión 3D' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Iniciá sesión para pedir tu presupuesto' })).toBeVisible();

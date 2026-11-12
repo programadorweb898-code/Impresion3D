@@ -83,7 +83,7 @@ for (const width of [390, 1280]) {
       .getByRole('contentinfo')
       .getByRole('link', { name: 'Hogar', exact: true })
       .click();
-    await expect(page.locator('.grid-products > article')).toHaveCount(20);
+    await expect(page.locator('.grid-products > article')).toHaveCount(10);
     await page.getByRole('contentinfo').screenshot({
       path: test.info().outputPath(`footer-${width}.png`),
     });

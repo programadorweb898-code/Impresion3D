@@ -183,7 +183,7 @@ test('la navegación sigue el flujo del sitio y permite usar el menú móvil', a
   page,
 }) => {
   await page.goto('/');
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   for (const width of [390, 768, 1280]) {
     await page.setViewportSize({ width, height: 844 });
     await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
@@ -255,7 +255,7 @@ test('aviso del carrito sigue visible al scrollear, reemplaza mensajes y desapar
   await page.clock.install();
   await page
     .locator('.product-card')
-    .nth(10)
+    .nth(8)
     .getByRole('button', { name: 'Agregar al carrito' })
     .click();
   const toast = page.locator('.toast');
@@ -276,7 +276,7 @@ test('aviso del carrito sigue visible al scrollear, reemplaza mensajes y desapar
   await page.clock.fastForward(1800);
   await page
     .locator('.product-card')
-    .nth(11)
+    .nth(9)
     .getByRole('button', { name: 'Agregar al carrito' })
     .click();
   await expect(toast).toHaveCount(1);
@@ -308,10 +308,10 @@ test('menú móvil, páginas y categorías incluyen piezas fuera de la primera p
   page,
 }) => {
   await page.goto('/');
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await expect(page.locator('.product-card').first()).toContainText('100,50');
   await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
-  await expect(page.locator('.product-card')).toHaveCount(5);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await page.getByRole('button', { name: 'Especial', exact: true }).click();
   await expect(page.locator('.product-card')).toHaveCount(1);
   await menu(page, 'Ingresar');
@@ -391,7 +391,7 @@ test('carrito combina páginas y recupera disponibilidad al volver a iniciar ses
     .getByRole('button', { name: 'Agregar al carrito' })
     .click();
   await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
-  await expect(page.locator('.product-card')).toHaveCount(5);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await page
     .locator('.product-card')
     .first()
@@ -430,7 +430,7 @@ test('visor WebGL carga geometría y permite cerrarlo y volver a abrirlo', async
   const downloaded = [];
   page.on('request', (r) => downloaded.push(r.url()));
   await page.goto('/');
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   expect(
     downloaded.some(
       (url) =>
@@ -780,7 +780,7 @@ test('ficha conserva fotos, descripción y medidas; galería adaptable a móvil 
   await page
     .getByRole('link', { name: 'Volver a la página anterior', exact: true })
     .click();
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   for (const prefix of ['descripci%C3%B3n', 'descripction', 'description']) {
     await page.goto(url.replace('descripcion', prefix));
     await expect(
@@ -856,7 +856,7 @@ test('volver funciona en perfil, pedidos y administración sin salir del sitio',
   await page
     .getByRole('link', { name: 'Volver a la página anterior', exact: true })
     .click();
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await menu(page, 'Mis pedidos');
   await expect(
     page.getByRole('heading', { name: 'Mis pedidos', exact: true }),
@@ -864,7 +864,7 @@ test('volver funciona en perfil, pedidos y administración sin salir del sitio',
   await page
     .getByRole('link', { name: 'Volver a la página anterior', exact: true })
     .click();
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await menu(page, 'Administración');
   await expect(
     page.getByRole('heading', { name: 'Administración', exact: true }),
@@ -872,7 +872,7 @@ test('volver funciona en perfil, pedidos y administración sin salir del sitio',
   await page
     .getByRole('link', { name: 'Volver a la página anterior', exact: true })
     .click();
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
 });
 test('privacidad y condiciones se abren desde el footer sin sesión y conservan navegación y contacto', async ({
   page,
@@ -933,7 +933,7 @@ test('privacidad y condiciones se abren desde el footer sin sesión y conservan 
   await page
     .getByRole('link', { name: 'Volver a la página anterior', exact: true })
     .click();
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await expect(page.locator('.page-back')).toHaveCount(0);
   await expect(page).toHaveTitle('Mundo 3D · Ideas que toman forma');
   await page.goto('/login');
@@ -985,7 +985,7 @@ test('new pages start at the top, while Back and Forward restore instantly befor
         ),
     );
   await page.goto('/');
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await page.evaluate(() => {
     window.__navigationFrames = [];
     window.__recordNavigation = true;
@@ -1035,7 +1035,7 @@ test('new pages start at the top, while Back and Forward restore instantly befor
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(privacyY);
   await painted();
   await page.goBack();
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(homeY);
   const frames = await page.evaluate(async () => {
     await new Promise((resolve) =>

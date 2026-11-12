@@ -4,13 +4,13 @@ test('catalog product Back link and browser Back restore the card and filters wi
   page,
 }) => {
   await page.goto('/');
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await page.getByLabel('Ordenar por').selectOption('price-desc');
   await expect(page.locator('.grid-products')).toHaveAttribute(
     'aria-busy',
     'false',
   );
-  const card = page.locator('.product-card').nth(12);
+  const card = page.locator('.product-card').nth(7);
   const link = card.getByRole('link').first();
   await link.scrollIntoViewIfNeeded();
   const originalY = await page.evaluate(() => scrollY);
@@ -44,7 +44,7 @@ test('returning to a previous category waits for its content before revealing th
   page,
 }) => {
   await page.goto('/');
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   const category = page
     .locator('footer')
     .getByRole('link', { name: 'Hogar', exact: true });

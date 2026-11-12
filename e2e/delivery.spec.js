@@ -14,7 +14,7 @@ test('el carrito cotiza entrega propia y guarda el total con envío', async ({
     .getByLabel('Contraseña', { exact: true })
     .fill('NavegadorPrueba1!');
   await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await page
     .locator('.product-card')
     .first()
