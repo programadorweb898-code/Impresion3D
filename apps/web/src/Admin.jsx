@@ -1,5 +1,7 @@
 import { OrderDelivery } from './OrderDelivery.jsx';
 import DesignRequests from './DesignRequests.jsx';
+import DesignQuote from './DesignQuote.jsx';
+import { WorkerConnections } from './SlicingControls.jsx';
 import PhotoQuotes from './PhotoQuotes.jsx';
 import { ProductGalleryEditor } from './ProductGalleryEditor.jsx';
 import { useEffect, useState } from 'react';
@@ -269,6 +271,11 @@ export function Admin({ onCatalogChange, onPreview }) {
       ) : tab === 'designs' ? (
         <>
           <PhotoQuotes admin />
+          <details className="photo-quote-history">
+            <summary>Herramientas técnicas del taller</summary>
+            <WorkerConnections />
+            <DesignQuote />
+          </details>
           <details className="photo-quote-history">
             <summary>Ver solicitudes antiguas con modelos 3D</summary>
             <DesignRequests admin />
