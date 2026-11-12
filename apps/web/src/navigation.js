@@ -42,6 +42,8 @@ export function currentPage() {
   );
   if (detail)
     return { view: 'product', id: (detail[1] || '').replace(/\/$/, '') };
+  if (/^\/preguntas-frecuentes\/?$/.test(path))
+    return { view: 'faq', id: null };
   const information = Object.keys(informationPages).find(
     (key) => informationPages[key].path === path.replace(/\/$/, ''),
   );

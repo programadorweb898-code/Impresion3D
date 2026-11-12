@@ -5,6 +5,7 @@ test('catalog product Back link and browser Back restore the card and filters wi
 }) => {
   await page.goto('/');
   await expect(page.locator('.product-card')).toHaveCount(10);
+  await page.getByRole('button', { name: 'Mostrar filtros' }).click();
   await page.getByLabel('Ordenar por').selectOption('price-desc');
   await expect(page.locator('.grid-products')).toHaveAttribute(
     'aria-busy',
@@ -66,7 +67,9 @@ test('returning to a previous category waits for its content before revealing th
     'data-scroll-restoring',
   );
   await expect(
-    page.getByRole('button', { name: 'Todos', exact: true }),
-  ).toHaveAttribute('aria-pressed', 'true');
+    page.locator('.nav-category-trigger'),
+  ).toHaveAttribute('data-selected-category', 'Todos');
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(originalY);
+  // Resolve any delayed intercepted requests before Playwright tears down the test.
+  await page.unrouteAll({ behavior: 'wait' });
 });

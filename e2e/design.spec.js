@@ -18,18 +18,19 @@ test('Home destaca la novedad con enlace directo sin tapar el hero, en móvil y 
     await expect(cta).toHaveAttribute('href', '/disenar');
     const bounds = await page.evaluate(() => {
       const promo = document.querySelector('.custom-design-feature').getBoundingClientRect();
-      const hero = document.querySelector('.hero').getBoundingClientRect();
+      const offers = document.querySelector('.offers-carousel')?.getBoundingClientRect();
       return {
         pageWidth: document.documentElement.scrollWidth,
         viewportWidth: innerWidth,
         promoBottom: promo.bottom,
-        heroTop: hero.top,
+        offersTop: offers?.top ?? Number.MAX_SAFE_INTEGER,
         promoWidth: promo.width,
       };
     });
     expect(bounds.pageWidth).toBeLessThanOrEqual(bounds.viewportWidth);
     expect(bounds.promoWidth).toBeGreaterThan(240);
-    expect(bounds.heroTop).toBeGreaterThanOrEqual(bounds.promoBottom - 1);
+    expect(bounds.offersTop).toBeGreaterThanOrEqual(bounds.promoBottom - 1);
+    await expect(page.locator('.hero')).toHaveCount(0);
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');

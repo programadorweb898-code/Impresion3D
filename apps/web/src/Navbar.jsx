@@ -1,4 +1,5 @@
 import { Brand } from './Brand.jsx';
+import { internalLink } from './site-content.js';
 import { useEffect, useRef, useState } from 'react';
 export function Navbar({
   user,
@@ -16,9 +17,20 @@ export function Navbar({
   onAbout,
   onDesign,
   cartButtonRef,
+  categories = [],
+  category = 'Todos',
+  onCategory,
+  onFaq,
+  search,
+  onSearchChange,
+  onSearchSubmit,
 }) {
   const [expanded, setExpanded] = useState(false);
   const toggle = useRef(null);
+  const headerRef = useRef(null);
+  const categoryButtonRef = useRef(null);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [categoryPanelPosition, setCategoryPanelPosition] = useState({ left: 0, top: 0 });
   const showingProcess = view === 'catalog' && location.hash === '#proceso';
   const [mobile, setMobile] = useState(
     () => window.matchMedia('(max-width: 575.98px)').matches,
@@ -28,6 +40,7 @@ export function Navbar({
     const resize = () => {
       setMobile(!media.matches);
       if (media.matches) setExpanded(false);
+      setCategoriesOpen(false);
     };
     resize();
     media.addEventListener('change', resize);
@@ -35,10 +48,54 @@ export function Navbar({
   }, []);
   const choose = (action) => {
     setExpanded(false);
+    setCategoriesOpen(false);
     action();
   };
+  useEffect(() => {
+    if (!categoriesOpen) return;
+    const closeOutside = (event) => {
+      if (!headerRef.current?.contains(event.target)) setCategoriesOpen(false);
+    };
+    const closeEscape = (event) => {
+      if (event.key === 'Escape') {
+        setCategoriesOpen(false);
+        categoryButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('keydown', closeEscape);
+    };
+  }, [categoriesOpen]);
+  const toggleCategories = () => {
+    if (!mobile && headerRef.current && categoryButtonRef.current) {
+      const header = headerRef.current.getBoundingClientRect();
+      const button = categoryButtonRef.current.getBoundingClientRect();
+      setCategoryPanelPosition({
+        left: Math.max(12, Math.min(button.left - header.left, header.width - 286)),
+        top: button.bottom - header.top + 8,
+      });
+    }
+    setCategoriesOpen((open) => !open);
+  };
+  const categoryLinks = () => (
+    <>
+      {['Todos', ...categories].map((item) => (
+        <a
+          key={item}
+          href={item === 'Todos' ? '/#catalogo' : '/?categoria=' + encodeURIComponent(item) + '#catalogo'}
+          aria-current={category === item ? 'page' : undefined}
+          onClick={(event) => internalLink(event, () => choose(() => onCategory(item)))}
+        >
+          {item === 'Todos' ? 'Todos los productos' : item}
+        </a>
+      ))}
+    </>
+  );
   return (
-    <header className="site-header">
+    <header className="site-header" ref={headerRef}>
       <a
         className="brand"
         aria-label="Mundo 3D, inicio"
@@ -50,6 +107,29 @@ export function Navbar({
       >
         <Brand />
       </a>
+      <form
+        className="header-product-search"
+        role="search"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSearchSubmit();
+        }}
+      >
+        <label className="sr-only" htmlFor="header-product-search">Buscar productos</label>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <circle cx="10.8" cy="10.8" r="6.5" />
+          <path d="m16 16 5 5" />
+        </svg>
+        <input
+          id="header-product-search"
+          type="search"
+          value={search}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder="Buscar productos"
+          autoComplete="off"
+        />
+        <button className="sr-only" type="submit">Buscar en catálogo</button>
+      </form>
       <div className={'nav-collapse' + (expanded ? ' is-expanded' : '')}>
         <nav
           inert={mobile && !expanded}
@@ -73,6 +153,24 @@ export function Navbar({
           >
             Catálogo
           </button>
+          <div className="nav-category-group">
+            <button
+              type="button"
+              ref={categoryButtonRef}
+              className="nav-category-trigger"
+              aria-expanded={categoriesOpen}
+              data-selected-category={category}
+              aria-controls={categoriesOpen ? (mobile ? 'nav-category-mobile' : 'nav-category-desktop') : undefined}
+              onClick={toggleCategories}
+            >
+              Categorías <span className="nav-category-chevron" aria-hidden="true">⌄</span>
+            </button>
+            {mobile && categoriesOpen && (
+              <div className="nav-category-mobile-list" id="nav-category-mobile">
+                {categoryLinks()}
+              </div>
+            )}
+          </div>
           <a
             href="/disenar"
             aria-current={view === 'design' ? 'page' : undefined}
@@ -108,6 +206,13 @@ export function Navbar({
             }}
           >
             Cómo funciona
+          </a>
+          <a
+            href="/faq"
+            aria-current={view === 'faq' ? 'page' : undefined}
+            onClick={(event) => internalLink(event, () => choose(onFaq))}
+          >
+            FAQ
           </a>
           <a
             href="/sobre-nosotros"
@@ -177,6 +282,17 @@ export function Navbar({
           )}
         </nav>
       </div>
+      {!mobile && categoriesOpen && (
+        <div
+          className="nav-category-popover"
+          id="nav-category-desktop"
+          style={{ left: categoryPanelPosition.left, top: categoryPanelPosition.top }}
+          role="group"
+          aria-label="Elegir categoría"
+        >
+          {categoryLinks()}
+        </div>
+      )}
       <div className="header-actions">
         <button
           ref={cartButtonRef}

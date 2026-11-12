@@ -62,7 +62,15 @@ test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio
   await expect(
     page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
   ).toBeEnabled();
-  const original = await (await page.request.get('/api/auth/me')).json();
+  // APIRequestContext doesn't inherit page.setExtraHTTPHeaders.
+  // Use the same isolated address as the browser to avoid cross-test 429.
+  const address = createHash('sha256').update(test.info().testId).digest();
+  const apiHeaders = { 'X-Forwarded-For': `198.18.${address[0]}.${address[1]}` };
+  await expect.poll(async () => {
+    const response = await page.request.get('/api/auth/me', { headers: apiHeaders });
+    return response.status();
+  }).toBe(200);
+  const original = await (await page.request.get('/api/auth/me', { headers: apiHeaders })).json();
   expect(original.role).toBe('customer');
   expect(original.email).toBeUndefined();
   await page
@@ -153,14 +161,20 @@ test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio
     .getByRole('button', { name: 'Continuar con Facebook', exact: true })
     .click();
   await expect(page).toHaveURL('/');
-  const returned = await (await page.request.get('/api/auth/me')).json();
+  const returned = await (await page.request.get('/api/auth/me', { headers: apiHeaders })).json();
   expect(returned.id).toBe(original.id);
   expect(returned.name).toBe('Nombre Facebook editado');
   expect(returned.email).toBe('facebook-browser-contact@example.com');
-  const orders = await (await page.request.get('/api/orders')).json();
+  const orders = await (await page.request.get('/api/orders', { headers: apiHeaders })).json();
   expect(orders).toHaveLength(1);
   expect(orders[0].userId).toBe(original.id);
 });
+async function selectCategory(page, name) {
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await page.getByRole('button', { name: 'Categorías' }).click();
+  await page.locator('.nav-category-mobile-list')
+    .getByRole('link', { name, exact: true }).click();
+}
 async function menu(page, name) {
   await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page
@@ -312,7 +326,7 @@ test('menú móvil, páginas y categorías incluyen piezas fuera de la primera p
   await expect(page.locator('.product-card').first()).toContainText('100,50');
   await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
   await expect(page.locator('.product-card')).toHaveCount(10);
-  await page.getByRole('button', { name: 'Especial', exact: true }).click();
+  await selectCategory(page, 'Especial');
   await expect(page.locator('.product-card')).toHaveCount(1);
   await menu(page, 'Ingresar');
   await expect(
@@ -684,7 +698,7 @@ test('ficha conserva fotos, descripción y medidas; galería adaptable a móvil 
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Especial', exact: true }).click();
+  await selectCategory(page, 'Especial');
   const link = page.getByRole('link', {
     name: 'Ver detalles de Pieza 00',
     exact: true,
@@ -796,7 +810,7 @@ test('agregar desde ficha exige login, vuelve al producto y conserva carrito sin
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Especial', exact: true }).click();
+  await selectCategory(page, 'Especial');
   await page
     .getByRole('link', { name: 'Ver detalles de Pieza 00', exact: true })
     .click();

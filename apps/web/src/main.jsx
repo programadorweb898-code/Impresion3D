@@ -135,6 +135,7 @@ function App() {
     [navigationVersion, setNavigationVersion] = useState(0);
   const cart = useCart(user?.id);
   const [authReady, setAuthReady] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const loginDestination = useRef(null);
   const offerDrafts = useRef({});
   const toastSequence = useRef(0);
@@ -824,6 +825,28 @@ function App() {
           onLogout={requestLogout}
           onHowItWorks={() => openSection('proceso')}
           onAbout={() => openInformation('about')}
+          onFaq={() => openInformation('faq')}
+          categories={catalogPage.categories}
+          category={category}
+          onCategory={openCategory}
+          search={search}
+          onSearchChange={(value) => {
+            if (view !== 'catalog') showCatalog();
+            else if (category !== 'Todos') {
+              navigatePage('catalog', '/', { replace: true });
+              rememberCatalog(1, 'Todos', {
+                search: value,
+                priceMin,
+                priceMax,
+                sort,
+              });
+              scrollTarget.current = null;
+            }
+            setSearch(value);
+            setCategory('Todos');
+            setCatalogPage((current) => ({ ...current, page: 1 }));
+          }}
+          onSearchSubmit={() => openSection('catalogo')}
         />
       )}
       {(loginPage || view !== 'catalog') && (
@@ -974,58 +997,6 @@ function App() {
                   </p>
                 </div>
               </section>
-              <section className="hero">
-                <div>
-                  <p className="eyebrow">DISEÑO QUE TOMA FORMA</p>
-                  <h1>
-                    Otra forma
-                    <br />
-                    de hacer <em>lo cotidiano.</em>
-                  </h1>
-                  <p className="hero-copy">
-                    Piezas para ordenar, decorar y regalar. Elegí un diseño de
-                    nuestro catálogo o traé tu propia idea: la imprimimos para
-                    vos.
-                  </p>
-                  <a
-                    className="primary"
-                    href="#catalogo"
-                    onClick={(event) => {
-                      if (
-                        event.button === 0 &&
-                        !event.metaKey &&
-                        !event.ctrlKey &&
-                        !event.shiftKey &&
-                        !event.altKey
-                      ) {
-                        event.preventDefault();
-                        openSection('catalogo');
-                      }
-                    }}
-                  >
-                    Explorar catálogo <span aria-hidden="true">↗</span>
-                  </a>
-                  <p className="small mt-6">
-                    Hecho a pedido. Coordinamos pago y entrega con vos.
-                  </p>
-                </div>
-                <figure className="hero-art hero-brand-art">
-                  <img
-                    className="hero-photo"
-                    src="/images/sm3d-portada-1000.webp"
-                    srcSet="/images/sm3d-portada-640.webp 640w, /images/sm3d-portada-1000.webp 1000w"
-                    sizes="(max-width: 575px) 90vw, 45vw"
-                    width="1024"
-                    height="1024"
-                    fetchPriority="high"
-                    alt="Logo SomosMundo3D en plateado y violeta neón, con un cubo y una boquilla de impresión 3D"
-                  />
-                  <figcaption className="hero-art-caption">
-                    <span>SomosMundo3D · Diseño e impresión 3D.</span>
-                    <span className="hero-caption-category">IMPRESIÓN 3D</span>
-                  </figcaption>
-                </figure>
-              </section>
               <OffersCarousel onOffer={openOffer} />
               <section
                 className="px-[5%] py-8"
@@ -1064,38 +1035,29 @@ function App() {
                     Explorá los detalles. Elegí tu próxima pieza.
                   </span>
                 </div>
-                <div className="filters" aria-label="Filtrar productos">
-                  {['Todos', ...catalogPage.categories].map((c) => (
-                    <button
-                      key={c}
-                      aria-pressed={category === c}
-                      className={category === c ? 'active' : ''}
-                      onClick={() => openCategory(c)}
-                    >
-                      {c}
-                    </button>
-                  ))}
+                <div className="catalog-filter-toolbar">
+                  <button
+                    type="button"
+                    className={'catalog-filter-toggle' + (filtersOpen ? ' is-open' : '')}
+                    aria-label={filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+                    aria-expanded={filtersOpen}
+                    aria-controls="catalog-filter-options"
+                    onClick={() => setFiltersOpen((open) => !open)}
+                  >
+                    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 7h16M4 12h16M4 17h16" />
+                      <circle cx="9" cy="7" r="2" fill="currentColor" stroke="none" />
+                      <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none" />
+                      <circle cx="11" cy="17" r="2" fill="currentColor" stroke="none" />
+                    </svg>
+                    <span>Filtros</span>
+                    {(sort !== 'relevance' || priceMin || priceMax) && (
+                      <span className="catalog-filter-indicator" aria-label="Filtros activos" />
+                    )}
+                  </button>
                 </div>
-                <form
-                  className="catalog-search"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    setCatalogPage((current) => ({ ...current, page: 1 }));
-                  }}
-                >
-                  <label>
-                    Buscar productos
-                    <input
-                      type="search"
-                      value={search}
-                      onChange={(event) => {
-                        setSearch(event.target.value);
-                        setCategory('Todos');
-                        setCatalogPage((current) => ({ ...current, page: 1 }));
-                      }}
-                      placeholder="Nombre o categoría"
-                    />
-                  </label>
+                {filtersOpen && (
+                  <div className="catalog-search catalog-filter-controls" id="catalog-filter-options">
                   <label>
                     Ordenar por
                     <select
@@ -1191,7 +1153,8 @@ function App() {
                       </label>
                     </div>
                   </details>
-                </form>
+                  </div>
+                )}
                 <div className="catalog-feedback">
                   <p role="status" aria-live="polite">
                     {loading

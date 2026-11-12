@@ -20,6 +20,7 @@ test('buscar agrupa pulsaciones, filtra precios y permite recuperar el catálogo
   ).toBeVisible();
   expect(searches).toHaveLength(1);
   expect(searches[0].searchParams.get('startsWith')).toBe('pieza 00');
+  await page.getByRole('button', { name: 'Mostrar filtros' }).click();
   await page.getByText('Filtrar por precio', { exact: true }).click();
   await page.getByLabel('Precio máximo', { exact: true }).fill('100');
   await expect(page.getByText('Sin resultados', { exact: true })).toBeVisible();
@@ -57,10 +58,9 @@ test('las pestañas reutilizan la búsqueda dinámica y permiten volver a buscar
     if (url.pathname === '/api/products') requests.push(url);
   });
   await page.goto('/');
-  const category = page
-    .locator('.filters button')
-    .filter({ hasNotText: /^Todos$/ })
-    .first();
+  await page.getByRole('button', { name: 'Abrir menú' }).click();
+  await page.getByRole('button', { name: 'Categorías' }).click();
+  const category = page.locator('.nav-category-mobile-list a').nth(1);
   const label = (await category.textContent()).trim();
   await category.click();
   await expect
@@ -73,9 +73,11 @@ test('las pestañas reutilizan la búsqueda dinámica y permiten volver a buscar
     )
     .toBe(true);
   await page.getByLabel('Buscar productos', { exact: true }).fill('Pieza 00');
-  await expect(page.locator('.filters button').first()).toHaveAttribute(
-    'aria-pressed',
-    'true',
+  await page.getByRole('button', { name: 'Abrir menú' }).click();
+  await page.getByRole('button', { name: 'Categorías' }).click();
+  await expect(page.locator('.nav-category-mobile-list a').first()).toHaveAttribute(
+    'aria-current',
+    'page',
   );
   await expect
     .poll(() =>
@@ -132,10 +134,10 @@ test('Halloween y Cuencos pueden compartir productos sin duplicarlos', async ({
   });
   await page.goto('/');
   for (const category of ['Halloween', 'Cuencos']) {
-    await page
-      .locator('.filters')
-      .getByRole('button', { name: category, exact: true })
-      .click();
+    await page.getByRole('button', { name: 'Abrir menú' }).click();
+    await page.getByRole('button', { name: 'Categorías' }).click();
+    await page.locator('.nav-category-mobile-list')
+      .getByRole('link', { name: category, exact: true }).click();
     await expect(page.locator('.product-card')).toHaveCount(2);
     await expect(
       page.getByRole('heading', { name: 'Cuenco de Mayers', exact: true }),
