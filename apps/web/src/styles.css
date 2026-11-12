@@ -5069,3 +5069,21 @@ html[data-scroll-restoring] #root {
     border-radius: 16px;
   }
 }
+
+
+/* Evita que los subtítulos del formulario se contraigan a columnas estrechas. */
+.photo-quote-page .photo-quote-section-heading {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+}
+.photo-quote-page .photo-quote-section-heading h3 {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  line-height: 1.4;
+  text-align: left;
+}
