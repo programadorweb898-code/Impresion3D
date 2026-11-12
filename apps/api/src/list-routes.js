@@ -1,7 +1,7 @@
 import { publicProductProjection } from './public-product.js';
 import { Product, Order } from './models.js';
 import { relevancePipeline } from './relevance.js';
-import { pageNumber, pageMetadata, pageSize as limit, catalogPageSize } from './pagination.js';
+import { pageNumber, pageMetadata, pageSize as limit, catalogPageSize, orderPageSize } from './pagination.js';
 export async function listProducts(req, res) {
   const page = pageNumber(req, res);
   if (!page) return;
@@ -97,13 +97,13 @@ export async function listOrders(req, res) {
   const filter = { userId: req.session.userId };
   const orders = await Order.find(filter)
     .sort({ createdAt: -1, _id: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit)
+    .skip((page - 1) * orderPageSize)
+    .limit(orderPageSize)
     .lean();
   if (req.query.page === undefined) return res.json(orders);
   const total = await Order.countDocuments(filter);
   res.json({
     orders,
-    ...pageMetadata(page, total),
+    ...pageMetadata(page, total, orderPageSize),
   });
 }
