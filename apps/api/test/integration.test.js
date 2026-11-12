@@ -246,11 +246,16 @@ test('catálogo e historial paginan sin mezclar usuarios; el carrito recupera pi
   const second = await agent
     .get('/api/products?page=2&category=Paginaci%C3%B3n')
     .expect(200);
-  assert.equal(first.body.products.length, 20);
-  assert.equal(second.body.products.length, 5);
+  const third = await agent
+    .get('/api/products?page=3&category=Paginaci%C3%B3n')
+    .expect(200);
+  assert.equal(first.body.products.length, 10);
+  assert.equal(second.body.products.length, 10);
+  assert.equal(third.body.products.length, 5);
   assert.equal(first.body.total, 25);
+  assert.equal(first.body.pages, 3);
   assert.equal(
-    new Set([...first.body.products, ...second.body.products].map((p) => p._id))
+    new Set([...first.body.products, ...second.body.products, ...third.body.products].map((p) => p._id))
       .size,
     25,
   );
