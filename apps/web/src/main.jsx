@@ -11,6 +11,7 @@ import React, {
   useCallback,
   lazy,
   Suspense,
+  Component,
 } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -54,6 +55,33 @@ import {
   rememberScrollPosition,
   traverseHistory,
 } from './navigation.js';
+// Prevent a failed lazy import or render from blanking the whole storefront.
+class AdminErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { failed: false };
+  }
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error, info) {
+    console.error('No se pudo abrir Administración:', error, info.componentStack);
+  }
+  render() {
+    if (this.state.failed) {
+      return (
+        <section className="orders admin" role="alert">
+          <h1>No pudimos abrir Administración</h1>
+          <p>Hubo un problema al cargar el panel. Actualizá la página para reintentarlo.</p>
+          <button className="primary" type="button" onClick={() => window.location.reload()}>
+            Reintentar
+          </button>
+        </section>
+      );
+    }
+    return this.props.children;
+  }
+}
 const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
 );
@@ -937,15 +965,17 @@ function App() {
               </p>
             )
           ) : view === 'admin' && user?.role === 'admin' ? (
-            <Suspense
-              fallback={
-                <p role="status" data-page-loading>
-                  Cargando administración…
-                </p>
-              }
-            >
-              <Admin onCatalogChange={reloadCatalog} onPreview={setViewing} />
-            </Suspense>
+            <AdminErrorBoundary>
+              <Suspense
+                fallback={
+                  <p role="status" data-page-loading>
+                    Cargando administración…
+                  </p>
+                }
+              >
+                <Admin onCatalogChange={reloadCatalog} onPreview={setViewing} />
+              </Suspense>
+            </AdminErrorBoundary>
           ) : view === 'catalog' ? (
             <>
               <section
