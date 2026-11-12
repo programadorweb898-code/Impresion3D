@@ -67,7 +67,7 @@ test('returning to a previous category waits for its content before revealing th
     'data-scroll-restoring',
   );
   await expect(
-    page.getByRole('button', { name: 'Todos', exact: true }),
-  ).toHaveAttribute('aria-pressed', 'true');
+    page.getByRole('button', { name: 'Categorías' }),
+  ).toHaveAttribute('data-selected-category', 'Todos');
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(originalY);
 });
