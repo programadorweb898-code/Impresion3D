@@ -132,12 +132,14 @@ export function Admin({ onCatalogChange, onPreview }) {
       setProductPage(items);
       setData(orders);
       setOperations(state);
+    } catch (cause) {
+      setError(cause?.message || 'No pudimos cargar los datos de Administración.');
     } finally {
       setLoading(false);
     }
   }
   useEffect(() => {
-    load().catch((e) => setError(e.message));
+    void load();
   }, []);
   async function saveOrder(id, body) {
     setBusy(true);
