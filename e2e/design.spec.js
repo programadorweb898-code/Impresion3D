@@ -37,15 +37,14 @@ test('Home destaca la novedad con enlace directo sin tapar el hero, en móvil y 
   await page.locator('.custom-design-feature')
     .getByRole('link', { name: 'Solicitar diseño personalizado' }).click();
   await expect(page).toHaveURL('/disenar');
-  await expect(page.getByRole('heading', { name: 'Convertí tu idea en impresión 3D' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu idea, hecha a medida.' })).toBeVisible();
 });
 
 test('la página invita a enviar una foto y exige iniciar sesión', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page.getByRole('link', { name: 'Diseño personalizado', exact: true }).click();
   await expect(page).toHaveURL('/disenar');
-  await expect(page.getByRole('heading', { name: 'Convertí tu idea en impresión 3D' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu idea, hecha a medida.' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Iniciá sesión para pedir tu presupuesto' })).toBeVisible();
   await expect(page.getByLabel('Archivo de diseño 3D')).toHaveCount(0);
 });
