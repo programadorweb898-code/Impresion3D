@@ -1,338 +1,77 @@
 import { test, expect } from '@playwright/test';
-import { tetraGlb, tetraStl } from '../apps/api/test/helpers/model-fixtures.js';
-import {
-  coloredThreeMf,
-  zipArchive,
-} from '../apps/api/test/helpers/three-mf-fixtures.js';
+import sharp from 'sharp';
+import { loginDesign } from './design-auth.js';
 
-test('local design route, STL/GLB/3MF measurements, replacement and drop without uploading', async ({
-  page,
-}) => {
-  const writes = [];
-  page.on('request', (request) => {
-    if (request.method() === 'POST' || request.method() === 'PUT')
-      writes.push(request.url());
-  });
+const photo = () => sharp({
+  create: { width: 160, height: 120, channels: 3, background: '#8244bb' },
+}).png().toBuffer();
+
+test('la página invita a enviar una foto y exige iniciar sesión', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
-  await page.getByRole('link', { name: 'Subí tu diseño', exact: true }).click();
+  await page.getByRole('link', { name: 'Presupuesto personalizado', exact: true }).click();
   await expect(page).toHaveURL('/disenar');
-  const input = page.getByLabel('Archivo de diseño 3D');
-  await expect(input).toHaveAttribute('accept', '.3mf,.stl,.glb');
-  await expect(
-    page.getByRole('heading', { name: 'Subí tu diseño', exact: true }),
-  ).toBeVisible();
-  for (const [name, buffer, expectedWidth] of [
-    ['pieza.STL', tetraStl(), '0,1 cm'],
-    ['pieza.glb', tetraGlb(), '100 cm'],
-    ['pieza.3mf', coloredThreeMf(), '0,6 cm'],
-    ['bambu.3mf', coloredThreeMf({ bambu: true }), '0,6 cm'],
-  ]) {
-    await input.setInputFiles({
-      name,
-      mimeType: 'application/octet-stream',
-      buffer,
-    });
-    await expect(
-      page.getByRole('button', { name: 'Restablecer vista', exact: true }),
-    ).toBeVisible();
-    await expect(page.locator('.design-measurements h2')).toHaveText(name);
-    await expect(
-      page.locator('.design-measurements dl > div').first(),
-    ).toHaveText('Ancho' + expectedWidth);
-    await expect(page.getByRole('alert')).toHaveCount(0);
-    await expect(page.locator('.design-parts-notice')).toHaveCount(
-      name.endsWith('.3mf') ? 1 : 0,
-    );
-  }
+  await expect(page.getByRole('heading', { name: 'Convertí tu idea en impresión 3D' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Iniciá sesión para pedir tu presupuesto' })).toBeVisible();
+  await expect(page.getByLabel('Archivo de diseño 3D')).toHaveCount(0);
+});
+
+test('con sesión acepta foto, tamaño y canal de respuesta, sin requerir archivos 3D', async ({ page }) => {
+  await loginDesign(page);
+  await page.goto('/disenar');
+  await expect(page.locator('input[type="file"]')).toHaveAttribute('accept', 'image/jpeg,image/png,image/webp');
+  const input = page.locator('input[type="file"]');
   await input.setInputFiles({
-    name: 'error.txt',
-    mimeType: 'text/plain',
-    buffer: Buffer.from('bad'),
+    name: 'referencia.png',
+    mimeType: 'image/png',
+    buffer: await photo(),
   });
-  await expect(page.getByRole('alert')).toHaveText(
-    'El archivo debe ser .3mf, .stl o .glb.',
-  );
-  await expect(page.locator('canvas')).toHaveCount(0);
+  await expect(page.locator('.photo-quote-preview')).toBeVisible();
+  await page.getByLabel('Cantidad').fill('2');
+  await page.getByLabel('Tamaño aproximado').fill('15 cm de alto');
+  await page.getByLabel('Detalles del pedido').fill('Quiero conservar el color');
+  await page.getByRole('radio', { name: 'WhatsApp' }).check();
+  await page.getByLabel('Tu número de WhatsApp').fill('+5491155555555');
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Solicitar presupuesto', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: /Solicitud #.*recibida/ })).toBeVisible();
+  const item = page.locator('.photo-quote-row').first();
+  await expect(item).toContainText('15 cm de alto');
+  await expect(item).toContainText('WhatsApp');
+  await expect(item.locator('img')).toBeVisible();
+  const src = await item.locator('img').getAttribute('src');
+  const response = await page.request.get(src);
+  expect(response.ok()).toBe(true);
+  expect(response.headers()['content-type']).toContain('image/webp');
+  const widthCheck = await page.evaluate(() => ({
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: innerWidth,
+    offenders: [...document.querySelectorAll('body *')]
+      .filter((element) => element.getBoundingClientRect().right > innerWidth + 1)
+      .slice(0, 12)
+      .map((element) => ({
+        tag: element.tagName,
+        className: typeof element.className === 'string' ? element.className : '',
+        right: Math.round(element.getBoundingClientRect().right),
+      })),
+  }));
+  expect(widthCheck.documentWidth, JSON.stringify(widthCheck.offenders)).toBeLessThanOrEqual(widthCheck.viewportWidth);
+});
+
+test('el selector rechaza archivos distintos a fotografías y superiores a 5 MB', async ({ page }) => {
+  await loginDesign(page);
+  await page.goto('/disenar');
+  const input = page.locator('input[type="file"]');
   await input.setInputFiles({
-    name: 'error.glb',
+    name: 'modelo.3mf',
     mimeType: 'application/octet-stream',
-    buffer: Buffer.from('bad'),
+    buffer: Buffer.from('no-model'),
   });
-  await expect(page.locator('.design-page > .error')).toContainText(
-    'modelo 3D válido',
-  );
-  await expect(page.locator('.design-measurements dl')).toHaveCount(0);
-  const dataTransfer = await page.evaluateHandle((bytes) => {
-    const data = new DataTransfer();
-    data.items.add(new File([new Uint8Array(bytes)], 'arrastrado.stl'));
-    return data;
-  }, Array.from(tetraStl()));
-  await page
-    .locator('.design-dropzone')
-    .dispatchEvent('drop', { dataTransfer });
-  await expect(page.locator('.design-measurements h2')).toHaveText(
-    'arrastrado.stl',
-  );
-  await expect(
-    page.getByRole('button', { name: 'Restablecer vista', exact: true }),
-  ).toBeVisible();
-  await expect(page.locator('.design-parts-notice')).toHaveCount(0);
-  expect(writes).toEqual([]);
-  for (const width of [390, 1280]) {
-    await page.setViewportSize({ width, height: 844 });
-    if (width === 1280) {
-      await expect
-        .poll(() =>
-          page.evaluate(() => {
-            const stage = document
-              .querySelector('.design-preview .model-stage')
-              .getBoundingClientRect();
-            const measures = document
-              .querySelector('.design-measurements')
-              .getBoundingClientRect();
-            return Math.max(
-              Math.abs(stage.y - measures.y),
-              Math.abs(stage.height - measures.height),
-            );
-          }),
-        )
-        .toBeLessThan(1);
-    }
-
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    ).toBe(true);
-  }
-  await page.reload();
-  await expect(
-    page.getByText(
-      'Tu modelo y sus medidas aparecerán acá cuando elijas un archivo.',
-    ),
-  ).toBeVisible();
-});
-
-test('3MF resolves packaged Bambu components, units and repeated mesh transforms', async ({
-  page,
-}) => {
-  const mesh =
-    '<mesh><vertices><vertex x="0" y="0" z="0"/><vertex x="1" y="0" z="0"/><vertex x="0" y="2" z="0"/><vertex x="0" y="0" z="3"/></vertices><triangles><triangle v1="0" v2="2" v3="1"/><triangle v1="0" v2="1" v3="3"/><triangle v1="0" v2="3" v3="2"/><triangle v1="1" v2="2" v3="3"/></triangles></mesh>';
-  const buffer = zipArchive({
-    '3D/3dmodel.model':
-      '<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" unit="centimeter"><resources><object id="10"><components><component p:path="/3D/Objects/part.model" objectid="1"/></components></object></resources><build><item objectid="10" transform="1 0 0 0 1 0 0 0 1 10 0 0"/><item objectid="10" transform="1 0 0 0 1 0 0 0 1 20 0 0"/></build></model>',
-    '3D/Objects/part.model':
-      '<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><resources><object id="1">' +
-      mesh +
-      '</object></resources></model>',
+  await expect(page.getByRole('alert')).toContainText('JPG, PNG o WebP');
+  await input.setInputFiles({
+    name: 'grande.png',
+    mimeType: 'image/png',
+    buffer: Buffer.alloc(5 * 1024 * 1024 + 1, 0),
   });
-  await page.goto('/disenar');
-  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'componentes.3mf',
-    mimeType: 'application/octet-stream',
-    buffer,
-  });
-  await expect(page.locator('.design-measurements dl')).toContainText(
-    'Ancho11 cm',
-  );
-  await expect(page.locator('.design-measurements dl')).toContainText(
-    'Alto3 cm',
-  );
-  await expect(page.locator('.design-measurements dl')).toContainText(
-    'Profundidad2 cm',
-  );
-  await expect(page.getByRole('alert')).toHaveCount(0);
-  await expect(page.locator('.design-parts-table tbody tr')).toHaveCount(2);
-  for (const row of await page.locator('.design-parts-table tbody tr').all()) {
-    await expect(row).toContainText('1 cm');
-    await expect(row).toContainText('3 cm');
-    await expect(row).toContainText('2 cm');
-  }
-});
-
-test('rejects external GLB resources and cyclic 3MF components', async ({
-  page,
-}) => {
-  const external = [];
-  page.on('request', (request) => {
-    if (request.url().includes('outside.example')) external.push(request.url());
-  });
-  await page.goto('/disenar');
-  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'externo.glb',
-    mimeType: 'application/octet-stream',
-    buffer: tetraGlb((doc) => ({
-      ...doc,
-      buffers: [{ uri: 'https://outside.example/model.bin', byteLength: 72 }],
-    })),
-  });
-  await expect(page.locator('.design-page > .error')).toContainText(
-    'incluir todos sus recursos',
-  );
-  expect(external).toEqual([]);
-  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'ciclo.3mf',
-    mimeType: 'application/octet-stream',
-    buffer: coloredThreeMf({
-      transformXml: (xml) =>
-        xml.replace('<component objectid="1"/>', '<component objectid="10"/>'),
-    }),
-  });
-  await expect(page.locator('.design-page > .error')).toContainText(
-    'referencias circulares',
-  );
-});
-
-test('STL disconnected shells show the multi-part notice and replacement clears it', async ({
-  page,
-}) => {
-  const first = tetraStl();
-  const second = tetraStl();
-  for (let t = 0; t < 4; t++)
-    for (let corner = 0; corner < 3; corner++) {
-      const offset = 84 + t * 50 + 12 + corner * 12;
-      second.writeFloatLE(second.readFloatLE(offset) + 10, offset);
-    }
-  const merged = Buffer.concat([first, second.subarray(84)]);
-  merged.writeUInt32LE(8, 80);
-  await page.goto('/disenar');
-  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'dos-piezas.stl',
-    mimeType: 'application/octet-stream',
-    buffer: merged,
-  });
-  await expect(page.locator('.design-parts-notice')).toContainText(
-    'Este archivo contiene varias piezas.',
-  );
-  await expect(page.locator('.design-parts-notice')).toContainText(
-    'subí una versión ensamblada',
-  );
-  await expect(page.locator('.design-measurements dl')).toContainText(
-    'Ancho1,1 cm',
-  );
-  await expect(page.locator('.design-parts-table tbody tr')).toHaveCount(2);
-  for (const row of await page.locator('.design-parts-table tbody tr').all()) {
-    await expect(row.locator('td')).toHaveText(['0,1 cm', '0,1 cm', '0,1 cm']);
-  }
-  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'una-pieza.stl',
-    mimeType: 'application/octet-stream',
-    buffer: first,
-  });
-  await expect(
-    page.getByRole('button', { name: 'Restablecer vista', exact: true }),
-  ).toBeVisible();
-  await expect(page.locator('.design-parts-notice')).toHaveCount(0);
-});
-
-test('GLB reports each named instance without including gaps in part dimensions', async ({
-  page,
-}) => {
-  await page.goto('/disenar');
-  const buffer = tetraGlb((doc) => ({
-    ...doc,
-    scenes: [{ nodes: [0, 1] }],
-    nodes: [
-      { name: 'Base', mesh: 0 },
-      { name: 'Tapa', mesh: 0, translation: [10, 0, 0], scale: [2, 3, 4] },
-    ],
-  }));
-  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'partes.glb',
-    mimeType: 'application/octet-stream',
-    buffer,
-  });
-  await expect(page.locator('.design-parts-table tbody tr')).toHaveCount(2);
-  await expect(
-    page.locator('.design-parts-table tbody tr').nth(0),
-  ).toContainText('Base');
-  await expect(
-    page.locator('.design-parts-table tbody tr').nth(0).locator('td'),
-  ).toHaveText(['100 cm', '100 cm', '100 cm']);
-  await expect(
-    page.locator('.design-parts-table tbody tr').nth(1),
-  ).toContainText('Tapa');
-  await expect(
-    page.locator('.design-parts-table tbody tr').nth(1).locator('td'),
-  ).toHaveText(['200 cm', '300 cm', '400 cm']);
-  await expect(
-    page.getByRole('heading', {
-      name: 'Medidas del conjunto del archivo',
-      exact: true,
-    }),
-  ).toBeVisible();
-});
-
-test('part names are displayed in Spanish with neutral fallbacks', async ({
-  page,
-}) => {
-  const buffer = tetraGlb((doc) => ({
-    ...doc,
-    scenes: [{ nodes: [0, 1, 2, 3] }],
-    nodes: [
-      { name: 'Main Component.stl', mesh: 0 },
-      { name: 'Start Component.stl', mesh: 0, translation: [2, 0, 0] },
-      { name: 'End Component.stl', mesh: 0, translation: [4, 0, 0] },
-      { name: 'UnknownGeometry987', mesh: 0, translation: [6, 0, 0] },
-    ],
-  }));
-  await page.goto('/disenar');
-  await page
-    .getByLabel('Archivo de diseño 3D')
-    .setInputFiles({
-      name: 'piezas.glb',
-      mimeType: 'application/octet-stream',
-      buffer,
-    });
-  await expect(page.locator('.design-parts-table tbody th')).toHaveText([
-    '1. Componente central',
-    '2. Componente inicial',
-    '3. Componente final',
-    'Pieza 4',
-  ]);
-});
-
-test('busy model worker leaves the page responsive and replacement cancels stale work', async ({
-  page,
-}) => {
-  // Deterministic CPU work in the real worker: the main page must keep handling input.
-  await page.route('**/assets/local-model.worker-*.js', async (route) => {
-    const response = await route.fetch();
-    await route.fulfill({
-      response,
-      body:
-        'const until = Date.now() + 2000; while (Date.now() < until) {};' +
-        (await response.text()),
-    });
-  });
-  await page.goto('/disenar');
-  const workerStarted = page.waitForEvent('worker');
-  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'lento.3mf',
-    mimeType: 'application/octet-stream',
-    buffer: coloredThreeMf(),
-  });
-  const worker = await workerStarted;
-  const workerClosed = new Promise((resolve) => worker.once('close', resolve));
-  await expect(page.getByText(/Procesando modelo 3D/)).toBeVisible();
-  // A normal UI replacement must complete before the busy worker finishes.
-  const before = Date.now();
-  await page.getByLabel('Archivo de diseño 3D').setInputFiles({
-    name: 'reemplazo.glb',
-    mimeType: 'application/octet-stream',
-    buffer: tetraGlb(),
-  });
-  await expect(
-    page.getByRole('button', { name: 'Restablecer vista', exact: true }),
-  ).toBeVisible();
-  expect(Date.now() - before).toBeLessThan(1800);
-  await workerClosed;
-  await expect(page.locator('.design-measurements h2')).toHaveText(
-    'reemplazo.glb',
-  );
-  await expect(
-    page.locator('.design-measurements dl > div').first(),
-  ).toHaveText('Ancho100 cm');
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(page.getByRole('alert')).toContainText('hasta 5 MB');
 });

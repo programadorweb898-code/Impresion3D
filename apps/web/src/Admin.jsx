@@ -1,7 +1,8 @@
 import { OrderDelivery } from './OrderDelivery.jsx';
-import { WorkerConnections } from './SlicingControls.jsx';
-import DesignQuote from './DesignQuote.jsx';
 import DesignRequests from './DesignRequests.jsx';
+import DesignQuote from './DesignQuote.jsx';
+import { WorkerConnections } from './SlicingControls.jsx';
+import PhotoQuotes from './PhotoQuotes.jsx';
 import { ProductGalleryEditor } from './ProductGalleryEditor.jsx';
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
@@ -236,7 +237,7 @@ export function Admin({ onCatalogChange, onPreview }) {
           className={tab === 'designs' ? 'active' : ''}
           onClick={() => setTab('designs')}
         >
-          Presupuestos 3D
+          Presupuestos
         </button>
         <button
           aria-pressed={tab === 'operations'}
@@ -269,9 +270,16 @@ export function Admin({ onCatalogChange, onPreview }) {
         <p role="status">Cargando taller…</p>
       ) : tab === 'designs' ? (
         <>
-          <WorkerConnections />
-          <DesignRequests admin />
-          <DesignQuote />
+          <PhotoQuotes admin />
+          <details className="photo-quote-history">
+            <summary>Herramientas técnicas del taller</summary>
+            <WorkerConnections />
+            <DesignQuote />
+          </details>
+          <details className="photo-quote-history">
+            <summary>Ver solicitudes antiguas con modelos 3D</summary>
+            <DesignRequests admin />
+          </details>
         </>
       ) : tab === 'operations' ? (
         <section>

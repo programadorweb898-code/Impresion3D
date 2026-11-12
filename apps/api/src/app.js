@@ -1,6 +1,7 @@
 import { validDeliveryLocality } from '@impresion3d/shared/localities';
 import { publicProductProjection } from './public-product.js';
 import { offersRouter } from './offers.js';
+import { photoQuotesRouter, adminPhotoQuotesRouter } from './photo-quotes.js';
 import { slicerWorkerRouter, adminSlicingRouter } from './slicing.js';
 import {
   designRequestsRouter,
@@ -420,6 +421,8 @@ export function createApp({
   );
   app.use('/api/admin/slicing', authenticated, adminSlicingRouter());
   app.use('/api/design-requests', designRequestsRouter(authenticated));
+  app.use('/api/photo-quotes', photoQuotesRouter(authenticated));
+  app.use('/api/admin/photo-quotes', authenticated, adminPhotoQuotesRouter());
   app.use(
     '/api/admin/design-requests',
     authenticated,
@@ -463,6 +466,8 @@ export function createApp({
     });
   }
   app.use((err, req, res, _next) => {
+    if (err.photoQuoteError)
+      return res.status(400).json({ message: err.message });
     if (err.name === 'MulterError' && req.designUpload)
       return res.status(400).json({
         message:

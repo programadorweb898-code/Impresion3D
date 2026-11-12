@@ -209,6 +209,37 @@ designRequestSchema.index({ userId: 1, createdAt: -1 });
 designRequestSchema.index({ createdAt: -1 });
 export const DesignRequest = model('DesignRequest', designRequestSchema);
 
+
+const photoQuoteSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    fileId: { type: Schema.Types.ObjectId, required: true },
+    filename: String,
+    requestId: { type: String, required: true },
+    requestHash: { type: String, required: true, select: false },
+    quantity: { type: Number, required: true, min: 1 },
+    approximateSize: { type: String, default: '' },
+    details: { type: String, default: '' },
+    contact: {
+      method: { type: String, enum: ['email', 'whatsapp'], required: true },
+      value: { type: String, required: true },
+    },
+    contactConsent: { type: Boolean, required: true },
+    status: {
+      type: String,
+      enum: ['recibido', 'en_revision', 'presupuestado', 'cerrado'],
+      default: 'recibido',
+    },
+    priceCents: { type: Number, default: null },
+    response: { type: String, default: '' },
+  },
+  { timestamps: true },
+);
+photoQuoteSchema.index({ userId: 1, requestId: 1 }, { unique: true });
+photoQuoteSchema.index({ userId: 1, createdAt: -1 });
+photoQuoteSchema.index({ createdAt: -1 });
+export const PhotoQuote = model('PhotoQuote', photoQuoteSchema);
+
 const slicerWorkerSchema = new Schema(
   {
     ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },

@@ -22,6 +22,6 @@ export async function openAdminQuotes(page) {
     .getByRole('button', { name: 'Administración', exact: true })
     .click();
   await page
-    .getByRole('button', { name: 'Presupuestos 3D', exact: true })
+    .getByRole('button', { name: 'Presupuestos', exact: true })
     .click();
 }

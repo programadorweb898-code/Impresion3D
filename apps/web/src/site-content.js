@@ -20,9 +20,9 @@ export const commonQuestions = [
       'Explorá el catálogo, iniciá sesión y agregá las piezas al carrito. Al enviar la solicitud revisamos la disponibilidad y coordinamos los detalles con vos antes de confirmar el pedido.',
   },
   {
-    question: '¿Puedo enviar mi propio modelo 3D?',
+    question: '¿Puedo solicitar una impresión con una foto?',
     answer:
-      'Sí. En “Subí tu diseño” podés cargar un archivo 3MF, STL o GLB, revisar su vista previa, ajustar las medidas de forma proporcional e indicar la cantidad. Iniciá sesión para enviar la solicitud de presupuesto.',
+      'Sí. En “Presupuesto personalizado” iniciá sesión, subí una imagen JPG, PNG o WebP, indicá la cantidad y contanos los detalles. Evaluamos si es viable imprimirlo y te enviamos un presupuesto.',
   },
   {
     question: '¿Cuánto tarda la fabricación?',
@@ -37,7 +37,7 @@ export const commonQuestions = [
   {
     question: '¿Cómo recibo el presupuesto de mi diseño?',
     answer:
-      'Revisamos el archivo y su viabilidad de impresión. Podés consultar el estado y nuestra respuesta en “Mis solicitudes”, dentro de “Subí tu diseño”. Enviar el archivo no confirma una compra.',
+      'Revisamos tu imagen de referencia y la viabilidad de impresión. Elegís recibir el presupuesto por correo electrónico o WhatsApp, y también podés ver el estado en “Mis solicitudes”. Enviar la imagen no confirma una compra.',
   },
   {
     question: '¿Cómo se coordinan el pago y la entrega?',
@@ -45,9 +45,9 @@ export const commonQuestions = [
       'Realizamos entregas a domicilio en auto hasta 30 km de ida desde Rafael Castillo (CP 1755). Para cotizar ingresá calle y altura, seleccioná provincia y localidad, y completá el CP. El carrito suma productos más envío antes de enviar el pedido. El envío es gratis desde $120.000 en productos. El sitio no cobra pagos online.',
   },
   {
-    question: '¿Qué pasa si el modelo no tiene colores definidos?',
+    question: '¿Necesito saber diseñar en 3D para consultar?',
     answer:
-      'Si detectamos colores sin asignar o no podemos comprobarlos, el sitio te avisa antes del envío. Podés enviarlo igual para que lo revisemos o cancelar. El blanco definido en el archivo se considera un color válido.',
+      'No. Podés enviarnos una foto o imagen de referencia. Si necesitás colores, tamaños o detalles específicos, escribilos en la solicitud. Te confirmaremos qué se puede fabricar.',
   },
 ];
 

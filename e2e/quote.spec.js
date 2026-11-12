@@ -5,6 +5,7 @@ test('manual and sliced 3MF produce the same aggregate quote, missing statistics
   page,
 }) => {
   await openAdminQuotes(page);
+  await page.getByText('Herramientas técnicas del taller', { exact: true }).click();
   await page
     .getByRole('button', { name: 'Presupuesto manual', exact: true })
     .click();
@@ -49,6 +50,7 @@ test('manual and sliced 3MF produce the same aggregate quote, missing statistics
 
 test('manual estimate changes with selected filament', async ({ page }) => {
   await openAdminQuotes(page);
+  await page.getByText('Herramientas técnicas del taller', { exact: true }).click();
   await page
     .getByRole('button', { name: 'Presupuesto manual', exact: true })
     .click();

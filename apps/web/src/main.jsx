@@ -58,7 +58,7 @@ const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
 );
 const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
-const DesignUpload = lazy(() => import('./DesignUpload.jsx'));
+const PhotoQuoteForm = lazy(() => import('./PhotoQuoteForm.jsx'));
 function Modal({ children, onClose, wide = false }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -859,11 +859,11 @@ function App() {
             <Suspense
               fallback={
                 <p role="status" data-page-loading>
-                  Cargando tu espacio de diseño…
+                  Cargando formulario de presupuesto…
                 </p>
               }
             >
-              <DesignUpload />
+              <PhotoQuoteForm />
             </Suspense>
           ) : view === 'offer' ? (
             !authReady || (user && !cart.ready) ? (
@@ -985,9 +985,8 @@ function App() {
                 <h2 id="makerworld-title">También publicamos en MakerWorld</h2>
                 <p>
                   MakerWorld es una plataforma de diseños para imprimir en 3D.
-                  Si tenés tus propios diseños y querés que los fabriquemos,
-                  envianos tus archivos. Nosotros nos encargamos de imprimirlos
-                  y enviártelos.
+                  Si encontraste un diseño que te gusta, podés enviarnos una imagen
+                  de referencia para consultar un presupuesto de impresión.
                 </p>
                 <a
                   href="https://makerworld.com/es"
@@ -1326,11 +1325,11 @@ function App() {
               </section>
               <section className="coming">
                 <div>
-                  <p className="eyebrow">¿TENÉS UN ARCHIVO 3D?</p>
+                  <p className="eyebrow">¿TENÉS UNA FOTO O UNA IDEA?</p>
                   <h2>Tu idea también tiene lugar acá.</h2>
                   <p>
-                    Subí tu modelo, revisalo en 3D y consultanos para hacerlo
-                    realidad.
+                    Mandanos una imagen del producto que te gustaría imprimir y
+                    contanos cómo lo imaginás. Evaluamos tu idea y te presupuestamos.
                   </p>
                 </div>
                 <a
@@ -1349,7 +1348,7 @@ function App() {
                     }
                   }}
                 >
-                  Cotizar mi archivo <span aria-hidden="true">↗</span>
+                  Pedir presupuesto <span aria-hidden="true">↗</span>
                 </a>
               </section>
             </>
