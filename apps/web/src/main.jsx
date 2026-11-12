@@ -832,6 +832,16 @@ function App() {
           search={search}
           onSearchChange={(value) => {
             if (view !== 'catalog') showCatalog();
+            else if (category !== 'Todos') {
+              navigatePage('catalog', '/', { replace: true });
+              rememberCatalog(1, 'Todos', {
+                search: value,
+                priceMin,
+                priceMax,
+                sort,
+              });
+              scrollTarget.current = null;
+            }
             setSearch(value);
             setCategory('Todos');
             setCatalogPage((current) => ({ ...current, page: 1 }));
