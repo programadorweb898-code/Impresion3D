@@ -4,7 +4,7 @@ test('buscar agrupa pulsaciones, filtra precios y permite recuperar el catálogo
   page,
 }) => {
   await page.goto('/');
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   const searches = [];
   page.on('request', (request) => {
     const url = new URL(request.url());
@@ -26,7 +26,7 @@ test('buscar agrupa pulsaciones, filtra precios y permite recuperar el catálogo
   await page
     .getByRole('button', { name: 'Limpiar filtros', exact: true })
     .click();
-  await expect(page.locator('.product-card')).toHaveCount(20);
+  await expect(page.locator('.product-card')).toHaveCount(10);
   await expect(
     page.getByLabel('Buscar productos', { exact: true }),
   ).toHaveValue('');
