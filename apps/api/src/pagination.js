@@ -1,4 +1,5 @@
 export const pageSize = 20;
+export const catalogPageSize = 10;
 
 export function pageNumber(req, res) {
   const raw = req.query.page ?? '1';
@@ -9,8 +10,8 @@ export function pageNumber(req, res) {
   return Number(raw);
 }
 
-export const pageMetadata = (page, total) => ({
+export const pageMetadata = (page, total, size = pageSize) => ({
   page,
   total,
-  pages: Math.max(1, Math.ceil(total / pageSize)),
+  pages: Math.max(1, Math.ceil(total / size)),
 });
