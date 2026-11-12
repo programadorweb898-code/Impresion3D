@@ -1,5 +1,6 @@
 export const pageSize = 20;
 export const catalogPageSize = 10;
+export const orderPageSize = 10;
 
 export function pageNumber(req, res) {
   const raw = req.query.page ?? '1';
