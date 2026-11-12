@@ -12,7 +12,6 @@ import React, {
   lazy,
   Suspense,
   Component,
-  Component,
 } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -74,32 +73,6 @@ class AdminErrorBoundary extends Component {
         <section className="orders admin" role="alert">
           <h1>No pudimos abrir Administración</h1>
           <p>Hubo un problema al cargar el panel. Actualizá la página para reintentarlo.</p>
-          <button className="primary" type="button" onClick={() => window.location.reload()}>
-            Reintentar
-          </button>
-        </section>
-      );
-    }
-    return this.props.children;
-  }
-}
-class AdminErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { failed: false };
-  }
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  componentDidCatch(error, info) {
-    console.error('Error al mostrar Administración', error, info);
-  }
-  render() {
-    if (this.state.failed) {
-      return (
-        <section className="orders admin" role="alert">
-          <h1>No pudimos abrir Administración</h1>
-          <p>Ocurrió un error al cargar el panel. Actualizá la página para intentarlo de nuevo.</p>
           <button className="primary" type="button" onClick={() => window.location.reload()}>
             Reintentar
           </button>
@@ -1000,9 +973,7 @@ function App() {
                   </p>
                 }
               >
-                <AdminErrorBoundary>
                 <Admin onCatalogChange={reloadCatalog} onPreview={setViewing} />
-              </AdminErrorBoundary>
               </Suspense>
             </AdminErrorBoundary>
           ) : view === 'catalog' ? (
