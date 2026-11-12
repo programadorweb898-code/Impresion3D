@@ -1,4 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { createHash } from 'node:crypto';
+test.beforeEach(async ({ page }, testInfo) => {
+  const hash = createHash('sha256').update(testInfo.testId).digest();
+  await page.setExtraHTTPHeaders({
+    'X-Forwarded-For': `198.19.${hash[0]}.${hash[1]}`,
+  });
+});
+
 
 test('la navegación de escritorio permanece en una fila con desplazamiento horizontal', async ({
   page,
