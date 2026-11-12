@@ -10,7 +10,7 @@ test('catalog product Back link and browser Back restore the card and filters wi
     'aria-busy',
     'false',
   );
-  const card = page.locator('.product-card').nth(12);
+  const card = page.locator('.product-card').nth(7);
   const link = card.getByRole('link').first();
   await link.scrollIntoViewIfNeeded();
   const originalY = await page.evaluate(() => scrollY);
