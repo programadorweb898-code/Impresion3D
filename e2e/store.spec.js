@@ -525,6 +525,20 @@ test('Administración no deja la pantalla negra y mantiene navegación funcional
   expect(errors).toEqual([]);
 });
 
+test('administración muestra error recuperable si una API falla', async ({ page }) => {
+  await login(page, 0, 'admin-browser@example.com');
+  await page.route('**/api/admin/operations', (route) =>
+    route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Servicio temporalmente no disponible' }) }),
+  );
+  await menu(page, 'Administración');
+  await expect(page.getByRole('heading', { name: 'Administración', exact: true })).toBeVisible();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Actualizar', exact: true })).toBeEnabled();
+  await page.unroute('**/api/admin/operations');
+  await page.getByRole('button', { name: 'Actualizar', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Productos', exact: true })).toBeVisible();
+});
+
 test('administración pagina productos y muestra integraciones sólo al administrador', async ({
   page,
 }) => {
