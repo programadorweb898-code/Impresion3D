@@ -36,7 +36,8 @@ const toLocalDate = (iso) => {
 function OrderEditor({ order, onSave, busy }) {
   const [status, setStatus] = useState(order.status);
   const [eta, setEta] = useState(toLocalDate(order.estimatedReadyAt));
-  const closed = statusTransitions[order.status].length === 0;
+  const transitions = statusTransitions[order.status] ?? [];
+  const closed = transitions.length === 0;
   return (
     <article className="order">
       <div className="flex justify-between flex-wrap gap-3">
@@ -82,7 +83,7 @@ function OrderEditor({ order, onSave, busy }) {
           <label>
             Estado
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
-              {[order.status, ...statusTransitions[order.status]].map((s) => (
+              {[order.status, ...transitions].map((s) => (
                 <option key={s} value={s}>
                   {statusLabels[s]}
                 </option>
@@ -300,7 +301,7 @@ export function Admin({ onCatalogChange, onPreview }) {
             }).map(([key, label]) => (
               <li key={key}>
                 {label}:{' '}
-                {operations?.integrations[key]
+                {operations?.integrations?.[key]
                   ? 'Habilitado'
                   : 'Sin configurar'}
               </li>
