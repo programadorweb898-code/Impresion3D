@@ -1,5 +1,5 @@
 import { rateLimitMessage } from './rate-limit-message.js';
-import { pageNumber, pageMetadata, pageSize as limit } from './pagination.js';
+import { pageNumber, pageMetadata, pageSize as limit, orderPageSize } from './pagination.js';
 import { validate } from './http-validation.js';
 import { Router } from 'express';
 import { addModelRoutes } from './model-routes.js';
@@ -110,15 +110,15 @@ export function createAdminRouter({
     const [orders, total] = await Promise.all([
       Order.find()
         .sort({ createdAt: -1, _id: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
+        .skip((page - 1) * orderPageSize)
+        .limit(orderPageSize)
         .populate('userId', 'name email')
         .lean(),
       Order.countDocuments(),
     ]);
     res.json({
       orders,
-      ...pageMetadata(page, total),
+      ...pageMetadata(page, total, orderPageSize),
     });
   });
   adminRouter.patch(
