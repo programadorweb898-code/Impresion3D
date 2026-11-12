@@ -1,7 +1,6 @@
 import { Brand } from './Brand.jsx';
 import { legalPages, legalSite } from '@impresion3d/shared';
 import {
-  commonQuestions,
   informationPages,
   internalLink,
   siteContact,
@@ -127,24 +126,6 @@ export function SiteFooter({
               </a>
             ))}
           </address>
-        </section>
-        <section
-          className="footer-column footer-faq"
-          aria-labelledby="footer-faq-title"
-        >
-          <h2 id="footer-faq-title">Preguntas frecuentes</h2>
-          {commonQuestions.slice(0, 3).map(({ question, answer }) => (
-            <details key={question}>
-              <summary>{question}</summary>
-              <p>{answer}</p>
-            </details>
-          ))}
-          <a
-            href={informationPages.faq.path}
-            onClick={(e) => internalLink(e, () => onInformation('faq'))}
-          >
-            Ver todas las preguntas <span aria-hidden="true">→</span>
-          </a>
         </section>
       </div>
       <div className="footer-bottom">
