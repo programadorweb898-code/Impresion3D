@@ -3652,3 +3652,106 @@ html[data-scroll-restoring] #root {
   color: #161616;
   background: #fff;
 }
+
+/* Solicitudes por fotografía: diseño accesible, oscuro y adaptable. */
+.photo-quote-page > p {
+  max-width: 72ch;
+}
+.photo-quote-login,
+.photo-quote-form,
+.photo-quote-row,
+.photo-quote-history {
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+  color: var(--text);
+}
+.photo-quote-form,
+.photo-quote-form label,
+.photo-quote-row form,
+.photo-quote-row form label,
+.photo-quote-contact > label {
+  display: grid;
+  gap: 0.65rem;
+}
+.photo-quote-form {
+  gap: 1.4rem;
+}
+.photo-quote-form input:not([type="radio"]):not([type="checkbox"]),
+.photo-quote-form textarea,
+.photo-quote-row input,
+.photo-quote-row select,
+.photo-quote-row textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: #111;
+  color: #fff;
+}
+.photo-quote-form input[type="file"] {
+  padding: 1rem;
+  border: 1px dashed var(--line);
+  cursor: pointer;
+}
+.photo-quote-preview,
+.photo-quote-thumb {
+  display: block;
+  max-height: 360px;
+  width: 100%;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: #0b0b0b;
+}
+.photo-quote-preview { max-width: 420px; }
+.photo-quote-thumb { max-width: 250px; height: 230px; }
+.photo-quote-grid,
+.photo-quote-row-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.photo-quote-row-layout { grid-template-columns: minmax(160px, 250px) 1fr; }
+.photo-quote-contact {
+  border: 1px solid var(--line);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  min-width: 0;
+}
+.photo-quote-contact legend { padding: 0 0.35rem; }
+.photo-quote-radio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.photo-quote-radio label,
+.photo-quote-consent {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.photo-quote-radio input,
+.photo-quote-consent input {
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+}
+.photo-quote-details { white-space: pre-wrap; overflow-wrap: anywhere; }
+.photo-quote-list { margin-top: 2.5rem; }
+.photo-quote-list > button { margin: 0.75rem 0; }
+.photo-quote-row form { gap: 1rem; margin-top: 1.3rem; }
+.photo-quote-reply { padding: 1rem 0; }
+.photo-quote-reply a { display: inline-block; }
+.photo-quote-row p { overflow-wrap: anywhere; }
+.photo-quote-history summary { cursor: pointer; font-weight: 600; }
+@media (max-width: 700px) {
+  .photo-quote-grid,
+  .photo-quote-row-layout { grid-template-columns: 1fr; }
+  .photo-quote-form,
+  .photo-quote-row { padding: 1rem; }
+}
