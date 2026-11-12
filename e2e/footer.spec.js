@@ -38,7 +38,7 @@ for (const width of [390, 1280]) {
       .getByRole('contentinfo')
       .getByRole('link', { name: 'Ver todas las preguntas' })
       .click();
-    await expect(page).toHaveURL('/preguntas-frecuentes');
+    await expect(page).toHaveURL('/faq');
     await expect(
       page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 }),
     ).toBeVisible();
