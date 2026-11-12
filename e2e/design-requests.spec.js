@@ -24,7 +24,8 @@ test('la consulta por foto se administra y puede responderse manualmente por Wha
   await loginDesign(page);
   await upload(page, 'Consulta de adorno personalizado en color rojo');
   await page.getByRole('radio', { name: 'WhatsApp' }).check();
-  await page.getByLabel('Tu número de WhatsApp').fill('+5491170001234');
+  await expect(page.getByLabel('Tu número de WhatsApp')).toHaveAttribute('placeholder', '11 5555-5555');
+  await page.getByLabel('Tu número de WhatsApp').fill('11 7000-1234');
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Solicitar presupuesto' }).click();
   await expect(page.getByText(/Solicitud #.*recibida/).first()).toBeVisible();

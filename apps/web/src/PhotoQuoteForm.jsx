@@ -4,7 +4,6 @@ import PhotoQuotes from './PhotoQuotes.jsx';
 
 const maxBytes = 5 * 1024 * 1024;
 const accepted = ['image/jpeg', 'image/png', 'image/webp'];
-const normalizePhone = (value) => value.replace(/[\s().-]/g, '');
 
 export default function PhotoQuoteForm() {
   const [user, setUser] = useState(undefined);
@@ -85,7 +84,7 @@ export default function PhotoQuoteForm() {
       details: details.trim(),
       contact: {
         method,
-        value: method === 'email' ? email.trim().toLowerCase() : normalizePhone(phone),
+        value: method === 'email' ? email.trim().toLowerCase() : phone.trim(),
       },
       contactConsent: consent,
     };
@@ -275,13 +274,14 @@ export default function PhotoQuoteForm() {
                       type="tel"
                       inputMode="tel"
                       autoComplete="tel"
-                      placeholder="+5491155555555"
+                      placeholder="11 5555-5555"
+                      maxLength={32}
                       required
                       value={phone}
                       disabled={busy || !!sent}
                       onChange={(event) => { setPhone(event.target.value); changed(); }}
                     />
-                    <span className="photo-quote-field-help">Incluí el código del país. Ejemplo: +54 9 11...</span>
+                    <span className="photo-quote-field-help">Código de área y número de Argentina, sin +54. Ejemplo: 11 5555-5555.</span>
                   </label>
                 )}
               </fieldset>

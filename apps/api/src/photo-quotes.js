@@ -13,6 +13,28 @@ import { pageNumber, pageMetadata } from './pagination.js';
 const imageLimit = 5 * 1024 * 1024;
 const invalid = (message) =>
   Object.assign(new Error(message), { status: 400, photoQuoteError: true });
+// The customer enters an Argentine local number; WhatsApp links require E.164.
+// Accepts the common "11 5555-5555", "011 5555-5555" and "11 15 5555-5555"
+// spellings, and preserves legacy +549... submissions.
+export function normalizeArgentineWhatsApp(input) {
+  if (typeof input !== 'string' || !/^[+\d\s().-]+$/.test(input))
+    return null;
+  if (input.includes('+') && !input.trim().startsWith('+54'))
+    return null;
+  const digits = input.replace(/\D/g, '');
+  if (/^549[1-9]\d{9}$/.test(digits)) return '+' + digits;
+
+  let national = /^54[1-9]\d{9}$/.test(digits) ? digits.slice(2) : digits;
+  if (national.startsWith('0')) national = national.slice(1);
+  if (national.length === 12) {
+    const areaLength = [2, 3, 4].find((n) => national.slice(n, n + 2) === '15');
+    if (areaLength != null)
+      national = national.slice(0, areaLength) + national.slice(areaLength + 2);
+  }
+  if (!/^[1-9]\d{9}$/.test(national)) return null;
+  return '+549' + national;
+}
+
 const contactSchema = z.discriminatedUnion('method', [
   z.strictObject({
     method: z.literal('email'),
@@ -20,7 +42,17 @@ const contactSchema = z.discriminatedUnion('method', [
   }),
   z.strictObject({
     method: z.literal('whatsapp'),
-    value: z.string().regex(/^\+[1-9]\d{7,14}$/, 'Ingresá WhatsApp con código de país, por ejemplo +54911...'),
+    value: z.string().max(32).transform((value, ctx) => {
+      const normalized = normalizeArgentineWhatsApp(value);
+      if (!normalized) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Ingresá el código de área y tu número argentino (10 dígitos). Ejemplo: 11 5555-5555.',
+        });
+        return z.NEVER;
+      }
+      return normalized;
+    }),
   }),
 ]);
 const metadataSchema = z.strictObject({
