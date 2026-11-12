@@ -23,10 +23,8 @@ for (const width of [390, 1280]) {
       'href',
       'tel:+5491155606321',
     );
-    await footer.getByText('¿Cómo hago un pedido?', { exact: true }).click();
-    await expect(footer.locator('details[open]')).toContainText(
-      'iniciá sesión',
-    );
+    await expect(footer.locator('.footer-faq')).toHaveCount(0);
+    await expect(footer.getByText('Preguntas frecuentes')).toHaveCount(0);
     await categories
       .getByRole('link', { name: 'Especial', exact: true })
       .click();
@@ -34,10 +32,8 @@ for (const width of [390, 1280]) {
     await expect(page.locator('.grid-products > article')).toHaveCount(1);
     await page.reload();
     await expect(page.locator('.grid-products > article')).toHaveCount(1);
-    await page
-      .getByRole('contentinfo')
-      .getByRole('link', { name: 'Ver todas las preguntas' })
-      .click();
+    await page.getByRole('navigation', { name: 'Principal' })
+      .getByRole('link', { name: 'FAQ', exact: true }).click();
     await expect(page).toHaveURL('/faq');
     await expect(
       page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 }),
@@ -47,8 +43,6 @@ for (const width of [390, 1280]) {
     await expect(
       page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 }),
     ).toBeVisible();
-    if (width < 576)
-      await page.getByRole('button', { name: 'Abrir menú' }).click();
     await page
       .getByRole('navigation', { name: 'Principal', exact: true })
       .getByRole('link', { name: 'Sobre nosotros' })
@@ -57,10 +51,6 @@ for (const width of [390, 1280]) {
     await expect(
       page.getByRole('heading', { name: 'Sobre nosotros', level: 1 }),
     ).toBeVisible();
-    if (width < 576)
-      await expect(
-        page.getByRole('button', { name: 'Abrir menú' }),
-      ).toHaveAttribute('aria-expanded', 'false');
     await page.reload();
     await expect(page).toHaveTitle('Sobre nosotros | Mundo 3D');
     expect(
