@@ -86,8 +86,9 @@ test('precio usa índice y diez clientes concurrentes reciben respuestas complet
         const r = await request(app)
           .get('/api/products?page=1' + (i % 2 ? '&sort=price-asc' : ''))
           .expect(200);
-        assert.equal(r.body.products.length, 20);
+        assert.equal(r.body.products.length, 10);
         assert.equal(r.body.total, 200);
+        assert.equal(r.body.pages, 20);
         timings.push(performance.now() - start);
       }),
     );
