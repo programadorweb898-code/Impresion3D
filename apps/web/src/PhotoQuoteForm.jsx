@@ -106,138 +106,227 @@ export default function PhotoQuoteForm() {
 
   return (
     <section className="design-page photo-quote-page" aria-labelledby="photo-quote-title">
-      <p className="eyebrow">IMPRESIONES PERSONALIZADAS</p>
-      <h1 id="photo-quote-title">Convertí tu idea en impresión 3D</h1>
-      <p>Subí una foto o imagen de referencia, contanos qué necesitás y te responderemos con un presupuesto. No necesitás un modelo 3D.</p>
-      {user === undefined ? (
-        <p role="status">Verificando tu sesión…</p>
-      ) : !user ? (
-        <div className="photo-quote-login">
-          <h2>Iniciá sesión para pedir tu presupuesto</h2>
-          <p>Necesitamos tu cuenta para guardar la solicitud y mostrarte nuestra respuesta.</p>
-          <a className="primary" href="/login" target="_blank" rel="noopener noreferrer">
-            Iniciar sesión o registrarme
-          </a>
-          <p className="small">Después de ingresar, volvé a esta pestaña.</p>
+      <header className="photo-quote-hero">
+        <div className="photo-quote-hero-copy">
+          <p className="photo-quote-eyebrow">
+            <span aria-hidden="true" className="photo-quote-eyebrow-dot" />
+            SOMOS MUNDO 3D · SERVICIO PERSONALIZADO
+          </p>
+          <h1 id="photo-quote-title">
+            Tu idea, hecha <span>a medida.</span>
+          </h1>
+          <p className="photo-quote-lead">
+            ¿Viste algo que te gustaría tener en 3D? Enviá una imagen de referencia,
+            contanos los detalles y te preparamos un presupuesto personalizado.
+            No necesitás saber diseñar ni tener un archivo 3D.
+          </p>
+          <div className="photo-quote-hero-tags" aria-label="Características del servicio">
+            <span>Solo una imagen</span>
+            <span>Presupuesto a medida</span>
+            <span>Respuesta por email o WhatsApp</span>
+          </div>
         </div>
+        <div className="photo-quote-steps" aria-label="Cómo funciona el proceso">
+          <p className="photo-quote-steps-title">Así de simple</p>
+          <ol>
+            <li><span aria-hidden="true">01</span><div><strong>Compartí tu referencia</strong><small>Una foto o imagen de lo que imaginás.</small></div></li>
+            <li><span aria-hidden="true">02</span><div><strong>Contanos cómo lo querés</strong><small>Medida, cantidad y detalles.</small></div></li>
+            <li><span aria-hidden="true">03</span><div><strong>Recibí tu presupuesto</strong><small>Elegí WhatsApp o correo electrónico.</small></div></li>
+          </ol>
+        </div>
+      </header>
+
+      {user === undefined ? (
+        <div className="photo-quote-session-card" role="status">Comprobando tu sesión…</div>
+      ) : !user ? (
+        <section className="photo-quote-session-card" aria-labelledby="photo-login-title">
+          <div className="photo-quote-session-icon" aria-hidden="true">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="4" y="10" width="16" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+          </div>
+          <div>
+            <h2 id="photo-login-title">Iniciá sesión para pedir tu presupuesto</h2>
+            <p>Tu solicitud y la respuesta quedarán guardadas en tu cuenta. Es rápido y te permite hacer seguimiento.</p>
+          </div>
+          <a className="photo-quote-login-link" href="/login" target="_blank" rel="noopener noreferrer">
+            Iniciar sesión o registrarme <span aria-hidden="true">↗</span>
+          </a>
+        </section>
       ) : (
         <>
-          <form className="photo-quote-form" onSubmit={submit}>
-            <label className="photo-quote-image-field">
-              <strong>1. Foto del producto que querés imprimir</strong>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                required={!file}
-                disabled={busy || !!sent}
-                onChange={(event) => selectPhoto(event.target.files?.[0])}
-              />
-              <span className="small">JPG, PNG o WebP · Hasta 5 MB</span>
-            </label>
-            {preview && (
-              <img className="photo-quote-preview" src={preview} alt="Vista previa de la imagen seleccionada" />
-            )}
-            <div className="photo-quote-grid">
-              <label>
-                <strong>2. Cantidad</strong>
-                <input
-                  type="number"
-                  min="1"
-                  max="1000"
-                  step="1"
-                  required
-                  value={quantity}
-                  disabled={busy || !!sent}
-                  onChange={(event) => { setQuantity(event.target.value); changed(); }}
-                />
-              </label>
-              <label>
-                <strong>Tamaño aproximado (opcional)</strong>
-                <input
-                  type="text"
-                  maxLength="120"
-                  placeholder="Ej.: 15 cm de alto"
-                  value={approximateSize}
-                  disabled={busy || !!sent}
-                  onChange={(event) => { setApproximateSize(event.target.value); changed(); }}
-                />
-              </label>
-            </div>
-            <label>
-              <strong>Detalles del pedido (opcional)</strong>
-              <textarea
-                rows={3}
-                maxLength={1500}
-                placeholder="Colores, para qué lo querés, detalles a conservar..."
-                value={details}
-                disabled={busy || !!sent}
-                onChange={(event) => { setDetails(event.target.value); changed(); }}
-              />
-            </label>
-            <fieldset className="photo-quote-contact">
-              <legend><strong>3. ¿Cómo querés recibir tu presupuesto?</strong></legend>
-              <div className="photo-quote-radio">
-                <label>
-                  <input type="radio" name="quote-contact" checked={method === 'email'} disabled={busy || !!sent} onChange={() => { setMethod('email'); changed(); }} />
-                  Correo electrónico
+          <div className="photo-quote-workspace">
+            <form className="photo-quote-form" onSubmit={submit}>
+              <div className="photo-quote-form-heading">
+                <p>CREÁ TU SOLICITUD</p>
+                <h2>Contanos tu idea</h2>
+                <span>Completá los datos para que podamos evaluar la impresión.</span>
+              </div>
+              <div className="photo-quote-form-section">
+                <div className="photo-quote-section-heading">
+                  <span className="photo-quote-step-number">01</span>
+                  <h3>Imagen de referencia</h3>
+                </div>
+                <label className="photo-quote-image-field">
+                  <span className="photo-quote-upload-icon" aria-hidden="true">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="3" />
+                      <circle cx="8.5" cy="8.5" r="2" />
+                      <path d="m3 17 5-5 4 4 4-5 5 6" />
+                    </svg>
+                  </span>
+                  <strong>1. Foto del producto que querés imprimir</strong>
+                  <span>Elegí una foto, captura o ilustración de lo que tenés en mente.</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    required={!file}
+                    disabled={busy || !!sent}
+                    onChange={(event) => selectPhoto(event.target.files?.[0])}
+                  />
+                  <span className="photo-quote-file-help">JPG, PNG o WebP · Hasta 5 MB</span>
                 </label>
+                {preview && (
+                  <div className="photo-quote-image-preview">
+                    <img className="photo-quote-preview" src={preview} alt="Vista previa de la imagen seleccionada" />
+                    <p>{file?.name}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="photo-quote-form-section">
+                <div className="photo-quote-section-heading">
+                  <span className="photo-quote-step-number">02</span>
+                  <h3>Detalles del diseño</h3>
+                </div>
+                <div className="photo-quote-grid">
+                  <label>
+                    <strong>2. Cantidad</strong>
+                    <input
+                      type="number"
+                      min="1"
+                      max="1000"
+                      step="1"
+                      required
+                      value={quantity}
+                      disabled={busy || !!sent}
+                      onChange={(event) => { setQuantity(event.target.value); changed(); }}
+                    />
+                  </label>
+                  <label>
+                    <strong>Tamaño aproximado (opcional)</strong>
+                    <input
+                      type="text"
+                      maxLength="120"
+                      placeholder="Ej.: 15 cm de alto"
+                      value={approximateSize}
+                      disabled={busy || !!sent}
+                      onChange={(event) => { setApproximateSize(event.target.value); changed(); }}
+                    />
+                  </label>
+                </div>
                 <label>
-                  <input type="radio" name="quote-contact" checked={method === 'whatsapp'} disabled={busy || !!sent} onChange={() => { setMethod('whatsapp'); changed(); }} />
-                  WhatsApp
+                  <strong>Detalles del pedido (opcional)</strong>
+                  <textarea
+                    rows={4}
+                    maxLength={1500}
+                    placeholder="Colores, materiales, para qué lo querés, detalles importantes..."
+                    value={details}
+                    disabled={busy || !!sent}
+                    onChange={(event) => { setDetails(event.target.value); changed(); }}
+                  />
                 </label>
               </div>
-              {method === 'email' ? (
-                <label>
-                  Tu correo electrónico
+
+              <fieldset className="photo-quote-contact photo-quote-form-section">
+                <legend className="photo-quote-contact-legend">
+                  <span className="photo-quote-step-number">03</span>
+                  <strong>¿Cómo querés recibir tu presupuesto?</strong>
+                </legend>
+                <div className="photo-quote-radio">
+                  <label className={method === 'email' ? 'is-selected' : ''}>
+                    <input type="radio" name="quote-contact" checked={method === 'email'} disabled={busy || !!sent} onChange={() => { setMethod('email'); changed(); }} />
+                    Correo electrónico
+                  </label>
+                  <label className={method === 'whatsapp' ? 'is-selected' : ''}>
+                    <input type="radio" name="quote-contact" checked={method === 'whatsapp'} disabled={busy || !!sent} onChange={() => { setMethod('whatsapp'); changed(); }} />
+                    WhatsApp
+                  </label>
+                </div>
+                {method === 'email' ? (
+                  <label>
+                    <strong>Tu correo electrónico</strong>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      maxLength={254}
+                      required
+                      value={email}
+                      disabled={busy || !!sent}
+                      onChange={(event) => { setEmail(event.target.value); changed(); }}
+                    />
+                    <span className="photo-quote-field-help">Usamos este email únicamente para responder la consulta.</span>
+                  </label>
+                ) : (
+                  <label>
+                    <strong>Tu número de WhatsApp</strong>
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="+5491155555555"
+                      required
+                      value={phone}
+                      disabled={busy || !!sent}
+                      onChange={(event) => { setPhone(event.target.value); changed(); }}
+                    />
+                    <span className="photo-quote-field-help">Incluí el código del país. Ejemplo: +54 9 11...</span>
+                  </label>
+                )}
+              </fieldset>
+
+              <div className="photo-quote-form-footer">
+                <label className="photo-quote-consent">
                   <input
-                    type="email"
-                    autoComplete="email"
-                    maxLength={254}
+                    type="checkbox"
                     required
-                    value={email}
+                    checked={consent}
                     disabled={busy || !!sent}
-                    onChange={(event) => { setEmail(event.target.value); changed(); }}
+                    onChange={(event) => { setConsent(event.target.checked); changed(); }}
                   />
-                  <span className="small">Podés usar el correo de tu cuenta o escribir otro.</span>
+                  <span>Acepto que Somos Mundo 3D use este contacto únicamente para responder mi solicitud de presupuesto.</span>
                 </label>
-              ) : (
-                <label>
-                  Tu número de WhatsApp
-                  <input
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    placeholder="+5491155555555"
-                    required
-                    value={phone}
-                    disabled={busy || !!sent}
-                    onChange={(event) => { setPhone(event.target.value); changed(); }}
-                  />
-                  <span className="small">Incluí el código de país (por ejemplo, +54 9 11...).</span>
-                </label>
-              )}
-            </fieldset>
-            <label className="photo-quote-consent">
-              <input
-                type="checkbox"
-                required
-                checked={consent}
-                disabled={busy || !!sent}
-                onChange={(event) => { setConsent(event.target.checked); changed(); }}
-              />
-              <span>Acepto que Somos Mundo 3D use este contacto únicamente para responder mi solicitud de presupuesto.</span>
-            </label>
-            <p className="small">La imagen es una referencia. Revisaremos si es posible imprimir el diseño antes de confirmar el precio. Enviar la solicitud no confirma una compra.</p>
-            <button className="primary" type="submit" disabled={busy || !file || !!sent}>
-              {busy ? 'Enviando solicitud…' : sent ? 'Solicitud enviada' : 'Solicitar presupuesto'}
-            </button>
-            {error && <p className="error" role="alert">{error}</p>}
-            {sent && (
-              <p className="notice" role="status">
-                Solicitud #{String(sent._id).slice(-6).toUpperCase()} recibida. Podés consultar el estado y la respuesta más abajo.
-              </p>
-            )}
-          </form>
+                <p className="photo-quote-field-help">
+                  La imagen es una referencia. Confirmaremos si es posible imprimir el diseño antes de acordar el precio. Enviar la solicitud no confirma una compra.
+                </p>
+                <button className="photo-quote-submit" type="submit" disabled={busy || !file || !!sent}>
+                  {busy ? 'Enviando solicitud…' : sent ? 'Solicitud enviada' : 'Solicitar presupuesto'}
+                  <span aria-hidden="true">↗</span>
+                </button>
+                {error && <p className="error" role="alert">{error}</p>}
+                {sent && (
+                  <p className="notice" role="status">
+                    Solicitud #{String(sent._id).slice(-6).toUpperCase()} recibida. Podés consultar el estado y la respuesta más abajo.
+                  </p>
+                )}
+              </div>
+            </form>
+
+            <aside className="photo-quote-aside" aria-label="Información importante">
+              <div className="photo-quote-aside-highlight">
+                <span className="photo-quote-aside-sparkle" aria-hidden="true">✧</span>
+                <h2>De una imagen a algo real.</h2>
+                <p>Cada proyecto es distinto. Revisamos el diseño, sus dimensiones y la cantidad para brindarte un presupuesto acorde.</p>
+              </div>
+              <div className="photo-quote-aside-details">
+                <h3>Lo que necesitás saber</h3>
+                <p><strong>No hace falta un modelo 3D.</strong> Con una foto podemos evaluar tu idea.</p>
+                <p><strong>El presupuesto es personalizado.</strong> Depende de la complejidad, el tamaño y los materiales.</p>
+                <p><strong>Podés hacer seguimiento.</strong> Tu consulta quedará disponible en tu cuenta.</p>
+              </div>
+            </aside>
+          </div>
           <PhotoQuotes refresh={refresh} />
         </>
       )}

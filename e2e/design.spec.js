@@ -37,15 +37,66 @@ test('Home destaca la novedad con enlace directo sin tapar el hero, en móvil y 
   await page.locator('.custom-design-feature')
     .getByRole('link', { name: 'Solicitar diseño personalizado' }).click();
   await expect(page).toHaveURL('/disenar');
-  await expect(page.getByRole('heading', { name: 'Convertí tu idea en impresión 3D' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu idea, hecha a medida.' })).toBeVisible();
+});
+
+
+test('Diseño personalizado tiene textos horizontales y formulario amplio en móvil y escritorio', async ({ page }) => {
+  await loginDesign(page);
+  for (const width of [320, 390, 575, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/disenar');
+    await expect(page.locator('.photo-quote-form')).toBeVisible();
+    const layout = await page.evaluate(() => {
+      const rect = (selector) => document.querySelector(selector).getBoundingClientRect();
+      const heading = document.querySelector('.photo-quote-page h1');
+      const form = document.querySelector('.photo-quote-form');
+      const input = document.querySelector('.photo-quote-form input[type="number"]');
+      const aside = document.querySelector('.photo-quote-aside');
+      const work = document.querySelector('.photo-quote-workspace').getBoundingClientRect();
+      const formRect = form.getBoundingClientRect();
+      const asideRect = aside.getBoundingClientRect();
+      return {
+        width: innerWidth,
+        documentWidth: document.documentElement.scrollWidth,
+        heroWidth: rect('.photo-quote-hero').width,
+        headingWidth: heading.getBoundingClientRect().width,
+        headingMode: getComputedStyle(heading).writingMode,
+        formWidth: formRect.width,
+        inputWidth: input.getBoundingClientRect().width,
+        formRight: formRect.right,
+        asideLeft: asideRect.left,
+        asideTop: asideRect.top,
+        formBottom: formRect.bottom,
+        workspaceColumns: getComputedStyle(document.querySelector('.photo-quote-workspace')).gridTemplateColumns,
+        visibleTextElementsNarrow: [...document.querySelectorAll('.photo-quote-page h1, .photo-quote-page h2, .photo-quote-page h3')]
+          .filter((node) => node.getBoundingClientRect().width < 150)
+          .map((node) => node.textContent.trim()),
+      };
+    });
+    expect(layout.documentWidth).toBeLessThanOrEqual(layout.width);
+    expect(layout.headingMode).toBe('horizontal-tb');
+    expect(layout.headingWidth).toBeGreaterThan(210);
+    expect(layout.formWidth).toBeGreaterThan(width <= 390 ? 270 : 400);
+    expect(layout.inputWidth).toBeGreaterThan(170);
+    if (width < 980) {
+      expect(layout.asideTop).toBeGreaterThanOrEqual(layout.formBottom - 1);
+    } else {
+      expect(layout.asideLeft).toBeGreaterThanOrEqual(layout.formRight - 1);
+    }
+    expect(layout.visibleTextElementsNarrow, JSON.stringify(layout)).toEqual([]);
+  }
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.locator('.photo-quote-workspace').screenshot({
+    path: test.info().outputPath('personalized-design-390.png'),
+  });
 });
 
 test('la página invita a enviar una foto y exige iniciar sesión', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page.getByRole('link', { name: 'Diseño personalizado', exact: true }).click();
   await expect(page).toHaveURL('/disenar');
-  await expect(page.getByRole('heading', { name: 'Convertí tu idea en impresión 3D' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu idea, hecha a medida.' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Iniciá sesión para pedir tu presupuesto' })).toBeVisible();
   await expect(page.getByLabel('Archivo de diseño 3D')).toHaveCount(0);
 });

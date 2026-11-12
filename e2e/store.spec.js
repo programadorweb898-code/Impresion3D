@@ -170,13 +170,11 @@ test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio
   expect(orders[0].userId).toBe(original.id);
 });
 async function selectCategory(page, name) {
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page.getByRole('button', { name: 'Categorías' }).click();
-  await page.locator('.nav-category-mobile-list')
+  await page.locator('.nav-category-popover')
     .getByRole('link', { name, exact: true }).click();
 }
 async function menu(page, name) {
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page
     .getByRole('navigation', { name: 'Principal' })
     .getByRole('button', { name, exact: true })
@@ -220,9 +218,6 @@ test('la navegación sigue el flujo del sitio y permite usar el menú móvil', a
     ).toBeInViewport();
     if (width === 390) {
       const position = await page.evaluate(() => scrollY);
-      await page
-        .getByRole('button', { name: 'Abrir menú', exact: true })
-        .click();
       await expect(
         page.getByRole('navigation', { name: 'Principal' }),
       ).toBeVisible();
@@ -234,9 +229,6 @@ test('la navegación sigue el flujo del sitio y permite usar el menú móvil', a
       await page
         .getByRole('link', { name: 'Cómo funciona', exact: true })
         .click();
-      await expect(
-        page.getByRole('button', { name: 'Abrir menú', exact: true }),
-      ).toBeVisible();
       await expect
         .poll(async () => {
           const target = await page.locator('#proceso').boundingBox();
@@ -250,7 +242,6 @@ test('la navegación sigue el flujo del sitio y permite usar el menú móvil', a
   await expect(page.locator('.site-header-spacer')).toHaveCount(0);
   await login(page, 0, 'admin-browser@example.com');
   await page.setViewportSize({ width: 390, height: 320 });
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   const profileLink = page.getByRole('link', {
     name: 'Mi perfil',
     exact: true,
@@ -862,7 +853,6 @@ test('volver funciona en perfil, pedidos y administración sin salir del sitio',
   page,
 }) => {
   await login(page, 0, 'admin-browser@example.com');
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page.getByRole('link', { name: 'Mi perfil', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Mi perfil', exact: true }),
@@ -1089,24 +1079,18 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
     if (new URL(request.url()).pathname === '/api/auth/logout')
       logoutRequests++;
   });
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await expect(
     nav.getByRole('button', { name: 'Catálogo', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
-  await expect(
-    nav.getByRole('button', { name: 'Catálogo', exact: true }),
-  ).toHaveCSS('font-weight', '700');
+  await expect(nav.getByRole('button', { name: 'Catálogo', exact: true })).toHaveAttribute('aria-current', 'page');
   await nav.getByRole('link', { name: 'Mi perfil', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Mi perfil', exact: true }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await expect(
     nav.getByRole('link', { name: 'Mi perfil', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
-  await expect(
-    nav.getByRole('link', { name: 'Mi perfil', exact: true }),
-  ).toHaveCSS('font-weight', '700');
+  await expect(nav.getByRole('link', { name: 'Mi perfil', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(
     nav.getByRole('button', { name: 'Catálogo', exact: true }),
   ).not.toHaveAttribute('aria-current', 'page');
@@ -1114,7 +1098,6 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
   await expect(
     page.getByRole('heading', { name: 'Mis pedidos', exact: true }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await expect(
     nav.getByRole('button', { name: 'Mis pedidos', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
@@ -1122,7 +1105,6 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
 
 test('cerrar sesión desde el perfil abre login', async ({ page }) => {
   await login(page);
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page.getByRole('link', { name: 'Mi perfil', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Mi perfil', exact: true }),

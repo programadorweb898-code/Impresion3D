@@ -17,7 +17,6 @@ export async function loginDesign(page, email = 'browser@example.com') {
 }
 export async function openAdminQuotes(page) {
   await loginDesign(page, 'admin-browser@example.com');
-  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page
     .getByRole('button', { name: 'Administración', exact: true })
     .click();

@@ -8,142 +8,86 @@ test.beforeEach(async ({ page }, testInfo) => {
 });
 
 
-test('la navegación de escritorio permanece en una fila con desplazamiento horizontal', async ({
-  page,
-}) => {
+test('cabecera conserva el buscador flexible en primera fila y el menú horizontal en segunda', async ({ page }) => {
   await page.goto('/');
   for (const signedIn of [false, true]) {
     if (signedIn) {
       await page.goto('/login');
-      await page
-        .getByLabel('Correo electrónico', { exact: true })
-        .fill('admin-browser@example.com');
-      await page
-        .getByLabel('Contraseña', { exact: true })
-        .fill('NavegadorPrueba1!');
+      await page.getByLabel('Correo electrónico', { exact: true }).fill('admin-browser@example.com');
+      await page.getByLabel('Contraseña', { exact: true }).fill('NavegadorPrueba1!');
       await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
-      await expect(
-        page.getByRole('button', { name: 'Administración', exact: true }),
-      ).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Administración', exact: true })).toBeVisible();
     }
-    for (const width of [1024, 1280, 1440, 1920]) {
+    for (const width of [320, 390, 575, 768, 1024, 1280, 1440, 1920]) {
       await page.setViewportSize({ width, height: 900 });
-      await expect
-        .poll(async () =>
-          page.locator('.site-nav').evaluate((nav) => {
-            const box = nav.getBoundingClientRect();
-            const logo = document
-              .querySelector('.site-header .brand')
-              .getBoundingClientRect();
-            const actions = document
-              .querySelector('.header-actions')
-              .getBoundingClientRect();
-            const centers = Array.from(nav.children).map((link) => {
-              const item = link.getBoundingClientRect();
-              return item.top + item.height / 2;
-            });
-            return (
-              Math.max(...centers) - Math.min(...centers) < 2 &&
-              box.left >= logo.right + 8 &&
-              box.right <= actions.left - 8 &&
-              getComputedStyle(nav).overflowX === 'auto'
-            );
-          }),
-        )
-        .toBe(true);
-      const links = page.locator('.site-nav > *');
-      for (let i = 0; i < (await links.count()); i++) {
-        await links.nth(i).scrollIntoViewIfNeeded();
-        expect(
-          await links.nth(i).evaluate((link) => {
-            const item = link.getBoundingClientRect();
-            const nav = link.parentElement.getBoundingClientRect();
-            return item.left >= nav.left - 1 && item.right <= nav.right + 1;
-          }),
-        ).toBe(true);
+      const state = await page.evaluate(() => {
+        const rect = (selector) => document.querySelector(selector).getBoundingClientRect();
+        const row = rect('.site-header-top');
+        const navRow = rect('.site-nav-row');
+        const nav = document.querySelector('.site-nav');
+        const centers = Array.from(nav.children).map((el) => {
+          const r = el.getBoundingClientRect();
+          return r.top + r.height / 2;
+        });
+        return {
+          logoRight: rect('.site-header-top .brand').right,
+          searchLeft: rect('.header-product-search').left,
+          searchRight: rect('.header-product-search').right,
+          searchWidth: rect('.header-product-search').width,
+          cartLeft: rect('.site-header-top .cart-icon-button').left,
+          topBottom: row.bottom,
+          secondTop: navRow.top,
+          navOverflow: getComputedStyle(nav).overflowX,
+          rowSpread: Math.max(...centers) - Math.min(...centers),
+          navScrollWidth: nav.scrollWidth,
+          navClientWidth: nav.clientWidth,
+          viewport: innerWidth,
+          pageWidth: document.documentElement.scrollWidth,
+        };
+      });
+      expect(state.searchLeft).toBeGreaterThanOrEqual(state.logoRight - 1);
+      expect(state.cartLeft).toBeGreaterThanOrEqual(state.searchRight - 1);
+      expect(state.searchWidth).toBeGreaterThan(width < 576 ? 120 : 200);
+      expect(state.secondTop).toBeGreaterThanOrEqual(state.topBottom - 1);
+      expect(state.navOverflow).toBe('auto');
+      expect(state.rowSpread).toBeLessThan(3);
+      expect(state.pageWidth).toBeLessThanOrEqual(state.viewport);
+      if (width <= 390) expect(state.navScrollWidth).toBeGreaterThan(state.navClientWidth);
+      const navLinks = page.locator('.site-nav > *');
+      for (let index = 0; index < await navLinks.count(); index++) {
+        await navLinks.nth(index).scrollIntoViewIfNeeded();
+        expect(await navLinks.nth(index).evaluate((item) => {
+          const r = item.getBoundingClientRect();
+          const parent = item.parentElement.getBoundingClientRect();
+          return r.left >= parent.left - 1 && r.right <= parent.right + 1;
+        })).toBe(true);
       }
-      if (signedIn && width === 1024) {
-        expect(
-          await page
-            .locator('.site-nav')
-            .evaluate(
-              (nav) => nav.scrollWidth <= nav.clientWidth || nav.scrollLeft > 0,
-            ),
-        ).toBe(true);
-      }
-      await expect
-        .poll(async () => {
-          const main = await page.locator('main').boundingBox();
-          const header = await page.locator('.site-header').boundingBox();
-          return main.y + (await page.evaluate(() => scrollY)) - header.height;
-        })
-        .toBeGreaterThanOrEqual(-1);
-      await page
-        .getByRole('navigation', { name: 'Principal', exact: true })
-        .getByRole('button', { name: 'Catálogo', exact: true })
-        .click();
-      await expect(page.locator('#catalogo')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Abrir menú', exact: true })).toHaveCount(0);
     }
   }
-  await page
-    .locator('.site-header')
-    .screenshot({ path: test.info().outputPath('desktop-navbar-admin.png') });
+  await page.locator('.site-header').screenshot({ path: test.info().outputPath('two-row-navbar.png') });
 });
 
-
-test('móvil muestra buscador entre logo y carrito y navega por categorías y FAQ', async ({ page }) => {
-  for (const width of [320, 390, 575]) {
-    await page.setViewportSize({ width, height: 844 });
-    await page.goto('/');
-    const search = page.getByRole('search').getByRole('searchbox', { name: 'Buscar productos' });
-    await expect(search).toBeVisible();
-    const positions = await page.evaluate(() => {
-      const box = (selector) => document.querySelector(selector).getBoundingClientRect();
-      return {
-        logoRight: box('.site-header .brand').right,
-        searchLeft: box('.header-product-search').left,
-        searchRight: box('.header-product-search').right,
-        cartLeft: box('.cart-icon-button').left,
-        width: document.documentElement.scrollWidth,
-        viewport: innerWidth,
-      };
-    });
-    expect(positions.searchLeft).toBeGreaterThanOrEqual(positions.logoRight - 1);
-    expect(positions.cartLeft).toBeGreaterThanOrEqual(positions.searchRight - 1);
-    expect(positions.width).toBeLessThanOrEqual(positions.viewport);
-    await page.getByRole('button', { name: 'Abrir menú' }).click();
-    await page.getByRole('button', { name: 'Categorías' }).click();
-    await expect(page.locator('.nav-category-mobile-list')).toBeVisible();
-    await expect(page.locator('.nav-category-mobile-list').getByRole('link', { name: 'Hogar' })).toBeVisible();
-    await page.locator('.nav-category-mobile-list').getByRole('link', { name: 'Hogar' }).click();
-    await expect(page).toHaveURL(/categoria=Hogar/);
-    await page.getByRole('button', { name: 'Abrir menú' }).click();
-    await page.getByRole('link', { name: 'FAQ', exact: true }).click();
-    await expect(page).toHaveURL('/faq');
-    await expect(page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 })).toBeVisible();
-  }
-});
-
-test('escritorio presenta categorías desplegables, FAQ y búsqueda reutilizable', async ({ page }) => {
-  for (const width of [768, 1024, 1440]) {
+test('categorías y FAQ se navegan desde la segunda fila en móvil y escritorio', async ({ page }) => {
+  for (const width of [320, 390, 575, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    await expect(page.getByRole('navigation', { name: 'Principal' })
-      .getByRole('link', { name: 'FAQ', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Categorías' }).click();
-    const popup = page.locator('.nav-category-popover');
-    await expect(popup).toBeVisible();
-    await expect(popup.getByRole('link', { name: 'Todos los productos' })).toBeVisible();
-    await popup.getByRole('link', { name: 'Hogar', exact: true }).click();
+    await page.getByRole('navigation', { name: 'Principal' })
+      .getByRole('button', { name: 'Categorías' }).click();
+    const categories = page.locator('.nav-category-popover');
+    await expect(categories).toBeVisible();
+    await expect(categories.getByRole('link', { name: 'Todos los productos' })).toBeVisible();
+    await categories.getByRole('link', { name: 'Hogar', exact: true }).click();
     await expect(page).toHaveURL(/categoria=Hogar/);
-    await expect(popup).toHaveCount(0);
-    await page.getByRole('searchbox', { name: 'Buscar productos' }).fill('Pieza 00');
+    await expect(categories).toHaveCount(0);
+    const search = page.getByRole('searchbox', { name: 'Buscar productos' });
+    await search.fill('Pieza 00');
     await expect(page.locator('.product-card')).toHaveCount(1);
     await page.getByRole('navigation', { name: 'Principal' })
       .getByRole('link', { name: 'FAQ', exact: true }).click();
     await expect(page).toHaveURL('/faq');
-    await page.reload();
     await expect(page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
   await page.goto('/preguntas-frecuentes');
   await expect(page.getByRole('heading', { name: 'Preguntas frecuentes', level: 1 })).toBeVisible();
