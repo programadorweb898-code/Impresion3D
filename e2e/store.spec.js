@@ -511,6 +511,20 @@ test('registro por correo confirma un enlace y elige una contraseña antes de in
     page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
   ).toBeEnabled();
 });
+test('Administración no deja la pantalla negra y mantiene navegación funcional', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await login(page, 0, 'admin-browser@example.com');
+  await menu(page, 'Administración');
+  await expect(page.getByRole('heading', { name: 'Administración', exact: true })).toBeVisible();
+  for (const name of ['Productos', 'Presupuestos', 'Estado del servicio', 'Pedidos']) {
+    await page.getByRole('button', { name, exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Administración', exact: true })).toBeVisible();
+    await expect(page.getByText('No pudimos abrir Administración')).toHaveCount(0);
+  }
+  expect(errors).toEqual([]);
+});
+
 test('administración pagina productos y muestra integraciones sólo al administrador', async ({
   page,
 }) => {
