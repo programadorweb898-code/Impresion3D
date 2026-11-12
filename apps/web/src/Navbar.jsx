@@ -86,7 +86,7 @@ export function Navbar({
         <a
           key={item}
           href={item === 'Todos' ? '/#catalogo' : '/?categoria=' + encodeURIComponent(item) + '#catalogo'}
-          aria-current={category === item && !search ? 'page' : undefined}
+          aria-current={category === item ? 'page' : undefined}
           onClick={(event) => internalLink(event, () => choose(() => onCategory(item)))}
         >
           {item === 'Todos' ? 'Todos los productos' : item}
@@ -159,7 +159,7 @@ export function Navbar({
               ref={categoryButtonRef}
               className="nav-category-trigger"
               aria-expanded={categoriesOpen}
-              aria-controls={mobile ? 'nav-category-mobile' : 'nav-category-desktop'}
+              aria-controls={categoriesOpen ? (mobile ? 'nav-category-mobile' : 'nav-category-desktop') : undefined}
               onClick={toggleCategories}
             >
               Categorías <span className="nav-category-chevron" aria-hidden="true">⌄</span>
