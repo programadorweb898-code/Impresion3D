@@ -161,6 +161,12 @@ test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio
   expect(orders).toHaveLength(1);
   expect(orders[0].userId).toBe(original.id);
 });
+async function selectCategory(page, name) {
+  await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
+  await page.getByRole('button', { name: 'Categorías' }).click();
+  await page.locator('.nav-category-mobile-list')
+    .getByRole('link', { name, exact: true }).click();
+}
 async function menu(page, name) {
   await page.getByRole('button', { name: 'Abrir menú', exact: true }).click();
   await page
@@ -312,7 +318,7 @@ test('menú móvil, páginas y categorías incluyen piezas fuera de la primera p
   await expect(page.locator('.product-card').first()).toContainText('100,50');
   await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
   await expect(page.locator('.product-card')).toHaveCount(10);
-  await page.getByRole('button', { name: 'Especial', exact: true }).click();
+  await selectCategory(page, 'Especial');
   await expect(page.locator('.product-card')).toHaveCount(1);
   await menu(page, 'Ingresar');
   await expect(
@@ -684,7 +690,7 @@ test('ficha conserva fotos, descripción y medidas; galería adaptable a móvil 
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Especial', exact: true }).click();
+  await selectCategory(page, 'Especial');
   const link = page.getByRole('link', {
     name: 'Ver detalles de Pieza 00',
     exact: true,
@@ -796,7 +802,7 @@ test('agregar desde ficha exige login, vuelve al producto y conserva carrito sin
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Especial', exact: true }).click();
+  await selectCategory(page, 'Especial');
   await page
     .getByRole('link', { name: 'Ver detalles de Pieza 00', exact: true })
     .click();
