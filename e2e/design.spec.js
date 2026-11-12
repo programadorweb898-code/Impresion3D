@@ -43,7 +43,19 @@ test('con sesión acepta foto, tamaño y canal de respuesta, sin requerir archiv
   const response = await page.request.get(src);
   expect(response.ok()).toBe(true);
   expect(response.headers()['content-type']).toContain('image/webp');
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const widthCheck = await page.evaluate(() => ({
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: innerWidth,
+    offenders: [...document.querySelectorAll('body *')]
+      .filter((element) => element.getBoundingClientRect().right > innerWidth + 1)
+      .slice(0, 12)
+      .map((element) => ({
+        tag: element.tagName,
+        className: typeof element.className === 'string' ? element.className : '',
+        right: Math.round(element.getBoundingClientRect().right),
+      })),
+  }));
+  expect(widthCheck.documentWidth, JSON.stringify(widthCheck.offenders)).toBeLessThanOrEqual(widthCheck.viewportWidth);
 });
 
 test('el selector rechaza archivos distintos a fotografías y superiores a 5 MB', async ({ page }) => {
