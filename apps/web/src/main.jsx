@@ -1145,7 +1145,6 @@ function App() {
                   </details>
                   </div>
                 )}
-         </form>
                 <div className="catalog-feedback">
                   <p role="status" aria-live="polite">
                     {loading
