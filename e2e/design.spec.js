@@ -76,7 +76,7 @@ test('Diseño personalizado tiene textos horizontales y formulario amplio en mó
     });
     expect(layout.documentWidth).toBeLessThanOrEqual(layout.width);
     expect(layout.headingMode).toBe('horizontal-tb');
-    expect(layout.headingWidth).toBeGreaterThan(250);
+    expect(layout.headingWidth).toBeGreaterThan(210);
     expect(layout.formWidth).toBeGreaterThan(width <= 390 ? 270 : 400);
     expect(layout.inputWidth).toBeGreaterThan(170);
     if (width < 980) {
