@@ -281,7 +281,7 @@ export default function PhotoQuoteForm() {
                       disabled={busy || !!sent}
                       onChange={(event) => { setPhone(event.target.value); changed(); }}
                     />
-                    <span className="photo-quote-field-help">Código de área y número de Argentina, sin +54. Ejemplo: 11 5555-5555.</span>
+                    <span className="photo-quote-field-help">Código de área y número, sin 0 ni 15. Ejemplo: 11 5555-5555.</span>
                   </label>
                 )}
               </fieldset>
