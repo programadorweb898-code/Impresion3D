@@ -1,0 +1,322 @@
+[
+  {
+    "_id": "f68c7ee699857c0503a424b5",
+    "name": "Inicial navideña con alce",
+    "category": "Navidad",
+    "shortDescription": "Una inicial para personalizar tu árbol.",
+    "description": "Adorno navideño impreso en 3D que combina una letra con una cabeza de alce, astas y un aro superior para colgar. Coordinamos la inicial antes de fabricarlo. El precio corresponde a una unidad; la imagen muestra la letra M como ejemplo.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-2019132-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-2019132-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "2019132",
+      "url": "https://makerworld.com/es/models/2019132-christmas-tree-ornaments-abc-with-moose-motif",
+      "author": "P2T",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "435cc64e28176f697367d8b5",
+    "name": "Estrella navideña articulada",
+    "category": "Navidad",
+    "shortDescription": "Una estrella con capas que podés mover.",
+    "description": "Estrella navideña impresa en 3D con contornos concéntricos unidos que permiten mover sus capas. Combina una forma festiva con una pieza interactiva para el escritorio o para regalar. El precio corresponde a una estrella.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-842674-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-842674-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "842674",
+      "url": "https://makerworld.com/es/models/842674-fidget-christmas-star",
+      "author": "FreRom",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "1c1fdbd045b9b282fc765c95",
+    "name": "Farol de escenas navideñas",
+    "category": "Navidad",
+    "shortDescription": "Escenas de Navidad en un farol decorativo.",
+    "description": "Farol impreso en 3D con estructura oscura, base y techo acanalados y paneles con motivos navideños. La combinación mostrada incluye rayas de bastón de caramelo y copos de nieve. Puede ambientarse con una luz LED pequeña. No incluye iluminación; usar únicamente LED, sin llama.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-746218-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-746218-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "746218",
+      "url": "https://makerworld.com/es/models/746218-christmas-lantern",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "dfde1af601360453678326d2",
+    "name": "Adorno circular de paisaje navideño",
+    "category": "Navidad",
+    "shortDescription": "Un pequeño paisaje para colgar del árbol.",
+    "description": "Adorno circular blanco impreso en 3D, con aro superior y una escena calada de pino, casa, bola navideña y copo de nieve. Su formato plano permite integrarlo a distintas decoraciones del árbol. El precio corresponde a una unidad del diseño mostrado.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-2111920-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-2111920-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "2111920",
+      "url": "https://makerworld.com/es/models/2111920-elegant-christmas-tree-ornaments",
+      "author": "DecoCraft3D",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "19791ec820e9cf6017230469",
+    "name": "Dado para intercambio de regalos",
+    "category": "Navidad",
+    "shortDescription": "Un dado para animar el intercambio de regalos.",
+    "description": "Dado de doce caras impreso en 3D, con instrucciones de intercambio de regalos en inglés. Sirve para proponer una dinámica de juego durante una reunión navideña: cada lanzamiento indica una acción con los regalos. El precio corresponde a un dado; no incluye regalos.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-840834-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-840834-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "840834",
+      "url": "https://makerworld.com/es/models/840834-christmas-gift-exchange-dice-newly-added-files",
+      "author": "jltPITTman",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "b3840e2716d486541fb41027",
+    "name": "Mini gorro decorativo de Santa",
+    "category": "Navidad",
+    "shortDescription": "Un gorrito para sumar un detalle navideño.",
+    "description": "Mini gorro decorativo de Santa impreso en 3D, con cuerpo rojo, banda blanca y pompón. Permite ambientar objetos pequeños o completar una escena navideña en miniatura. Coordinamos el tamaño si necesitás colocarlo sobre un objeto. El precio corresponde a un gorrito, sin figura ni accesorios.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-1093781-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-1093781-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "1093781",
+      "url": "https://makerworld.com/es/models/1093781-mini-santa-hat",
+      "author": "Feprint3d",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "35af41213acca01abc0159bb",
+    "name": "Adorno colgante de bombilla gigante",
+    "category": "Navidad",
+    "shortDescription": "Una bombilla gigante como adorno para colgar.",
+    "description": "Adorno navideño impreso en 3D con forma de bombilla de gran tamaño, cuerpo verde y extremo gris que imita una rosca. Pensado para colgar como pieza decorativa en una composición navideña. No tiene función eléctrica ni incluye iluminación. El precio corresponde a una unidad.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-2021138-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-2021138-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "2021138",
+      "url": "https://makerworld.com/es/models/2021138-jumbo-christmas-tree-light-hanging-bulb-vase-mode",
+      "author": "im.jackharvest",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "ce21c0e688d52f64c52299f2",
+    "name": "Posavasos copo de nieve",
+    "category": "Navidad",
+    "shortDescription": "Un copo de nieve debajo de tu vaso.",
+    "description": "Posavasos blanco impreso en 3D con forma de copo de nieve de seis brazos y centro hexagonal calado. Un detalle para acompañar la mesa navideña y apoyar un vaso. El precio corresponde a una unidad del diseño mostrado. No incluye vaso ni otros accesorios.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-772789-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-772789-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "772789",
+      "url": "https://makerworld.com/es/models/772789-snowflake-coaster-set",
+      "author": "Longevity",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "3e8fcecd90b60b588fca74a5",
+    "name": "Adorno de arbolito glaseado",
+    "category": "Navidad",
+    "shortDescription": "Un arbolito con detalles de glaseado.",
+    "description": "Adorno navideño impreso en 3D con forma de arbolito blanco, líneas rojas onduladas y pequeños detalles verdes que recuerdan el glaseado de un dulce festivo. Una pieza decorativa para una mesa, repisa o composición navideña. El precio corresponde a una unidad.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-862294-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-862294-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "862294",
+      "url": "https://makerworld.com/es/models/862294-christmas-cake-ornament",
+      "author": "Melted Manufacturing",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "8bc55557a9a2a859d561e53b",
+    "name": "Árbol navideño acanalado para LED",
+    "category": "Navidad",
+    "shortDescription": "Un árbol acanalado para luz ambiental con LED.",
+    "description": "Árbol navideño decorativo impreso en 3D, con punta fina, niveles redondeados y paredes acanaladas. Su cuerpo está diseñado para colocar una vela de té LED y crear una luz ambiental suave. No incluye iluminación. Utilizar únicamente LED, sin llama.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-1998883-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-1998883-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "1998883",
+      "url": "https://makerworld.com/es/models/1998883-christmas-ribbed-led-christmas-tree",
+      "author": "P2T",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  }
+]
