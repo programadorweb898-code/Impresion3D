@@ -317,6 +317,11 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 65.4,
+      "height": 85,
+      "depth": 66.6
+    }
   }
 ]

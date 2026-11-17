@@ -21,6 +21,7 @@ import { migrateCatalogCopy } from './catalog-copy.js';
 import { migrateChristmasCatalog } from './christmas-catalog.js';
 import { migrateMakerworldCatalog } from './makerworld-catalog.js';
 import { migrateGiftBoxDescription } from './gift-box-description.js';
+import { migrateLedTreeDimensions } from './led-tree-dimensions.js';
 import { migrateSeasonalCuencos } from './seasonal-cuencos.js';
 import {
   createOrderNotifier,
@@ -78,6 +79,7 @@ await migrateSeasonalCuencos();
 await migrateMakerworldCatalog();
 await migrateChristmasCatalog();
 await migrateGiftBoxDescription(Product);
+await migrateLedTreeDimensions(Product);
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,
