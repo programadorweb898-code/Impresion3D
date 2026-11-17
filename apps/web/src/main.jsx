@@ -439,6 +439,9 @@ function App() {
       window.removeEventListener('hashchange', onNavigate);
     };
   }, []);
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [catalogPage.page]);
   function openLogin() {
     if (view === 'catalog') saveCatalogContext();
     if (['product', 'offer'].includes(view) && !loginDestination.current)
