@@ -170,7 +170,7 @@ export function Navbar({
               aria-controls={categoriesOpen ? 'nav-category-desktop' : undefined}
               onClick={toggleCategories}
             >
-              Categorías <span className="nav-category-chevron" aria-hidden="true">⌄</span>
+              Categorías
             </button>
           </div>
           <a

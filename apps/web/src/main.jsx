@@ -331,9 +331,9 @@ function App() {
     let active = true;
     setLoading(true);
     const query = new URLSearchParams({ page: String(catalogPage.page) });
-    // Category tabs and text search share the same dynamic search endpoint.
-    const searchTerm = search.trim() || (category === 'Todos' ? '' : category);
+    const searchTerm = search.trim();
     if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
+    if (category !== 'Todos') query.set('category', category);
     if (priceMin !== '')
       query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
     if (priceMax !== '')
@@ -377,8 +377,9 @@ function App() {
   }, [view, user?.id]);
   async function reloadCatalog() {
     const query = new URLSearchParams({ page: String(catalogPage.page) });
-    const searchTerm = search.trim() || (category === 'Todos' ? '' : category);
+    const searchTerm = search.trim();
     if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
+    if (category !== 'Todos') query.set('category', category);
     if (priceMin !== '')
       query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
     if (priceMax !== '')
