@@ -97,7 +97,12 @@ export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
           </div>
           <div>
             <dt>Profundidad</dt>
-            <dd>{formatCentimeters(p.dimensions?.depth)}</dd>
+            <dd>
+              {p._id === 'dfa1353cef54ee23ef970b72' &&
+              !Number.isFinite(p.dimensions?.depth)
+                ? 'Plano'
+                : formatCentimeters(p.dimensions?.depth)}
+            </dd>
           </div>
         </dl>
         <p className="product-detail-price">
