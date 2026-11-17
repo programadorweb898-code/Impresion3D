@@ -25,7 +25,17 @@ export async function listProducts(req, res) {
       req.query.category.length > 60
     )
       return res.status(400).json({ message: 'Categoría inválida' });
-    filter.category = req.query.category;
+    const cat = req.query.category.trim();
+    if (cat) {
+      // No solo por el campo categoría: también matchea título y descripción
+      // para que productos navideños (bolas, adornos, árbol) aparezcan aunque
+      // su campo category no lleve exactamente ese nombre.
+      filter.$or = [
+        { category: cat },
+        { name: { $regex: cat, $options: 'i' } },
+        { description: { $regex: cat, $options: 'i' } }
+      ];
+    }
   }
   const startsWith = req.query.startsWith;
   if (startsWith !== undefined) {
