@@ -20,6 +20,7 @@ import { ensureUserEmailIndex } from './user-email-index.js';
 import { migrateCatalogCopy } from './catalog-copy.js';
 import { migrateChristmasCatalog } from './christmas-catalog.js';
 import { migrateMakerworldCatalog } from './makerworld-catalog.js';
+import { migrateGiftBoxDescription } from './gift-box-description.js';
 import { migrateSeasonalCuencos } from './seasonal-cuencos.js';
 import {
   createOrderNotifier,
@@ -76,6 +77,7 @@ await migrateCatalogCopy();
 await migrateSeasonalCuencos();
 await migrateMakerworldCatalog();
 await migrateChristmasCatalog();
+await migrateGiftBoxDescription(Product);
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,
