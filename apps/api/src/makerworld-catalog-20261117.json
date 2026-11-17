@@ -779,7 +779,7 @@
     "shortDescription": "Tus lápices reunidos en una trama tejida.",
     "description": "Portalápices cilíndrico impreso en 3D, con paredes de trama entrelazada y borde trenzado. Reúne bolígrafos y lápices sobre el escritorio y suma un detalle decorativo. No incluye útiles ni otros accesorios.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 800000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -802,7 +802,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 88.27,
+      "height": 95.36,
+      "depth": 88.99
+    }
   },
   {
     "_id": "6527e01a2b39478b95692e77",
