@@ -119,11 +119,13 @@ export const productSchema = z.strictObject({
   color: z.enum(['terracotta', 'sage', 'sand']),
   priceCents: z.number().int().min(0).max(100000000),
   currency: z.literal('ARS'),
-  dimensions: z.strictObject({
-    width: z.number().positive().max(2000).optional(),
-    height: z.number().positive().max(2000),
-    depth: z.number().positive().max(2000).optional(),
-  }),
+  dimensions: z
+    .strictObject({
+      width: z.number().positive().max(2000).optional(),
+      height: z.number().positive().max(2000),
+      depth: z.number().positive().max(2000).optional(),
+    })
+    .optional(),
   active: z.boolean(),
 });
 export const productUpdateSchema = productSchema.extend({

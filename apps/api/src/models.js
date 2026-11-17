@@ -56,6 +56,15 @@ const productSchema = new Schema(
     currency: { type: String, default: 'ARS' },
     dimensions: { width: Number, height: Number, depth: Number },
     active: { type: Boolean, default: true },
+    source: {
+      platform: String,
+      id: String,
+      url: String,
+      author: String,
+      license: String,
+      licenseUrl: String,
+    },
+    imageNotice: String,
     historicalSalesCount: { type: Number, default: 0, min: 0 },
     viewsCount: { type: Number, default: 0, min: 0 },
     image: { url: String, publicId: String, width: Number, height: Number },
@@ -67,13 +76,6 @@ const productSchema = new Schema(
         width: Number,
         height: Number,
       },
-    },
-    model: {
-      url: String,
-      publicId: String,
-      format: { type: String, enum: ['glb', 'stl'] },
-      sourceFormat: { type: String, enum: ['3mf'] },
-      bytes: Number,
     },
   },
   { timestamps: true },
@@ -208,7 +210,6 @@ designRequestSchema.index({ userId: 1, requestId: 1 }, { unique: true });
 designRequestSchema.index({ userId: 1, createdAt: -1 });
 designRequestSchema.index({ createdAt: -1 });
 export const DesignRequest = model('DesignRequest', designRequestSchema);
-
 
 const photoQuoteSchema = new Schema(
   {

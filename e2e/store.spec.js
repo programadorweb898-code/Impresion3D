@@ -7,7 +7,6 @@ test.beforeEach(async ({ page }, testInfo) => {
     'X-Forwarded-For': `198.18.${bytes[0]}.${bytes[1]}`,
   });
 });
-import { tetraGlb } from '../apps/api/test/helpers/model-fixtures.js';
 test('enlaces anteriores de error permiten continuar con Facebook sin volver a exigir email', async ({
   page,
 }) => {
@@ -65,12 +64,20 @@ test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio
   // APIRequestContext doesn't inherit page.setExtraHTTPHeaders.
   // Use the same isolated address as the browser to avoid cross-test 429.
   const address = createHash('sha256').update(test.info().testId).digest();
-  const apiHeaders = { 'X-Forwarded-For': `198.18.${address[0]}.${address[1]}` };
-  await expect.poll(async () => {
-    const response = await page.request.get('/api/auth/me', { headers: apiHeaders });
-    return response.status();
-  }).toBe(200);
-  const original = await (await page.request.get('/api/auth/me', { headers: apiHeaders })).json();
+  const apiHeaders = {
+    'X-Forwarded-For': `198.18.${address[0]}.${address[1]}`,
+  };
+  await expect
+    .poll(async () => {
+      const response = await page.request.get('/api/auth/me', {
+        headers: apiHeaders,
+      });
+      return response.status();
+    })
+    .toBe(200);
+  const original = await (
+    await page.request.get('/api/auth/me', { headers: apiHeaders })
+  ).json();
   expect(original.role).toBe('customer');
   expect(original.email).toBeUndefined();
   await page
@@ -161,18 +168,24 @@ test('Facebook sin correo permite ingresar, comprar y confirmar un correo propio
     .getByRole('button', { name: 'Continuar con Facebook', exact: true })
     .click();
   await expect(page).toHaveURL('/');
-  const returned = await (await page.request.get('/api/auth/me', { headers: apiHeaders })).json();
+  const returned = await (
+    await page.request.get('/api/auth/me', { headers: apiHeaders })
+  ).json();
   expect(returned.id).toBe(original.id);
   expect(returned.name).toBe('Nombre Facebook editado');
   expect(returned.email).toBe('facebook-browser-contact@example.com');
-  const orders = await (await page.request.get('/api/orders', { headers: apiHeaders })).json();
+  const orders = await (
+    await page.request.get('/api/orders', { headers: apiHeaders })
+  ).json();
   expect(orders).toHaveLength(1);
   expect(orders[0].userId).toBe(original.id);
 });
 async function selectCategory(page, name) {
   await page.getByRole('button', { name: 'Categorías' }).click();
-  await page.locator('.nav-category-popover')
-    .getByRole('link', { name, exact: true }).click();
+  await page
+    .locator('.nav-category-popover')
+    .getByRole('link', { name, exact: true })
+    .click();
 }
 async function menu(page, name) {
   await page
@@ -422,50 +435,21 @@ test('carrito combina páginas y recupera disponibilidad al volver a iniciar ses
     page.getByText('Producto no disponible', { exact: true }),
   ).toHaveCount(0);
 });
-test('visor WebGL carga geometría y permite cerrarlo y volver a abrirlo', async ({
+test('el catálogo muestra productos sin controles ni descargas del visor 3D', async ({
   page,
 }) => {
-  await page.route('https://res.cloudinary.com/test/model.glb', (route) =>
-    route.fulfill({
-      contentType: 'model/gltf-binary',
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: tetraGlb(),
-    }),
-  );
   const downloaded = [];
-  page.on('request', (r) => downloaded.push(r.url()));
+  page.on('request', (request) => downloaded.push(request.url()));
   await page.goto('/');
   await expect(page.locator('.product-card')).toHaveCount(10);
+  await expect(page.getByRole('button', { name: /Ver en 3D/i })).toHaveCount(0);
+  await expect(page.locator('canvas')).toHaveCount(0);
   expect(
     downloaded.some(
       (url) =>
-        url.includes('ProductViewer') ||
-        url.includes('/Admin-') ||
-        url.endsWith('model.glb'),
+        url.includes('ProductViewer') || /\.(glb|stl)(?:[?#]|$)/.test(url),
     ),
   ).toBe(false);
-  const open = () =>
-    page
-      .locator('.product-card')
-      .first()
-      .getByRole('button', { name: 'Ver en 3D' })
-      .click();
-  await open();
-  await expect(
-    page.getByRole('button', { name: 'Restablecer vista' }),
-  ).toBeVisible();
-  await expect(page.locator('.model-stage')).toHaveCSS(
-    'background-color',
-    'rgb(37, 43, 51)',
-  );
-  await page.getByRole('button', { name: 'Vista superior' }).click();
-  await expect(page.locator('canvas')).toBeVisible();
-  await page.getByRole('button', { name: 'Cerrar visor 3D' }).click();
-  await expect(page.locator('canvas')).toHaveCount(0);
-  await open();
-  await expect(
-    page.getByRole('button', { name: 'Restablecer vista' }),
-  ).toBeVisible();
 });
 
 test('registro por correo confirma un enlace y elige una contraseña antes de iniciar sesión', async ({
@@ -511,32 +495,57 @@ test('registro por correo confirma un enlace y elige una contraseña antes de in
     page.getByRole('button', { name: 'Abrir carrito, 0 productos' }),
   ).toBeEnabled();
 });
-test('Administración no deja la pantalla negra y mantiene navegación funcional', async ({ page }) => {
+test('Administración no deja la pantalla negra y mantiene navegación funcional', async ({
+  page,
+}) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await login(page, 0, 'admin-browser@example.com');
   await menu(page, 'Administración');
-  await expect(page.getByRole('heading', { name: 'Administración', exact: true })).toBeVisible();
-  for (const name of ['Productos', 'Presupuestos', 'Estado del servicio', 'Pedidos']) {
+  await expect(
+    page.getByRole('heading', { name: 'Administración', exact: true }),
+  ).toBeVisible();
+  for (const name of [
+    'Productos',
+    'Presupuestos',
+    'Estado del servicio',
+    'Pedidos',
+  ]) {
     await page.getByRole('button', { name, exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Administración', exact: true })).toBeVisible();
-    await expect(page.getByText('No pudimos abrir Administración')).toHaveCount(0);
+    await expect(
+      page.getByRole('heading', { name: 'Administración', exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText('No pudimos abrir Administración')).toHaveCount(
+      0,
+    );
   }
   expect(errors).toEqual([]);
 });
 
-test('administración muestra error recuperable si una API falla', async ({ page }) => {
+test('administración muestra error recuperable si una API falla', async ({
+  page,
+}) => {
   await login(page, 0, 'admin-browser@example.com');
   await page.route('**/api/admin/operations', (route) =>
-    route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Servicio temporalmente no disponible' }) }),
+    route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'Servicio temporalmente no disponible' }),
+    }),
   );
   await menu(page, 'Administración');
-  await expect(page.getByRole('heading', { name: 'Administración', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Administración', exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole('alert')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Actualizar', exact: true })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Actualizar', exact: true }),
+  ).toBeEnabled();
   await page.unroute('**/api/admin/operations');
   await page.getByRole('button', { name: 'Actualizar', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Productos', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Productos', exact: true }),
+  ).toBeVisible();
 });
 
 test('administración pagina productos y muestra integraciones sólo al administrador', async ({
@@ -600,9 +609,11 @@ test('carrito espera disponibilidad sin alertas falsas al abrirlo y al agregar o
       .getByRole('button', { name: `Abrir carrito, ${i + 1} productos` })
       .click();
     const drawer = page.getByRole('dialog');
-    await expect(drawer.getByRole('status').filter({ hasText: 'Actualizando precios y disponibilidad' })).toContainText(
-      'Actualizando precios y disponibilidad',
-    );
+    await expect(
+      drawer
+        .getByRole('status')
+        .filter({ hasText: 'Actualizando precios y disponibilidad' }),
+    ).toContainText('Actualizando precios y disponibilidad');
     await expect(drawer.getByRole('alert')).toHaveCount(0);
     await expect(
       drawer.getByRole('heading', {
@@ -673,9 +684,11 @@ test('fallo de catálogo informa conexión sin marcar piezas como no disponibles
       exact: true,
     })
     .click();
-  await expect(drawer.getByRole('status').filter({ hasText: 'Actualizando precios y disponibilidad' })).toContainText(
-    'Actualizando precios y disponibilidad',
-  );
+  await expect(
+    drawer
+      .getByRole('status')
+      .filter({ hasText: 'Actualizando precios y disponibilidad' }),
+  ).toContainText('Actualizando precios y disponibilidad');
   await expect(drawer.getByRole('alert')).toHaveCount(0);
   release();
   await quoteDelivery(page);
@@ -1110,7 +1123,9 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
   await expect(
     nav.getByRole('button', { name: 'Catálogo', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
-  await expect(nav.getByRole('button', { name: 'Catálogo', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(
+    nav.getByRole('button', { name: 'Catálogo', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
   await nav.getByRole('link', { name: 'Mi perfil', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Mi perfil', exact: true }),
@@ -1118,7 +1133,9 @@ test('menú resalta la página activa; cancelar conserva sesión y confirmar sal
   await expect(
     nav.getByRole('link', { name: 'Mi perfil', exact: true }),
   ).toHaveAttribute('aria-current', 'page');
-  await expect(nav.getByRole('link', { name: 'Mi perfil', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(
+    nav.getByRole('link', { name: 'Mi perfil', exact: true }),
+  ).toHaveAttribute('aria-current', 'page');
   await expect(
     nav.getByRole('button', { name: 'Catálogo', exact: true }),
   ).not.toHaveAttribute('aria-current', 'page');

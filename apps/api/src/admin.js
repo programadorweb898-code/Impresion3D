@@ -2,7 +2,6 @@ import { rateLimitMessage } from './rate-limit-message.js';
 import { pageNumber, pageMetadata, pageSize as limit } from './pagination.js';
 import { validate } from './http-validation.js';
 import { Router } from 'express';
-import { addModelRoutes } from './model-routes.js';
 import { randomUUID } from 'node:crypto';
 import { cloudinaryFailure } from './cloudinary-errors.js';
 import { imageUpload, normalizeImage } from './images.js';
@@ -41,7 +40,6 @@ export function createAdminRouter({
       commit: buildCommit || null,
       integrations: {
         images: !!imageStorage,
-        models: !!imageStorage?.uploadModel,
         recovery: !!accountServices.sendReset,
         verification: !!accountServices.sendVerification,
         google: !!accountServices.providers?.google,
@@ -279,11 +277,9 @@ export function createAdminRouter({
       if (!['angle', 'context'].includes(req.params.slot))
         return res.status(400).json({ message: 'Elegí Otro ángulo o En uso.' });
       if (!imageStorage)
-        return res
-          .status(503)
-          .json({
-            message: 'La carga de fotos no está disponible. Intentá más tarde.',
-          });
+        return res.status(503).json({
+          message: 'La carga de fotos no está disponible. Intentá más tarde.',
+        });
       next();
     },
     imageUpload,
@@ -316,21 +312,17 @@ export function createAdminRouter({
           { new: true, runValidators: true },
         );
       } catch {
-        return res
-          .status(503)
-          .json({
-            message:
-              'No pudimos confirmar el cambio. Actualizá la lista antes de reintentar.',
-          });
+        return res.status(503).json({
+          message:
+            'No pudimos confirmar el cambio. Actualizá la lista antes de reintentar.',
+        });
       }
       if (!product) {
         await imageStorage.remove(image.publicId).catch(() => {});
-        return res
-          .status(409)
-          .json({
-            message:
-              'El producto cambió. Actualizá la lista y volvé a intentarlo.',
-          });
+        return res.status(409).json({
+          message:
+            'El producto cambió. Actualizá la lista y volvé a intentarlo.',
+        });
       }
       const previous = current.gallery?.[req.params.slot];
       if (previous?.publicId)
@@ -339,6 +331,5 @@ export function createAdminRouter({
     },
   );
 
-  addModelRoutes(adminRouter, imageStorage);
   return adminRouter;
 }

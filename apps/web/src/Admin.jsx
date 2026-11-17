@@ -8,7 +8,6 @@ import { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { Pagination } from './Pagination.jsx';
 import { ProductPhoto } from './ProductPhoto.jsx';
-import { ProductModel } from './ProductModel.jsx';
 import {
   productSchema,
   formatMoney,
@@ -57,7 +56,9 @@ function OrderEditor({ order, onSave, busy }) {
       {order.notes && <p>Solicitud: {order.notes}</p>}
       <OrderDelivery delivery={order.delivery} />
       <p>
-        {order.delivery?.status === 'pending_quote' ? 'Productos (sin envío): ' : 'Total: '}
+        {order.delivery?.status === 'pending_quote'
+          ? 'Productos (sin envío): '
+          : 'Total: '}
         {formatMoney(order.totalCents, order.currency)}
       </p>
       <ol>
@@ -109,7 +110,7 @@ function OrderEditor({ order, onSave, busy }) {
     </article>
   );
 }
-export function Admin({ onCatalogChange, onPreview }) {
+export function Admin({ onCatalogChange }) {
   const [tab, setTab] = useState('orders'),
     [products, setProducts] = useState([]),
     [operations, setOperations] = useState(null),
@@ -133,7 +134,9 @@ export function Admin({ onCatalogChange, onPreview }) {
       setData(orders);
       setOperations(state);
     } catch (cause) {
-      setError(cause?.message || 'No pudimos cargar los datos de Administración.');
+      setError(
+        cause?.message || 'No pudimos cargar los datos de Administración.',
+      );
     } finally {
       setLoading(false);
     }
@@ -159,7 +162,9 @@ export function Admin({ onCatalogChange, onPreview }) {
     }
   }
   async function deleteProduct(id) {
-    if (!window.confirm('¿Seguro que querés eliminar este producto del catálogo?')) {
+    if (
+      !window.confirm('¿Seguro que querés eliminar este producto del catálogo?')
+    ) {
       return;
     }
     setBusy(true);
@@ -188,11 +193,18 @@ export function Admin({ onCatalogChange, onPreview }) {
       color: values.color,
       priceCents: Math.round(Number(values.price) * 100),
       currency: 'ARS',
-      dimensions: {
-        ...(values.width !== '' && { width: Math.round(Number(values.width) * 100) / 10 }),
-        height: Math.round(Number(values.height) * 100) / 10,
-        ...(values.depth !== '' && { depth: Math.round(Number(values.depth) * 100) / 10 }),
-      },
+      dimensions:
+        values.height === '' && values.width === '' && values.depth === ''
+          ? undefined
+          : {
+              ...(values.width !== '' && {
+                width: Math.round(Number(values.width) * 100) / 10,
+              }),
+              height: Math.round(Number(values.height) * 100) / 10,
+              ...(values.depth !== '' && {
+                depth: Math.round(Number(values.depth) * 100) / 10,
+              }),
+            },
       active: values.active === 'on',
     });
     if (!parsed.success) {
@@ -294,7 +306,6 @@ export function Admin({ onCatalogChange, onPreview }) {
           <ul>
             {Object.entries({
               images: 'Fotos',
-              models: 'Modelos 3D',
               recovery: 'Recuperación de contraseña',
               verification: 'Confirmación de correo',
               google: 'Google',
@@ -453,7 +464,11 @@ export function Admin({ onCatalogChange, onPreview }) {
                           ? Math.round(editing.dimensions[key] * 10) / 100
                           : ''
                       }
-                      required={key === 'height'}
+                      required={
+                        key === 'height' &&
+                        (Number.isFinite(editing.dimensions?.height) ||
+                          !editing._id)
+                      }
                       placeholder="A confirmar"
                     />
                   </label>
@@ -491,14 +506,6 @@ export function Admin({ onCatalogChange, onPreview }) {
             {products.map((p) => (
               <article className="order" key={p._id}>
                 <h3>{p.name}</h3>
-                <ProductModel
-                  product={p}
-                  onPreview={onPreview}
-                  onSaved={async () => {
-                    setNotice('Modelo 3D guardado.');
-                    await Promise.all([load(data.page), onCatalogChange()]);
-                  }}
-                />
                 <ProductGalleryEditor
                   product={p}
                   onUpdated={async () => {

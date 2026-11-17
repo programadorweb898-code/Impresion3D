@@ -65,15 +65,26 @@ class AdminErrorBoundary extends Component {
     return { failed: true };
   }
   componentDidCatch(error, info) {
-    console.error('No se pudo abrir Administración:', error, info.componentStack);
+    console.error(
+      'No se pudo abrir Administración:',
+      error,
+      info.componentStack,
+    );
   }
   render() {
     if (this.state.failed) {
       return (
         <section className="orders admin" role="alert">
           <h1>No pudimos abrir Administración</h1>
-          <p>Hubo un problema al cargar el panel. Actualizá la página para reintentarlo.</p>
-          <button className="primary" type="button" onClick={() => window.location.reload()}>
+          <p>
+            Hubo un problema al cargar el panel. Actualizá la página para
+            reintentarlo.
+          </p>
+          <button
+            className="primary"
+            type="button"
+            onClick={() => window.location.reload()}
+          >
             Reintentar
           </button>
         </section>
@@ -85,9 +96,8 @@ class AdminErrorBoundary extends Component {
 const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
 );
-const ProductViewer = lazy(() => import('./ProductViewer.jsx'));
 const PhotoQuoteForm = lazy(() => import('./PhotoQuoteForm.jsx'));
-function Modal({ children, onClose, wide = false }) {
+function Modal({ children, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     const node = ref.current;
@@ -103,7 +113,7 @@ function Modal({ children, onClose, wide = false }) {
         onClose();
       }}
     >
-      <div className={wide ? 'modal model-modal' : 'modal'}>{children}</div>
+      <div className="modal">{children}</div>
     </dialog>
   );
 }
@@ -159,7 +169,6 @@ function App() {
       city: '',
       postalCode: '',
     }),
-    [viewing, setViewing] = useState(null),
     [navigationVersion, setNavigationVersion] = useState(0);
   const cart = useCart(user?.id);
   const [authReady, setAuthReady] = useState(false);
@@ -973,7 +982,7 @@ function App() {
                   </p>
                 }
               >
-                <Admin onCatalogChange={reloadCatalog} onPreview={setViewing} />
+                <Admin onCatalogChange={reloadCatalog} />
               </Suspense>
             </AdminErrorBoundary>
           ) : view === 'catalog' ? (
@@ -984,7 +993,10 @@ function App() {
               >
                 <div className="custom-design-feature__info">
                   <p className="custom-design-feature__kicker">
-                    <span className="custom-design-feature__dot" aria-hidden="true" />
+                    <span
+                      className="custom-design-feature__dot"
+                      aria-hidden="true"
+                    />
                     NOVEDAD · DISEÑO PERSONALIZADO
                   </p>
                   <h2 id="custom-design-feature-title">
@@ -997,10 +1009,19 @@ function App() {
                   </p>
                 </div>
                 <div className="custom-design-feature__action">
-                  <ol className="custom-design-feature__steps" aria-label="Cómo funciona">
-                    <li><strong>01</strong> Subí una imagen</li>
-                    <li><strong>02</strong> Contanos los detalles</li>
-                    <li><strong>03</strong> Recibí tu presupuesto</li>
+                  <ol
+                    className="custom-design-feature__steps"
+                    aria-label="Cómo funciona"
+                  >
+                    <li>
+                      <strong>01</strong> Subí una imagen
+                    </li>
+                    <li>
+                      <strong>02</strong> Contanos los detalles
+                    </li>
+                    <li>
+                      <strong>03</strong> Recibí tu presupuesto
+                    </li>
                   </ol>
                   <a
                     className="custom-design-feature__cta"
@@ -1035,8 +1056,9 @@ function App() {
                 <h2 id="makerworld-title">También publicamos en MakerWorld</h2>
                 <p>
                   MakerWorld es una plataforma de diseños para imprimir en 3D.
-                  Si encontraste un diseño que te gusta, podés enviarnos una imagen
-                  de referencia para consultar un presupuesto de impresión.
+                  Si encontraste un diseño que te gusta, podés enviarnos una
+                  imagen de referencia para consultar un presupuesto de
+                  impresión.
                 </p>
                 <a
                   href="https://makerworld.com/es"
@@ -1068,121 +1090,164 @@ function App() {
                 <div className="catalog-filter-toolbar">
                   <button
                     type="button"
-                    className={'catalog-filter-toggle' + (filtersOpen ? ' is-open' : '')}
-                    aria-label={filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+                    className={
+                      'catalog-filter-toggle' + (filtersOpen ? ' is-open' : '')
+                    }
+                    aria-label={
+                      filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros'
+                    }
                     aria-expanded={filtersOpen}
                     aria-controls="catalog-filter-options"
                     onClick={() => setFiltersOpen((open) => !open)}
                   >
-                    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="19"
+                      height="19"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <path d="M4 7h16M4 12h16M4 17h16" />
-                      <circle cx="9" cy="7" r="2" fill="currentColor" stroke="none" />
-                      <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none" />
-                      <circle cx="11" cy="17" r="2" fill="currentColor" stroke="none" />
+                      <circle
+                        cx="9"
+                        cy="7"
+                        r="2"
+                        fill="currentColor"
+                        stroke="none"
+                      />
+                      <circle
+                        cx="16"
+                        cy="12"
+                        r="2"
+                        fill="currentColor"
+                        stroke="none"
+                      />
+                      <circle
+                        cx="11"
+                        cy="17"
+                        r="2"
+                        fill="currentColor"
+                        stroke="none"
+                      />
                     </svg>
                     <span>Filtros</span>
                     {(sort !== 'relevance' || priceMin || priceMax) && (
-                      <span className="catalog-filter-indicator" aria-label="Filtros activos" />
+                      <span
+                        className="catalog-filter-indicator"
+                        aria-label="Filtros activos"
+                      />
                     )}
                   </button>
                 </div>
                 {filtersOpen && (
-                  <div className="catalog-search catalog-filter-controls" id="catalog-filter-options">
-                  <label>
-                    Ordenar por
-                    <select
-                      value={sort}
-                      onChange={(event) => {
-                        setSort(event.target.value);
-                        setCatalogPage((current) => ({ ...current, page: 1 }));
-                      }}
-                    >
-                      <option value="relevance">Más relevantes</option>
-                      <option value="price-asc">Precio: menor a mayor</option>
-                      <option value="price-desc">Precio: mayor a menor</option>
-                    </select>
-                  </label>
-                  <details className="price-filters">
-                    <summary>Filtrar por precio</summary>
-                    <div className="price-fields">
-                      <label>
-                        Rango de precio
-                        <select
-                          aria-label="Rango de precio"
-                          value={
-                            Array.from({ length: 8 }, (_, i) => [
-                              String(i * 5000),
-                              String((i + 1) * 5000),
-                            ]).some(
-                              ([min, max]) =>
-                                priceMin === min && priceMax === max,
-                            )
-                              ? priceMin + ':' + priceMax
-                              : ''
-                          }
-                          onChange={(event) => {
-                            const [min, max] = event.target.value
-                              ? event.target.value.split(':')
-                              : ['', ''];
-                            setPriceMin(min);
-                            setPriceMax(max);
-                            setCatalogPage((current) => ({
-                              ...current,
-                              page: 1,
-                            }));
-                          }}
-                        >
-                          <option value="">
-                            Todos los precios / personalizado
-                          </option>
-                          {Array.from({ length: 8 }, (_, i) => {
-                            const min = i * 5000,
-                              max = (i + 1) * 5000;
-                            return (
-                              <option key={min} value={min + ':' + max}>
-                                $ {min.toLocaleString('es-AR')} – ${' '}
-                                {max.toLocaleString('es-AR')}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </label>
-                      <label>
-                        Precio mínimo
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={priceMin}
-                          onChange={(event) => {
-                            setPriceMin(event.target.value);
-                            setCatalogPage((current) => ({
-                              ...current,
-                              page: 1,
-                            }));
-                          }}
-                          placeholder="Desde"
-                        />
-                      </label>
-                      <label>
-                        Precio máximo
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={priceMax}
-                          onChange={(event) => {
-                            setPriceMax(event.target.value);
-                            setCatalogPage((current) => ({
-                              ...current,
-                              page: 1,
-                            }));
-                          }}
-                          placeholder="Hasta"
-                        />
-                      </label>
-                    </div>
-                  </details>
+                  <div
+                    className="catalog-search catalog-filter-controls"
+                    id="catalog-filter-options"
+                  >
+                    <label>
+                      Ordenar por
+                      <select
+                        value={sort}
+                        onChange={(event) => {
+                          setSort(event.target.value);
+                          setCatalogPage((current) => ({
+                            ...current,
+                            page: 1,
+                          }));
+                        }}
+                      >
+                        <option value="relevance">Más relevantes</option>
+                        <option value="price-asc">Precio: menor a mayor</option>
+                        <option value="price-desc">
+                          Precio: mayor a menor
+                        </option>
+                      </select>
+                    </label>
+                    <details className="price-filters">
+                      <summary>Filtrar por precio</summary>
+                      <div className="price-fields">
+                        <label>
+                          Rango de precio
+                          <select
+                            aria-label="Rango de precio"
+                            value={
+                              Array.from({ length: 8 }, (_, i) => [
+                                String(i * 5000),
+                                String((i + 1) * 5000),
+                              ]).some(
+                                ([min, max]) =>
+                                  priceMin === min && priceMax === max,
+                              )
+                                ? priceMin + ':' + priceMax
+                                : ''
+                            }
+                            onChange={(event) => {
+                              const [min, max] = event.target.value
+                                ? event.target.value.split(':')
+                                : ['', ''];
+                              setPriceMin(min);
+                              setPriceMax(max);
+                              setCatalogPage((current) => ({
+                                ...current,
+                                page: 1,
+                              }));
+                            }}
+                          >
+                            <option value="">
+                              Todos los precios / personalizado
+                            </option>
+                            {Array.from({ length: 8 }, (_, i) => {
+                              const min = i * 5000,
+                                max = (i + 1) * 5000;
+                              return (
+                                <option key={min} value={min + ':' + max}>
+                                  $ {min.toLocaleString('es-AR')} – ${' '}
+                                  {max.toLocaleString('es-AR')}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </label>
+                        <label>
+                          Precio mínimo
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={priceMin}
+                            onChange={(event) => {
+                              setPriceMin(event.target.value);
+                              setCatalogPage((current) => ({
+                                ...current,
+                                page: 1,
+                              }));
+                            }}
+                            placeholder="Desde"
+                          />
+                        </label>
+                        <label>
+                          Precio máximo
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={priceMax}
+                            onChange={(event) => {
+                              setPriceMax(event.target.value);
+                              setCatalogPage((current) => ({
+                                ...current,
+                                page: 1,
+                              }));
+                            }}
+                            placeholder="Hasta"
+                          />
+                        </label>
+                      </div>
+                    </details>
                   </div>
                 )}
                 <div className="catalog-feedback">
@@ -1291,13 +1356,6 @@ function App() {
                         </p>
                         <div className="card-actions">
                           <button
-                            className="model-button"
-                            disabled={!p.model?.url}
-                            onClick={() => setViewing(p)}
-                          >
-                            Ver en 3D <span aria-hidden="true">◇</span>
-                          </button>
-                          <button
                             className="product-button"
                             disabled={!authReady || cartProductIds.has(p._id)}
                             onClick={() => addToCart(p)}
@@ -1312,11 +1370,7 @@ function App() {
                         </div>
                         {cartProductIds.has(p._id) && (
                           <p className="card-help">
-                            {!p.model?.url
-                              ? 'Vista 3D todavía no disponible.'
-                              : cartProductIds.has(p._id)
-                                ? 'Cambiá la cantidad desde tu carrito.'
-                                : 'Giralo y acercalo en el visor.'}
+                            Cambiá la cantidad desde tu carrito.
                           </p>
                         )}
                       </article>
@@ -1371,7 +1425,8 @@ function App() {
                   <h2>Tu idea también tiene lugar acá.</h2>
                   <p>
                     Mandanos una imagen del producto que te gustaría imprimir y
-                    contanos cómo lo imaginás. Evaluamos tu idea y te presupuestamos.
+                    contanos cómo lo imaginás. Evaluamos tu idea y te
+                    presupuestamos.
                   </p>
                 </div>
                 <a
@@ -1511,21 +1566,6 @@ function App() {
           message={cartToast.message}
           onDismiss={dismissCartToast}
         />
-      )}
-      {viewing && (
-        <Modal wide onClose={() => setViewing(null)}>
-          <button
-            className="close"
-            aria-label="Cerrar visor 3D"
-            onClick={() => setViewing(null)}
-          >
-            ×
-          </button>
-          <h2 id="modal-title">{viewing.name} · Vista 3D</h2>
-          <Suspense fallback={<p role="status">Preparando visor…</p>}>
-            <ProductViewer product={viewing} />
-          </Suspense>
-        </Modal>
       )}
       {logoutPrompt && (
         <Modal

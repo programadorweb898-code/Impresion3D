@@ -60,9 +60,9 @@ Volvé a iniciar sesión para ver Administración. No existe una contraseña adm
 
 Las fotos reales se cargan desde Administración con Cloudinary: seguí [la guía de fotos](docs/product-photos.md) para habilitar las tres variables del servidor. La recuperación de contraseña y el cambio confirmado de email usan Resend. El acceso con Google y Facebook se habilita con sus credenciales. Consultá [acceso y cuentas](docs/account-access.md). El registro confirma el correo cuando se configura Resend; los registros pendientes no abren sesión y el enlace permite elegir la contraseña definitiva. Consultá [operación y preparación para el público](docs/operations.md) para activar avisos, revisar integraciones y configurar backups. No se inventan plazos ni cuenta regresiva.
 
-El [visor 3D del catálogo](docs/catalog-3d.md) permite asociar un GLB, STL o 3MF a cada producto desde Administración, sin usar Meshy. Requiere archivos reales; no convierte las fotos en modelos.
+El catálogo muestra productos terminados con fotografías y carrusel de imágenes. Se retiró el visor 3D y la carga de modelos de productos. La [ampliación del catálogo con MakerWorld](docs/makerworld-catalog.md) incorpora 30 diseños CC0 con dos imágenes por producto y precio inicial de ARS 10.000.
 
-Próximas etapas: mejoras operativas; visor y modelos paramétricos propios con límites por producto; estimación mediante slicer y cola de fabricación; por último generación desde imágenes (por ejemplo Meshy), moderación y revisión de imprimibilidad. Esta versión permite a administradores cargar fotos y modelos GLB, STL y 3MF; no acepta archivos de clientes ni genera modelos con IA.
+Los administradores pueden cargar las fotos principal y de uso de cada producto. La geometría y el laminado se reservan para los procesos internos de cotización y fabricación.
 
 ## Pruebas con MongoDB real y aislado
 

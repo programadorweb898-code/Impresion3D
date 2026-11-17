@@ -621,75 +621,7 @@ select {
 .photo-editor .error {
   margin: 0;
 }
-
-.model-modal {
-  width: min(100%, 900px);
-}
-.model-stage {
-  width: 100%;
-  height: 410px;
-  position: relative;
-  background: #252b33;
-  border-radius: 10px;
-  overflow: hidden;
-  touch-action: none;
-}
-.model-stage canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.viewer-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 16px 0;
-}
-.viewer-controls button {
-  font-size: 12px;
-  padding: 8px 14px;
-}
-.model-button {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 12px 16px;
-  margin-top: 16px;
-  background: #303d30;
-  color: white;
-  border-radius: 6px;
-  font-size: 13px;
-}
-.model-editor {
-  padding: 16px 0;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 16px;
-}
-.model-editor h4 {
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-.model-editor form {
-  margin-top: 16px;
-}
-.model-editor input {
-  font-size: 12px;
-  max-width: 100%;
-}
 @media (max-width: 760px) {
-  .model-stage {
-    height: 300px;
-  }
-  .model-modal {
-    padding: 24px 18px;
-  }
-  .viewer-controls {
-    gap: 8px;
-  }
-  .viewer-controls button {
-    padding: 8px 10px;
-  }
 }
 
 .cart-link {
@@ -873,7 +805,6 @@ select {
   margin-top: auto;
   padding-top: 18px;
 }
-.card-actions .model-button,
 .card-actions .product-button {
   width: 100%;
   min-height: 46px;
@@ -887,10 +818,6 @@ select {
   border-radius: 8px;
   font-size: 14px;
   border: 1px solid #303d30;
-}
-.card-actions .model-button {
-  background: #303d30;
-  color: white;
 }
 .card-actions .product-button {
   background: white;
@@ -966,7 +893,6 @@ select {
   .product-card strong {
     font-size: 14px;
   }
-  .card-actions .model-button,
   .card-actions .product-button {
     padding: 10px 6px;
     gap: 6px;
@@ -2326,17 +2252,11 @@ form p,
   gap: 8px;
   padding-top: 18px;
 }
-.card-actions .model-button,
 .card-actions .product-button {
   font-size: 11px;
   border-radius: 4px;
   padding: 10px 9px;
   min-height: 44px;
-}
-.card-actions .model-button {
-  background: transparent;
-  border: 1px solid #b7bdb9;
-  color: var(--text);
 }
 .card-actions .product-button {
   background: var(--text);
@@ -2488,18 +2408,6 @@ textarea::placeholder {
 .legal-contact {
   background: var(--surface);
   color: var(--text);
-  border-color: var(--border);
-}
-header,
-footer,
-.order,
-.product-editor,
-.photo-editor,
-.model-editor,
-.cart-item,
-.cart-drawer-header,
-.product-detail-dimensions > div,
-.legal-static-header {
   border-color: var(--border);
 }
 .social-button {
@@ -2791,7 +2699,6 @@ footer,
     padding-top: 14px;
     gap: 7px;
   }
-  .card-actions .model-button,
   .card-actions .product-button {
     font-size: 10px;
     padding: 10px 5px;
@@ -2910,18 +2817,6 @@ footer,
 .design-section {
   margin-top: 2rem;
 }
-.design-preview,
-.design-preview .product-viewer {
-  display: contents;
-}
-.design-preview .product-viewer > * {
-  grid-column: 1;
-}
-.design-preview .model-stage {
-  grid-row: 1;
-  height: auto;
-  min-height: 480px;
-}
 .design-measurements {
   grid-column: 2;
   grid-row: 1;
@@ -2935,10 +2830,6 @@ footer,
 @media (max-width: 700px) {
   .design-layout {
     grid-template-columns: 1fr;
-  }
-  .design-preview .model-stage {
-    height: 360px;
-    min-height: 0;
   }
   .design-measurements {
     grid-column: 1;
@@ -3679,7 +3570,7 @@ html[data-scroll-restoring] #root {
 .photo-quote-form {
   gap: 1.4rem;
 }
-.photo-quote-form input:not([type="radio"]):not([type="checkbox"]),
+.photo-quote-form input:not([type='radio']):not([type='checkbox']),
 .photo-quote-form textarea,
 .photo-quote-row input,
 .photo-quote-row select,
@@ -3693,7 +3584,7 @@ html[data-scroll-restoring] #root {
   background: #111;
   color: #fff;
 }
-.photo-quote-form input[type="file"] {
+.photo-quote-form input[type='file'] {
   padding: 1rem;
   border: 1px dashed var(--line);
   cursor: pointer;
@@ -3708,22 +3599,31 @@ html[data-scroll-restoring] #root {
   border-radius: 0.75rem;
   background: #0b0b0b;
 }
-.photo-quote-preview { max-width: 420px; }
-.photo-quote-thumb { max-width: 250px; height: 230px; }
+.photo-quote-preview {
+  max-width: 420px;
+}
+.photo-quote-thumb {
+  max-width: 250px;
+  height: 230px;
+}
 .photo-quote-grid,
 .photo-quote-row-layout {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
-.photo-quote-row-layout { grid-template-columns: minmax(160px, 250px) 1fr; }
+.photo-quote-row-layout {
+  grid-template-columns: minmax(160px, 250px) 1fr;
+}
 .photo-quote-contact {
   border: 1px solid var(--line);
   padding: 1rem;
   border-radius: 0.75rem;
   min-width: 0;
 }
-.photo-quote-contact legend { padding: 0 0.35rem; }
+.photo-quote-contact legend {
+  padding: 0 0.35rem;
+}
 .photo-quote-radio {
   display: flex;
   flex-wrap: wrap;
@@ -3741,19 +3641,42 @@ html[data-scroll-restoring] #root {
   flex: 0 0 auto;
   margin-top: 0.2rem;
 }
-.photo-quote-details { white-space: pre-wrap; overflow-wrap: anywhere; }
-.photo-quote-list { margin-top: 2.5rem; }
-.photo-quote-list > button { margin: 0.75rem 0; }
-.photo-quote-row form { gap: 1rem; margin-top: 1.3rem; }
-.photo-quote-reply { padding: 1rem 0; }
-.photo-quote-reply a { display: inline-block; }
-.photo-quote-row p { overflow-wrap: anywhere; }
-.photo-quote-history summary { cursor: pointer; font-weight: 600; }
+.photo-quote-details {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.photo-quote-list {
+  margin-top: 2.5rem;
+}
+.photo-quote-list > button {
+  margin: 0.75rem 0;
+}
+.photo-quote-row form {
+  gap: 1rem;
+  margin-top: 1.3rem;
+}
+.photo-quote-reply {
+  padding: 1rem 0;
+}
+.photo-quote-reply a {
+  display: inline-block;
+}
+.photo-quote-row p {
+  overflow-wrap: anywhere;
+}
+.photo-quote-history summary {
+  cursor: pointer;
+  font-weight: 600;
+}
 @media (max-width: 700px) {
   .photo-quote-grid,
-  .photo-quote-row-layout { grid-template-columns: 1fr; }
+  .photo-quote-row-layout {
+    grid-template-columns: 1fr;
+  }
   .photo-quote-form,
-  .photo-quote-row { padding: 1rem; }
+  .photo-quote-row {
+    padding: 1rem;
+  }
 }
 
 /* Grid children and native file controls must shrink on narrow screens. */
@@ -3783,7 +3706,6 @@ html[data-scroll-restoring] #root {
 .photo-quote-row {
   overflow-wrap: anywhere;
 }
-
 
 /* Inicio: propuesta de diseño personalizado, visible sin superponer el catálogo. */
 .custom-design-feature {
@@ -3885,7 +3807,9 @@ html[data-scroll-restoring] #root {
   line-height: 1.35;
   font-weight: 760;
   text-decoration: none;
-  transition: background 150ms ease, transform 150ms ease;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
 }
 .custom-design-feature__cta:hover,
 .custom-design-feature__cta:focus-visible {
@@ -3942,7 +3866,6 @@ html[data-scroll-restoring] #root {
     transition: none;
   }
 }
-
 
 /* Búsqueda en la cabecera y navegación de categorías, coherentes con el tema oscuro. */
 .site-header {
@@ -4235,7 +4158,6 @@ html[data-scroll-restoring] #root {
     grid-column: auto;
   }
 }
-
 
 /* 2026-11: Cabecera en dos filas: buscador flexible arriba y pestañas desplazables abajo. */
 .site-header.site-header-two-rows {
@@ -4857,7 +4779,9 @@ html[data-scroll-restoring] #root {
   font-weight: 650;
   line-height: 1.5;
 }
-.photo-quote-page .photo-quote-form input:not([type='radio']):not([type='checkbox']):not([type='file']),
+.photo-quote-page
+  .photo-quote-form
+  input:not([type='radio']):not([type='checkbox']):not([type='file']),
 .photo-quote-page .photo-quote-form textarea {
   width: 100%;
   min-width: 0;
@@ -4989,8 +4913,7 @@ html[data-scroll-restoring] #root {
 }
 .photo-quote-aside-highlight {
   background:
-    radial-gradient(ellipse at 100% 0%, #854da136, transparent 70%),
-    #1b1423;
+    radial-gradient(ellipse at 100% 0%, #854da136, transparent 70%), #1b1423;
 }
 .photo-quote-aside-sparkle {
   display: block;
@@ -5070,7 +4993,6 @@ html[data-scroll-restoring] #root {
   }
 }
 
-
 /* Evita que los subtítulos del formulario se contraigan a columnas estrechas. */
 .photo-quote-page .photo-quote-section-heading {
   display: grid;
@@ -5123,10 +5045,26 @@ html[data-scroll-restoring] #root {
   background: #4a385f;
 }
 @keyframes photo-quote-toast-life {
-  0% { opacity: 0; transform: translateY(8px); }
-  15%, 75% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-5px); }
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  15%,
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .photo-quote-success-toast { animation: none; }
+  .photo-quote-success-toast {
+    animation: none;
+  }
+}
+
+.product-card .card-actions {
+  grid-template-columns: minmax(0, 1fr);
 }

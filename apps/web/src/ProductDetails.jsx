@@ -70,6 +70,21 @@ export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
           {p.description ||
             'Consultanos para conocer más detalles de esta pieza.'}
         </p>
+        {p.imageNotice && (
+          <p className="small product-image-notice">{p.imageNotice}</p>
+        )}
+        {p.source?.platform === 'MakerWorld' && (
+          <p className="small product-source">
+            Diseño de {p.source.author} ·{' '}
+            <a href={p.source.url} target="_blank" rel="noreferrer">
+              MakerWorld
+            </a>{' '}
+            ·{' '}
+            <a href={p.source.licenseUrl} target="_blank" rel="noreferrer">
+              {p.source.license}
+            </a>
+          </p>
+        )}
         <h2>Medidas</h2>
         <dl className="product-detail-dimensions">
           <div>

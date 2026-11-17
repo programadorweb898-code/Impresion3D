@@ -7,7 +7,6 @@ import { validateProductModel } from '../src/product-models.js';
 import { createApp } from '../src/app.js';
 import { User, Product } from '../src/models.js';
 import { tetraStl, tetraGlb } from './helpers/model-fixtures.js';
-import { coloredThreeMf } from './helpers/three-mf-fixtures.js';
 let mongo, app, product;
 let uploads = 0;
 const removed = [];
@@ -154,40 +153,14 @@ test('sólo el administrador con CSRF puede cargar modelos', async () => {
     .attach('model', tetraStl(), 'model.stl')
     .expect(403);
 });
-test('publica y reemplaza un modelo; conserva la foto y rechaza archivos inválidos', async () => {
-  const admin = await account('model-admin@example.com', true);
-  const first = await upload(admin, tetraStl());
-  assert.equal(first.status, 200, JSON.stringify(first.body));
-  assert.equal(first.body.model.format, 'stl');
-  const catalog = await request(app).get('/api/products');
-  assert.equal(catalog.body[0].model.format, 'stl');
-  assert.equal(
-    catalog.body[0].image.url,
-    'https://res.cloudinary.com/test/photo.webp',
+test('retira la carga de modelos del catálogo y no publica archivos antiguos', async () => {
+  const admin = await account('retired-model-admin@example.com', true);
+  assert.equal((await upload(admin, tetraGlb(), 'model.glb')).status, 404);
+  await Product.collection.updateOne(
+    { _id: product._id },
+    { $set: { model: { url: 'https://example.com/old.glb', format: 'glb' } } },
   );
-  const next = await upload(admin, tetraGlb(), 'model.glb');
-  assert.equal(next.status, 200, JSON.stringify(next.body));
-  assert.deepEqual(removed, ['impresion3d/models/1.stl']);
-  assert.equal(
-    (await upload(admin, Buffer.from('<script>'), 'model.glb')).status,
-    400,
-  );
-  assert.equal(uploads, 2);
-  assert.equal((await Product.findById(product._id)).model.format, 'glb');
-  assert.equal(
-    (await upload(admin, Buffer.alloc(10 * 1024 * 1024 + 1), 'large.stl'))
-      .status,
-    400,
-  );
-});
-
-test('la carga administrativa de 3MF guarda GLB y conserva origen y foto', async () => {
-  const admin = await account('mf-admin@example.com', true);
-  const response = await upload(admin, coloredThreeMf(), 'keychains.3mf');
-  assert.equal(response.status, 200, JSON.stringify(response.body));
-  assert.equal(response.body.model.format, 'glb');
-  assert.equal(response.body.model.sourceFormat, '3mf');
-  const current = await Product.findById(product._id);
-  assert.equal(current.model.sourceFormat, '3mf');
-  assert.equal(current.image.url, 'https://res.cloudinary.com/test/photo.webp');
+  const catalog = await request(app).get('/api/products').expect(200);
+  assert.equal(catalog.body[0].model, undefined);
+  assert.equal(uploads, 0);
 });

@@ -18,6 +18,7 @@ import { createAccountServices } from './account-access.js';
 import { SocialIdentity } from './models.js';
 import { ensureUserEmailIndex } from './user-email-index.js';
 import { migrateCatalogCopy } from './catalog-copy.js';
+import { migrateMakerworldCatalog } from './makerworld-catalog.js';
 import { migrateSeasonalCuencos } from './seasonal-cuencos.js';
 import {
   createOrderNotifier,
@@ -72,6 +73,7 @@ await Promise.all([
 console.info(JSON.stringify({ event: 'database_indexes_ready' }));
 await migrateCatalogCopy();
 await migrateSeasonalCuencos();
+await migrateMakerworldCatalog();
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,

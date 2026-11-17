@@ -1,0 +1,962 @@
+[
+  {
+    "_id": "457689d2e2a26c02a14d63c2",
+    "name": "Caja de regalo con cierre mecánico",
+    "category": "Hogar",
+    "shortDescription": "Una caja que se abre girando su perilla.",
+    "description": "Caja impresa en 3D con tapa y cierre mecánico accionado por una perilla. Su formato rectangular permite presentar una tarjeta de regalo o guardar pequeños recuerdos. Se entrega armada; el contenido de ambientación no está incluido.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-74951-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-74951-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "74951",
+      "url": "https://makerworld.com/es/models/74951-mechanically-locking-gift-card-box",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "d62fde842fa0e95488ce77ca",
+    "name": "Portafotos corazón tejido",
+    "category": "Hogar",
+    "shortDescription": "Un corazón tejido para mostrar tu foto favorita.",
+    "description": "Portafotos pequeño con forma de corazón y textura que imita el tejido. Su ranura superior sostiene una fotografía o una tarjeta y permite decorar escritorios, mesas de luz y estantes. No incluye fotografía.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-2280729-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-2280729-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "2280729",
+      "url": "https://makerworld.com/es/models/2280729-knitted-heart-photo-stand",
+      "author": "OrangeSs",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "b191b9b6985fa7e45799ce06",
+    "name": "Estuche para tarjetas SD y USB",
+    "category": "Accesorio",
+    "shortDescription": "Tarjetas y memorias reunidas en un solo estuche.",
+    "description": "Estuche rígido impreso en 3D, con tapa abisagrada, cierres y compartimentos para tarjetas SD, microSD y memorias USB. Ayuda a ordenar y transportar tus accesorios de almacenamiento. No incluye tarjetas ni memorias.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-479663-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-479663-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "479663",
+      "url": "https://makerworld.com/es/models/479663-media-storage-container",
+      "author": "Rugg",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "4fa6546bbd75e09a90e0cd83",
+    "name": "Soporte ajustable para celular",
+    "category": "Accesorio",
+    "shortDescription": "Elegí la inclinación de tu celular sobre el escritorio.",
+    "description": "Soporte plegable para celular con base dentada y apoyo regulable. Permite acomodar el ángulo de pantalla sobre una mesa para videollamadas, lectura o consulta. Consultanos por la compatibilidad con tu equipo y su funda. No incluye celular.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-914894-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-914894-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "914894",
+      "url": "https://makerworld.com/es/models/914894-adjustable-phone-stand",
+      "author": "sky rider",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "d9030eb81cace95d35f2a668",
+    "name": "Portalápices para panel Skadis",
+    "category": "Oficina",
+    "shortDescription": "Un espacio para tus útiles en el panel de trabajo.",
+    "description": "Portalápices impreso en 3D pensado para paneles Skadis. Su recipiente vertical de esquinas redondeadas reúne bolígrafos, lápices y útiles pequeños sin ocupar la mesa. No incluye panel ni útiles.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-769733-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-769733-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "769733",
+      "url": "https://makerworld.com/es/models/769733-ikea-skadis-simple-pen-or-tools-holder",
+      "author": "Weiqi",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "3df31a88a4ae2f1f66c11f48",
+    "name": "Cuenco decorativo de cuerda",
+    "category": "Cuencos",
+    "shortDescription": "Textura de cuerda para organizar pequeños objetos.",
+    "description": "Cuenco decorativo impreso en 3D con una trama que reproduce una cuerda enrollada. Sirve para reunir llaves, accesorios o pequeños objetos sobre una consola o un escritorio. No incluye los objetos de ambientación.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-13044-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-13044-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "13044",
+      "url": "https://makerworld.com/es/models/13044-rope-bowl",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "26244f7e4f16ab7bc3bf5ad9",
+    "name": "Estuche de viaje para cepillo",
+    "category": "Accesorio",
+    "shortDescription": "Protegé el cabezal de tu cepillo cuando viajás.",
+    "description": "Estuche compacto impreso en 3D para cubrir el cabezal de un cepillo de dientes. La tapa abisagrada y la abertura para el mango permiten llevarlo en un neceser. Consultanos por la compatibilidad con tu cepillo. No incluye cepillo.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-13128-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-13128-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "13128",
+      "url": "https://makerworld.com/es/models/13128-toothbrush-travel-case",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "5afbb207db8cc4f6aa425532",
+    "name": "Cuenco decorativo tejido",
+    "category": "Cuencos",
+    "shortDescription": "Un cuenco con efecto tejido para tu espacio.",
+    "description": "Cuenco decorativo impreso en 3D con paredes que imitan puntos de tejido. Su forma redonda funciona como portaobjetos en el hogar o la oficina, o para presentar golosinas envueltas. Los objetos de ambientación no están incluidos.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-160651-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-160651-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "160651",
+      "url": "https://makerworld.com/es/models/160651-knitted-bowl",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "03157f1c68423e396b1dd793",
+    "name": "Etiqueta con nombre personalizado",
+    "category": "Accesorio",
+    "shortDescription": "Tu nombre convertido en un llavero.",
+    "description": "Llavero impreso en 3D con letras conectadas y nombre personalizado. Un accesorio para identificar llaves, mochilas o bolsos. Coordinamos el nombre antes de fabricarlo. La imagen muestra un ejemplo de personalización.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-2868843-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-2868843-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "2868843",
+      "url": "https://makerworld.com/es/models/2868843-customisable-nametag-commercial-use-allowed",
+      "author": "Ryno_man",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "62664d92a866feec2bbac075",
+    "name": "Gancho para puerta de 35 mm",
+    "category": "Hogar",
+    "shortDescription": "Un punto extra para colgar detrás de la puerta.",
+    "description": "Gancho impreso en 3D diseñado para colocarse sobre una puerta de hasta 35 mm de espesor. Su forma permite colgar accesorios livianos sin ocupar espacio de piso. Verificá el espesor y la holgura de tu puerta antes de pedirlo. No incluye bolso ni otros objetos.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-196347-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-196347-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "196347",
+      "url": "https://makerworld.com/es/models/196347-35mm-over-door-hook-hanger",
+      "author": "richriedling",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "afe967a033dc7cd1d7fd2099",
+    "name": "Estante esquinero para ducha",
+    "category": "Hogar",
+    "shortDescription": "Aprovechá una esquina para ordenar el baño.",
+    "description": "Estante esquinero impreso en 3D con base calada de trama irregular y bordes elevados. Su diseño triangular permite reunir frascos y accesorios en una esquina del baño. Coordinamos la instalación y la compatibilidad con tu espacio. No incluye frascos ni fijaciones.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-106945-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-106945-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "106945",
+      "url": "https://makerworld.com/es/models/106945-corner-shower-shelf-fixed",
+      "author": "xchgre",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "4f5c38dfbc2c85df191e5af6",
+    "name": "Bandeja modular para ducha",
+    "category": "Hogar",
+    "shortDescription": "Organizá tus accesorios junto a la ducha.",
+    "description": "Organizador modular impreso en 3D con bandejas rectangulares y soportes para colgar de una mampara. La base calada permite separar tus accesorios y el sistema admite distintas configuraciones. Consultanos por la configuración y el espesor de tu mampara. No incluye productos de baño.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-855602-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-855602-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "855602",
+      "url": "https://makerworld.com/es/models/855602-modular-shower-tray",
+      "author": "FiftyFifty",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "b158873faf5b03e11b540971",
+    "name": "Organizador de medallas",
+    "category": "Hogar",
+    "shortDescription": "Tus medallas ordenadas y a la vista.",
+    "description": "Soporte de pared impreso en 3D, con brazos distribuidos en dos columnas para colgar cintas y medallas. Una forma de reunir recuerdos deportivos y decorar tu espacio. No incluye medallas ni elementos de fijación.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-454689-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-454689-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "454689",
+      "url": "https://makerworld.com/es/models/454689-medal-holder",
+      "author": "donnkey",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "74798b86c0a21421109dbb33",
+    "name": "Posavasos de trama tejida",
+    "category": "Hogar",
+    "shortDescription": "Un detalle tejido debajo de tu vaso.",
+    "description": "Posavasos circular impreso en 3D, con borde trenzado y centro de trama tejida. Ofrece una base decorativa para un vaso en mesas y escritorios. El precio corresponde a una unidad. No incluye vaso ni soporte para apilar.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-13127-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-13127-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "13127",
+      "url": "https://makerworld.com/es/models/13127-woven-coasters",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "6234a380476ae537ea62952e",
+    "name": "Araña decorativa",
+    "category": "Halloween",
+    "shortDescription": "Una pequeña araña para tu decoración.",
+    "description": "Araña decorativa pequeña impresa en 3D, con cuerpo alargado y ocho patas curvas. Un detalle para composiciones temáticas, escritorios y ambientaciones de Halloween. Es una pieza decorativa; no incluye otros adornos.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-149284-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-149284-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "149284",
+      "url": "https://makerworld.com/es/models/149284-spider",
+      "author": "BODY MECHANIC",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "9fa5cd6ffc6c88fcbd9f2468",
+    "name": "Adorno de huella con nombre",
+    "category": "Navidad",
+    "shortDescription": "La huella de tu mascota también puede decorar el árbol.",
+    "description": "Adorno navideño plano con forma de huella, detalles de copos y un espacio para el nombre de tu mascota. Se cuelga del árbol por su aro superior. Coordinamos el nombre antes de fabricarlo; Luna es el ejemplo mostrado.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-806001-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-806001-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "806001",
+      "url": "https://makerworld.com/es/models/806001-customizable-christmas-tree-decoration-dog-paw",
+      "author": "JBCreazioni",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "aa541933f3162551c2b3378e",
+    "name": "Árbol navideño de piezas intercambiables",
+    "category": "Navidad",
+    "shortDescription": "Un árbol de diseño espiral para mesas y estantes.",
+    "description": "Árbol navideño decorativo impreso en 3D, con cuerpo verde de aberturas en espiral y tronco que se une por rosca. Una pieza de la colección de árboles intercambiables del diseñador. El precio corresponde a un árbol con su tronco, como en las imágenes.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-55275-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-55275-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "55275",
+      "url": "https://makerworld.com/es/models/55275-christmas-tree-set",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "80c9b4319ac2dcdab7580350",
+    "name": "Casita encantada para luz LED",
+    "category": "Halloween",
+    "shortDescription": "Una casita encantada para iluminar con LED.",
+    "description": "Casita decorativa impresa en 3D con techo inclinado, chimeneas, textura de madera y ventanas claras. Su cuerpo permite colocar una luz LED pequeña para una ambientación de Halloween. No incluye iluminación. Utilizar únicamente LED, sin llama.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-35259-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-35259-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "35259",
+      "url": "https://makerworld.com/es/models/35259-tea-light-haunted-house",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "3adf75a44416834d546b8aa8",
+    "name": "Gatito articulado con corazón",
+    "category": "Accesorio",
+    "shortDescription": "Un gatito articulado con un detalle de corazón.",
+    "description": "Figura de gato impresa en 3D con cuerpo y cola articulados y un corazón junto a su pata delantera. Sus segmentos permiten acomodarlo en distintas posiciones sobre una mesa o estante. Una pieza decorativa para regalar.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-145302-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-145302-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "145302",
+      "url": "https://makerworld.com/es/models/145302-flexicat-for-valentine-s-day-heart-print-in-place",
+      "author": "LabLab",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "96662806919bd26a60e00b30",
+    "name": "Soporte compacto para celular",
+    "category": "Accesorio",
+    "shortDescription": "Un apoyo compacto con un borde de color.",
+    "description": "Soporte para celular de una sola pieza, con perfil curvo y un detalle de color en el borde. La base y el labio delantero sostienen el equipo sobre una mesa. Consultanos por la compatibilidad con tu celular y su funda. No incluye equipo.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-692815-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-692815-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "692815",
+      "url": "https://makerworld.com/es/models/692815-soporte-para-celular",
+      "author": "victor",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "512a1cf568dd0eb17190b83e",
+    "name": "Llavero clicker personalizado",
+    "category": "Accesorio",
+    "shortDescription": "Un llavero con nombre y botón para presionar.",
+    "description": "Llavero clicker con carcasa redondeada y tecla personalizada, diseñado para un interruptor mecánico de tipo MX. Coordinamos el nombre antes de fabricarlo. La imagen muestra Lina como ejemplo. No incluye las llaves de ambientación.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-3330650-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-3330650-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "3330650",
+      "url": "https://makerworld.com/es/models/3330650-name-fidget-clicker-keychain-mechanical-switch",
+      "author": "AboHaider.H",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "5e4bcd314357caa6629505a7",
+    "name": "Módulo para torre hidropónica",
+    "category": "Jardín",
+    "shortDescription": "Una pieza modular para tu proyecto de cultivo.",
+    "description": "Conjunto de piezas impresas en 3D del diseño de torre hidropónica modular: base y secciones con alojamientos para plantas. Coordinamos la configuración antes de fabricarlo. No incluye plantas, bomba, nutrientes ni instalación; la escena de uso es ilustrativa.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-1526699-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-1526699-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "1526699",
+      "url": "https://makerworld.com/es/models/1526699-tower-hydroponic-system-part-1",
+      "author": "Valera Perinski",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "db45540315356c8de0695673",
+    "name": "Pantalla decorativa B3 para LED",
+    "category": "Iluminación",
+    "shortDescription": "Una pantalla ondulada para luz ambiental.",
+    "description": "Pantalla B3 impresa en 3D con líneas verticales y una silueta ondulada, diseñada para el módulo LED Bambu Lab 001. Una pieza para iluminación ambiental de mesas y rincones. No incluye componentes eléctricos. Usar únicamente con un módulo LED compatible.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-50252-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-50252-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "50252",
+      "url": "https://makerworld.com/es/models/50252-led-lamp-b3",
+      "author": "xinyu",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "37a7d764829ea8888ccc4cbb",
+    "name": "Cuadro de pueblo navideño",
+    "category": "Navidad",
+    "shortDescription": "Un pueblo nevado en una pieza decorativa.",
+    "description": "Cuadro rectangular impreso en 3D en tonos claros y oscuros, con una escena de casas y paisaje nevado. Su relieve destaca los detalles del pueblo para decorar una repisa o integrar una composición navideña. No incluye marco ni soporte.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-764689-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-764689-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "764689",
+      "url": "https://makerworld.com/es/models/764689-christmas-village-picture",
+      "author": "Haledesigns3d",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "db589da55bcdc99e2954092b",
+    "name": "Portalápices de trama tejida",
+    "category": "Oficina",
+    "shortDescription": "Tus lápices reunidos en una trama tejida.",
+    "description": "Portalápices cilíndrico impreso en 3D, con paredes de trama entrelazada y borde trenzado. Reúne bolígrafos y lápices sobre el escritorio y suma un detalle decorativo. No incluye útiles ni otros accesorios.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-13122-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-13122-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "13122",
+      "url": "https://makerworld.com/es/models/13122-woven-pencil-holder",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "6527e01a2b39478b95692e77",
+    "name": "Rosa decorativa con tallo",
+    "category": "Hogar",
+    "shortDescription": "Una rosa decorativa que podés regalar.",
+    "description": "Rosa impresa en 3D con pétalos rojos, cáliz y tallo verde. Una pieza decorativa para colocar en un florero o presentar como regalo. El precio corresponde a una rosa con tallo. No incluye florero.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-208589-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-208589-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "208589",
+      "url": "https://makerworld.com/es/models/208589-3d-printed-roses-for-all-occasions",
+      "author": "Rick9206",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "ba3d15e5646ef11acd95e93f",
+    "name": "Mini maceta para cactus",
+    "category": "Jardín",
+    "shortDescription": "Una mini maceta con brazos y piernas colgantes.",
+    "description": "Mini maceta impresa en 3D con cuerpo acanalado en espiral, brazos delgados y piernas articuladas. Se apoya en el borde de un estante para dejar colgar sus pies. El precio corresponde a una maceta vacía; no incluye planta ni sustrato.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-1423054-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-1423054-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "1423054",
+      "url": "https://makerworld.com/es/models/1423054-mini-cactus-family-flowerpot",
+      "author": "Reybrond",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "56fbf8f421832767073b5726",
+    "name": "Farol decorativo de Halloween",
+    "category": "Halloween",
+    "shortDescription": "Un farol con escenas de Halloween.",
+    "description": "Farol decorativo impreso en 3D con estructura oscura, techo inclinado y paneles claros con motivos de Halloween. Puede ambientarse con una luz LED pequeña. No incluye iluminación. Usar únicamente LED y mantener alejado de llamas.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-633095-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-633095-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "633095",
+      "url": "https://makerworld.com/es/models/633095-halloween-lantern",
+      "author": "JamesThePrinter",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "50c969d4dbfb60bfba085a96",
+    "name": "Soporte minimalista para celular",
+    "category": "Accesorio",
+    "shortDescription": "Un soporte de líneas simples para tu pantalla.",
+    "description": "Soporte minimalista para celular impreso en 3D, con respaldo inclinado, perfil triangular y un labio delantero. Sirve para apoyar el equipo sobre el escritorio o una mesa de luz. Consultanos por la compatibilidad con tu celular y su funda. No incluye equipo.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-2320874-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-2320874-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "2320874",
+      "url": "https://makerworld.com/es/models/2320874-phone-stand",
+      "author": "Trueangle",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "dfa1353cef54ee23ef970b72",
+    "name": "Sobre reutilizable sin pegamento",
+    "category": "Accesorio",
+    "shortDescription": "Un sobre que se cierra con su propia pestaña.",
+    "description": "Sobre reutilizable impreso en 3D con solapas y un cierre de pestaña y ranura, sin pegamento. Permite presentar una tarjeta o guardar papeles pequeños. No incluye tarjetas ni contenido.",
+    "color": "sand",
+    "priceCents": 1000000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/mw-1486060-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/mw-1486060-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "MakerWorld",
+      "id": "1486060",
+      "url": "https://makerworld.com/es/models/1486060-envelope-template",
+      "author": "Dezain 3D",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  }
+]

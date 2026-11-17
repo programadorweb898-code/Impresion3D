@@ -1,0 +1,328 @@
+{
+  "tool": "built-in image_gen",
+  "referenceDirectory": "Source images listed in makerworld-sources-20261117.json",
+  "prompts": [
+    {
+      "makerworldId": "74951",
+      "view": "front",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Front slightly elevated view, pure white studio background, product only. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "74951",
+      "view": "context",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Show product in realistic intended use, entire and sharp, tasteful home or work environment. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "2280729",
+      "view": "front",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Front slightly elevated view, pure white studio background, product only. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "2280729",
+      "view": "context",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Show product in realistic intended use, entire and sharp, tasteful home or work environment. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "479663",
+      "view": "front",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Front slightly elevated view, pure white studio background, product only. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "479663",
+      "view": "context",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Show product in realistic intended use, entire and sharp, tasteful home or work environment. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "914894",
+      "view": "front",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Front slightly elevated view, pure white studio background, product only. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "914894",
+      "view": "context",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Show product in realistic intended use, entire and sharp, tasteful home or work environment. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "769733",
+      "view": "front",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Front slightly elevated view, pure white studio background, product only. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "769733",
+      "view": "context",
+      "prompt": "Professional square realistic product photo based on the original reference. Preserve exact form, color, proportions, and FDM texture. Show product in realistic intended use, entire and sharp, tasteful home or work environment. Remove promotional text, badges and watermarks."
+    },
+    {
+      "makerworldId": "13044",
+      "view": "front",
+      "prompt": "ONE square high-quality realistic product photograph. Exact terracotta red rope-textured round bowl, preserve braided rope spiral and shallow proportions. Front slightly elevated catalog view on pure white seamless studio background; product alone without usage props. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "13044",
+      "view": "context",
+      "prompt": "ONE square high-quality realistic product photograph. Exact terracotta red rope-textured round bowl, preserve braided rope spiral and shallow proportions. On hallway console holding keys and a watch, attractive warm home entry. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "13128",
+      "view": "front",
+      "prompt": "ONE square high-quality realistic product photograph. ONE exact small pink hinged toothbrush HEAD travel case with exit opening for handle, as reference; not a full length case. Front slightly elevated catalog view on pure white seamless studio background; product alone without usage props. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "13128",
+      "view": "context",
+      "prompt": "ONE square high-quality realistic product photograph. ONE exact small pink hinged toothbrush HEAD travel case with exit opening for handle, as reference; not a full length case. Pink case protecting head of toothbrush, handle extending through side notch, beside toiletry bag in travel bathroom. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "160651",
+      "view": "front",
+      "prompt": "ONE square high-quality realistic product photograph. Exact white knitted round bowl, thick braided stitches and open lattice, preserve all geometry. Front slightly elevated catalog view on pure white seamless studio background; product alone without usage props. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "160651",
+      "view": "context",
+      "prompt": "ONE square high-quality realistic product photograph. Exact white knitted round bowl, thick braided stitches and open lattice, preserve all geometry. On living room side table holding wrapped candies only, textured white bowl sharp. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "2868843",
+      "view": "front",
+      "prompt": "ONE square high-quality realistic product photograph. ONE name keychain from reference, choose the blue 'George' example, same rounded connected lettering, small silver chain and ring, no other keychains. Front slightly elevated catalog view on pure white seamless studio background; product alone without usage props. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "2868843",
+      "view": "context",
+      "prompt": "ONE square high-quality realistic product photograph. ONE name keychain from reference, choose the blue 'George' example, same rounded connected lettering, small silver chain and ring, no other keychains. Blue George keychain attached to two house keys on a clean wooden entryway table. Preserve original letters and shape. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "196347",
+      "view": "front",
+      "prompt": "ONE square high-quality realistic product photograph. Exact white over-door double-ended hook for 35mm thick door, preserve flat strap with two curved hooked ends. Front slightly elevated catalog view on pure white seamless studio background; product alone without usage props. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "196347",
+      "view": "context",
+      "prompt": "ONE square high-quality realistic product photograph. Exact white over-door double-ended hook for 35mm thick door, preserve flat strap with two curved hooked ends. Mounted correctly over top edge of white interior door, front hook holding lightweight fabric tote. Show exact over-door geometry and contact, no floating. Preserve reference design, color, dimensions, FDM texture; single finished product entire and sharp, soft natural lighting. Remove promotional text, badges, watermarks; no added text, logos or false functionality."
+    },
+    {
+      "makerworldId": "106945",
+      "view": "front",
+      "prompt": "Create ONE square realistic product photograph. Exact white triangular corner shower shelf with irregular Voronoi open lattice floor and two raised back edges. No hand. Front slightly elevated view of entire object alone, pure white seamless studio background and soft contact shadow. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "106945",
+      "view": "context",
+      "prompt": "Create ONE square realistic product photograph. Exact white triangular corner shower shelf with irregular Voronoi open lattice floor and two raised back edges. No hand. Installed level at tiled shower corner, holding shampoo and conditioner bottles. Preserve triangular lattice shelf design and proportions. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "855602",
+      "view": "front",
+      "prompt": "Create ONE square realistic product photograph. Exact black modular shower caddy, two rectangular open shelves vertically suspended on long black straps with over-glass hooks, preserve assembly. Front slightly elevated view of entire object alone, pure white seamless studio background and soft contact shadow. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "855602",
+      "view": "context",
+      "prompt": "Create ONE square realistic product photograph. Exact black modular shower caddy, two rectangular open shelves vertically suspended on long black straps with over-glass hooks, preserve assembly. Hanging correctly on glass shower screen with shampoo bottle above and bar of soap in dish below, bright modern tiled bathroom. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "454689",
+      "view": "front",
+      "prompt": "Create ONE square realistic product photograph. Exact flat black medal holder with rectangular top plate and two vertical stems each with six pairs of outward curved arms, preserve counts and geometry. Front slightly elevated view of entire object alone, pure white seamless studio background and soft contact shadow. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "454689",
+      "view": "context",
+      "prompt": "Create ONE square realistic product photograph. Exact flat black medal holder with rectangular top plate and two vertical stems each with six pairs of outward curved arms, preserve counts and geometry. Black medal holder fixed flat to home exercise room wall, medals hanging from several arms with colorful ribbons, entire holder visible. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "13127",
+      "view": "front",
+      "prompt": "Create ONE square realistic product photograph. ONE beige round woven coaster from reference with braided rope border and woven lattice center, no holder or glass. Front slightly elevated view of entire object alone, pure white seamless studio background and soft contact shadow. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "13127",
+      "view": "context",
+      "prompt": "Create ONE square realistic product photograph. ONE beige round woven coaster from reference with braided rope border and woven lattice center, no holder or glass. Same single beige woven coaster supporting a clear glass of cold water on living room wood side table; exact border and weave. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "149284",
+      "view": "front",
+      "prompt": "Create ONE square realistic product photograph. Exact tiny black spider ornament from reference, eight curved legs and tapered segmented body, realistic printed plastic not live animal. Front slightly elevated view of entire object alone, pure white seamless studio background and soft contact shadow. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "149284",
+      "view": "context",
+      "prompt": "Create ONE square realistic product photograph. Exact tiny black spider ornament from reference, eight curved legs and tapered segmented body, realistic printed plastic not live animal. Tiny black printed spider on a Halloween decorated desk with pumpkin blurred behind, visibly toy plastic ornament, same form. Preserve exact reference form, color, texture and physical details, finished premium print quality. No source promotional graphics, added text, logos or watermarks. Product entire and sharp; no unrelated products."
+    },
+    {
+      "makerworldId": "806001",
+      "view": "front",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Exact cream and red flat paw-shaped Christmas ornament with snowflakes, dog silhouette, cream script Luna and hanging loop. Front view slightly elevated, entire product centered alone against pure white studio seamless, gentle shadow. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "806001",
+      "view": "context",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Exact cream and red flat paw-shaped Christmas ornament with snowflakes, dog silhouette, cream script Luna and hanging loop. Hanging by its cord on Christmas tree branch, warm festive lights softly blurred, entire Luna ornament sharp. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "55275",
+      "view": "front",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Only ONE medium green spiral-cut conical Christmas tree on brown round trunk from front left of reference. Preserve exact spiral slots and threaded trunk proportions. Front view slightly elevated, entire product centered alone against pure white studio seamless, gentle shadow. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "55275",
+      "view": "context",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Only ONE medium green spiral-cut conical Christmas tree on brown round trunk from front left of reference. Preserve exact spiral slots and threaded trunk proportions. Decorating a wooden console in a cozy Christmas living room, the same green spiral tree entire, no duplicate trees. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "35259",
+      "view": "front",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Exact small charcoal black crooked haunted house with pointed sloping roof, two chimneys, wood grain walls and cream window panels. Front view slightly elevated, entire product centered alone against pure white studio seamless, gentle shadow. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "35259",
+      "view": "context",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Exact small charcoal black crooked haunted house with pointed sloping roof, two chimneys, wood grain walls and cream window panels. On Halloween console with warm battery LED light glowing through windows, no flame, subtle spooky room. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "145302",
+      "view": "front",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Exact red articulated flat cat with segmented body and tail and integrated red heart by front paw, preserve flat profile, joints and count of limbs. Front view slightly elevated, entire product centered alone against pure white studio seamless, gentle shadow. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "145302",
+      "view": "context",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Exact red articulated flat cat with segmented body and tail and integrated red heart by front paw, preserve flat profile, joints and count of limbs. Red articulated cat with heart standing on desk next to blank greeting card, cozy gift scene, entire product sharp. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "692815",
+      "view": "front",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Exact blue compact continuous bent-strip phone stand with mint green stripe through edge, curved S-like base and back, preserve shape. Front view slightly elevated, entire product centered alone against pure white studio seamless, gentle shadow. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "692815",
+      "view": "context",
+      "prompt": "Create ONE square realistic professional finished-product photograph. Exact blue compact continuous bent-strip phone stand with mint green stripe through edge, curved S-like base and back, preserve shape. Same blue mint-edged stand holding upright phone on home desk. Ensure phone rests in front lip and leans against back, design unchanged. Match exact geometry, colors, proportions and printed layer texture of reference. No added graphics, source promotional text, badges, logos or watermarks; preserve Luna as part of actual ornament only. High clarity and tasteful lighting."
+    },
+    {
+      "makerworldId": "3330650",
+      "view": "front",
+      "prompt": "Create ONE square photorealistic high quality product photo. ONE turquoise rounded rectangular mechanical clicker keychain with white word Lina on raised turquoise button and turquoise loop, identical to center reference. Front catalog view entire product on pure white seamless studio background, no usage props, soft shadow. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "3330650",
+      "view": "context",
+      "prompt": "Create ONE square photorealistic high quality product photo. ONE turquoise rounded rectangular mechanical clicker keychain with white word Lina on raised turquoise button and turquoise loop, identical to center reference. Attached to keys on desk, hand gently pressing raised Lina button, exact geometry unchanged. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "1526699",
+      "view": "front",
+      "prompt": "Create ONE square photorealistic high quality product photo. White hydroponic tower assembly from right of reference: flared reservoir base, vertical cylindrical planting modules with black net cups. No plants for front photo. Preserve all assembly proportions. Front catalog view entire product on pure white seamless studio background, no usage props, soft shadow. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "1526699",
+      "view": "context",
+      "prompt": "Create ONE square photorealistic high quality product photo. White hydroponic tower assembly from right of reference: flared reservoir base, vertical cylindrical planting modules with black net cups. No plants for front photo. Preserve all assembly proportions. Same white modular hydroponic tower on sunny balcony with a few small green plants growing in black cups, realistic modest growth, no claim of crop yield. Whole tower visible. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "50252",
+      "view": "front",
+      "prompt": "Create ONE square photorealistic high quality product photo. Exact white wavy vertical ribbed B3 lampshade with gently twisting silhouette on small dark round base, identical to reference. Front catalog view entire product on pure white seamless studio background, no usage props, soft shadow. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "50252",
+      "view": "context",
+      "prompt": "Create ONE square photorealistic high quality product photo. Exact white wavy vertical ribbed B3 lampshade with gently twisting silhouette on small dark round base, identical to reference. On modern bedroom nightstand with warm LED illumination inside same white B3 shade, no flame, tasteful ambient bedroom light. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "764689",
+      "view": "front",
+      "prompt": "Create ONE square photorealistic high quality product photo. Exact rectangular monochrome raised Christmas village picture from reference, landscape format, snowy houses and sky image preserved. No frame. Front catalog view entire product on pure white seamless studio background, no usage props, soft shadow. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "764689",
+      "view": "context",
+      "prompt": "Create ONE square photorealistic high quality product photo. Exact rectangular monochrome raised Christmas village picture from reference, landscape format, snowy houses and sky image preserved. No frame. Same monochrome rectangular village relief picture leaning on a shelf with subtle Christmas decoration in background; entire artwork unchanged and clear. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "13122",
+      "view": "front",
+      "prompt": "Create ONE square photorealistic high quality product photo. Exact beige woven cylindrical pencil holder with braided rim and open woven wall, exact design and proportions. Front catalog view entire product on pure white seamless studio background, no usage props, soft shadow. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "13122",
+      "view": "context",
+      "prompt": "Create ONE square photorealistic high quality product photo. Exact beige woven cylindrical pencil holder with braided rim and open woven wall, exact design and proportions. Same beige woven cup holding pencils and pens on tidy work desk near a notebook, no change to weave or shape. Keep original shape, dimensions, colors, FDM print texture and fine details. One finished product, sharp focus and realistic lighting. Remove promotional text, badges, source logos and watermarks; retain Lina only as actual product lettering."
+    },
+    {
+      "makerworldId": "208589",
+      "view": "front",
+      "prompt": "Create ONE square professional realistic product photograph. Exact single dark red printed rose with green thorned long stem, preserve petals, calyx, stem proportions. Front slightly elevated view against pure white seamless studio background, entire single product alone, soft shadow. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    },
+    {
+      "makerworldId": "208589",
+      "view": "context",
+      "prompt": "Create ONE square professional realistic product photograph. Exact single dark red printed rose with green thorned long stem, preserve petals, calyx, stem proportions. The same single red printed rose in a narrow clear vase on romantic bedside table, whole stem and flower visible. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    },
+    {
+      "makerworldId": "1423054",
+      "view": "front",
+      "prompt": "Create ONE square professional realistic product photograph. ONE white spiral fluted mini cactus planter with two thin arms and two dangling jointed legs and rounded shoes, from left foreground of reference. Empty pot. Front slightly elevated view against pure white seamless studio background, entire single product alone, soft shadow. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    },
+    {
+      "makerworldId": "1423054",
+      "view": "context",
+      "prompt": "Create ONE square professional realistic product photograph. ONE white spiral fluted mini cactus planter with two thin arms and two dangling jointed legs and rounded shoes, from left foreground of reference. Empty pot. Same white spiral planter sitting at shelf edge with legs dangling naturally and one small cactus planted inside. Entire figurative pot visible. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    },
+    {
+      "makerworldId": "633095",
+      "view": "front",
+      "prompt": "Create ONE square professional realistic product photograph. Exact charcoal black square Halloween lantern with sloped pyramidal cap, finial, pale panels with spiderweb and haunted castle bats design, preserve structure. Front slightly elevated view against pure white seamless studio background, entire single product alone, soft shadow. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    },
+    {
+      "makerworldId": "633095",
+      "view": "context",
+      "prompt": "Create ONE square professional realistic product photograph. Exact charcoal black square Halloween lantern with sloped pyramidal cap, finial, pale panels with spiderweb and haunted castle bats design, preserve structure. Same lantern glowing softly with battery LED on Halloween decorated console, no flame; entire lantern in focus, subtle warm setting. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    },
+    {
+      "makerworldId": "2320874",
+      "view": "front",
+      "prompt": "Create ONE square professional realistic product photograph. Exact matte black one-piece triangular phone stand with broad slanted back, hollow triangular side and raised front lip, preserve proportions. Front slightly elevated view against pure white seamless studio background, entire single product alone, soft shadow. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    },
+    {
+      "makerworldId": "2320874",
+      "view": "context",
+      "prompt": "Create ONE square professional realistic product photograph. Exact matte black one-piece triangular phone stand with broad slanted back, hollow triangular side and raised front lip, preserve proportions. Same black triangular phone stand holding smartphone on office desk beside notebook, entire stand visible and structurally correct. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    },
+    {
+      "makerworldId": "1486060",
+      "view": "front",
+      "prompt": "Create ONE square professional realistic product photograph. Exact white thin flexible printed envelope with curved top flap, rounded tab and horizontal closing slot, same rectangular proportions. Front slightly elevated view against pure white seamless studio background, entire single product alone, soft shadow. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    },
+    {
+      "makerworldId": "1486060",
+      "view": "context",
+      "prompt": "Create ONE square professional realistic product photograph. Exact white thin flexible printed envelope with curved top flap, rounded tab and horizontal closing slot, same rectangular proportions. Same reusable white printed envelope on gift desk, slightly open with a plain greeting card partially visible, no added writing. Preserve exact reference design, form, color, FDM print texture, physical features. High quality finished product, sharp image, balanced composition. Remove all source promotional text, badges, logos, watermarks; no invented text or claims."
+    }
+  ],
+  "finalEdits": [
+    {
+      "makerworldId": "769733",
+      "view": "context",
+      "prompt": "Remove the right-hand green tool cup and its tools entirely. Keep ONLY the left green cup, holding pens, attached to same Skadis panel, center this single product. Retain design and room."
+    },
+    {
+      "makerworldId": "1423054",
+      "view": "context",
+      "prompt": "Remove the empty planter on the left completely. Keep ONLY the planter containing cactus on the right. Recenter this single white spiral planter at shelf edge with legs dangling. Preserve its precise form and room."
+    },
+    {
+      "makerworldId": "1526699",
+      "view": "context",
+      "prompt": "Remove ONLY the raised word Lina from the lower white base. Replace letters with continuous matching white FDM surface. Keep absolutely all other geometry, plants, tower, lighting, background and framing identical. No text anywhere."
+    },
+    {
+      "makerworldId": "50252",
+      "view": "context",
+      "prompt": "Remove ONLY the word Lina from the dark round lamp base. Replace letters with matching dark surface. Keep exact lampshade, ribbing, proportions, light, nightstand and room identical. No text anywhere."
+    }
+  ]
+}
