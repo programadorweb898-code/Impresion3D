@@ -8,16 +8,24 @@ export function Pagination({ page, pages, busy, onPage }) {
       >
         Anterior
       </button>
-      {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
-        <button
-          key={n}
-          disabled={busy}
-          aria-current={n === page ? 'page' : undefined}
-          onClick={() => onPage(n)}
-        >
-          {n}
-        </button>
-      ))}
+      {Array.from({ length: pages }, (_, i) => i + 1).map((n) => {
+        const isActive = n === page;
+        return (
+          <button
+            key={n}
+            disabled={busy}
+            aria-current={isActive ? 'page' : undefined}
+            onClick={() => onPage(n)}
+            style={
+              isActive
+                ? { backgroundColor: '#e5e7eb', borderRadius: '6px' }
+                : undefined
+            }
+          >
+            {n}
+          </button>
+        );
+      })}
       <button
         disabled={busy || page >= pages}
         onClick={() => onPage(page + 1)}

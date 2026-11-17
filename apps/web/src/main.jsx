@@ -440,8 +440,12 @@ function App() {
     };
   }, []);
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  }, [catalogPage.page]);
+    if (loading || !products.length) return;
+    const first = document.querySelector('#catalogo .product-card');
+    if (first) {
+      first.scrollIntoView({ behavior: 'instant', block: 'center' });
+    }
+  }, [catalogPage.page, products, loading]);
   function openLogin() {
     if (view === 'catalog') saveCatalogContext();
     if (['product', 'offer'].includes(view) && !loginDestination.current)
