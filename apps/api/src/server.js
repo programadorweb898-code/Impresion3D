@@ -26,6 +26,7 @@ import { migrateEnvelopeAndTreePrices } from './envelope-tree-update.js';
 import { migrateWovenPencilHolder } from './woven-pencil-holder-update.js';
 import { migrateB3Price } from './b3-price-update.js';
 import { migrateB3Dimensions } from './b3-dimensions-update.js';
+import { migrateCactusDimensionsPrice } from './cactus-dimensions-price.js';
 import { migrateSeasonalCuencos } from './seasonal-cuencos.js';
 import {
   createOrderNotifier,
@@ -88,6 +89,7 @@ await migrateEnvelopeAndTreePrices(Product);
 await migrateWovenPencilHolder(Product);
 await migrateB3Price(Product);
 await migrateB3Dimensions(Product);
+await migrateCactusDimensionsPrice(Product);
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,

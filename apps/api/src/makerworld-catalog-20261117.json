@@ -851,9 +851,9 @@
     "name": "Mini maceta para cactus",
     "category": "Jardín",
     "shortDescription": "Una mini maceta con brazos y piernas colgantes.",
-    "description": "Mini maceta impresa en 3D con cuerpo acanalado en espiral, brazos delgados y piernas articuladas. Se apoya en el borde de un estante para dejar colgar sus pies. El precio corresponde a una maceta vacía; no incluye planta ni sustrato.",
+    "description": "Mini maceta impresa en 3D con cuerpo acanalado en espiral, brazos delgados y piernas articuladas. Se apoya en el borde de un estante para dejar colgar sus pies. El precio corresponde a una maceta vacía; no incluye planta ni sustrato. Medidas del cuerpo de la maceta: 6,64 cm de diámetro y 5,5 cm de alto, sin contar brazos ni piernas articuladas.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 500000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -876,7 +876,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 66.35,
+      "height": 55,
+      "depth": 66.35
+    }
   },
   {
     "_id": "56fbf8f421832767073b5726",

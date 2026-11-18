@@ -22,13 +22,20 @@ after(async () => {
   await mongo?.stop();
 });
 
-test('30 diseños distintos con uso comercial, dos imágenes locales y $10.000 ARS', async () => {
+test('30 diseños distintos con uso comercial, dos imágenes y precios corregidos', async () => {
   assert.equal(catalog.length, 30);
   for (const field of ['_id', 'name'])
     assert.equal(new Set(catalog.map((p) => p[field])).size, 30);
   assert.equal(new Set(catalog.map((p) => p.source.id)).size, 30);
   for (const p of catalog) {
-    assert.equal(p.priceCents, 1000000);
+    const correctedPrices = {
+      '74951': 500000,
+      '50252': 3500000,
+      '13122': 800000,
+      '1423054': 500000,
+      '1486060': 200000,
+    };
+    assert.equal(p.priceCents, correctedPrices[p.source.id] ?? 1000000);
     assert.equal(p.currency, 'ARS');
     assert.equal(p.source.license, 'CC0-1.0');
     assert.equal(p.model, undefined);
