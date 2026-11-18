@@ -22,7 +22,7 @@ after(async () => {
   await mongo?.stop();
 });
 
-test('diez diseños de Navidad distintos, comerciales, con dos fotos y precio inicial ARS 10.000', async () => {
+test('diez diseños de Navidad distintos, comerciales, con dos fotos y precios vigentes', async () => {
   assert.equal(catalog.length, 10);
   assert.equal(new Set(catalog.map((p) => p._id)).size, 10);
   assert.equal(new Set(catalog.map((p) => p.name)).size, 10);
@@ -32,7 +32,7 @@ test('diez diseños de Navidad distintos, comerciales, con dos fotos y precio in
   );
   for (const p of catalog) {
     assert.equal(p.category, 'Navidad');
-    assert.equal(p.priceCents, 1000000);
+    assert.equal(p.priceCents, p.source.id === '1998883' ? 1500000 : 1000000);
     assert.equal(p.currency, 'ARS');
     assert.equal(p.source.license, 'CC0-1.0');
     assert.equal(p.model, undefined);
