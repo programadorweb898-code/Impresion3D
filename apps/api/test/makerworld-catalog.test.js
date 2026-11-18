@@ -33,6 +33,7 @@ test('30 diseños distintos con uso comercial, dos imágenes y precios corregido
       '50252': 3500000,
       '13122': 800000,
       '1423054': 500000,
+      '454689': 300000,
       '1486060': 200000,
     };
     assert.equal(p.priceCents, correctedPrices[p.source.id] ?? 1000000);

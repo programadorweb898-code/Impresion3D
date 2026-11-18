@@ -393,9 +393,9 @@
     "name": "Organizador de medallas",
     "category": "Hogar",
     "shortDescription": "Tus medallas ordenadas y a la vista.",
-    "description": "Soporte de pared impreso en 3D, con brazos distribuidos en dos columnas para colgar cintas y medallas. Una forma de reunir recuerdos deportivos y decorar tu espacio. No incluye medallas ni elementos de fijación.",
+    "description": "Soporte de pared impreso en 3D, con brazos distribuidos en dos columnas para colgar cintas y medallas. Una forma de reunir recuerdos deportivos y decorar tu espacio. No incluye medallas ni elementos de fijación. Medidas: 23,75 cm de ancho × 19 cm de alto × 0,95 cm de espesor, según la escala del 95 % guardada en el archivo proporcionado.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 300000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -418,7 +418,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 237.5,
+      "height": 190,
+      "depth": 9.5
+    }
   },
   {
     "_id": "74798b86c0a21421109dbb33",
