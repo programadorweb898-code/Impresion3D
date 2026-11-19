@@ -69,6 +69,15 @@ export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
         <p className="product-detail-description">
           {p.description ||
             'Consultanos para conocer más detalles de esta pieza.'}
+          {p.dimensions && (
+            <span className="product-detail-dimensions-inline">
+              {' '}
+              Medidas: {formatCentimeters(p.dimensions?.width)} ×
+              {formatCentimeters(p.dimensions?.height)} ×
+              {formatCentimeters(p.dimensions?.depth)} (ancho × alto ×
+              profundidad).
+            </span>
+          )}
         </p>
         {p.imageNotice && (
           <p className="small product-image-notice">{p.imageNotice}</p>
@@ -85,26 +94,7 @@ export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
             </a>
           </p>
         )}
-        <h2>Medidas</h2>
-        <dl className="product-detail-dimensions">
-          <div>
-            <dt>Ancho</dt>
-            <dd>{formatCentimeters(p.dimensions?.width)}</dd>
-          </div>
-          <div>
-            <dt>Alto</dt>
-            <dd>{formatCentimeters(p.dimensions?.height)}</dd>
-          </div>
-          <div>
-            <dt>Profundidad</dt>
-            <dd>
-              {p._id === 'dfa1353cef54ee23ef970b72' &&
-              !Number.isFinite(p.dimensions?.depth)
-                ? 'Plano'
-                : formatCentimeters(p.dimensions?.depth)}
-            </dd>
-          </div>
-        </dl>
+
         <p className="product-detail-price">
           {formatMoney(p.priceCents, p.currency)}
         </p>
