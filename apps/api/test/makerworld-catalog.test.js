@@ -29,16 +29,25 @@ test('30 diseños distintos con uso comercial, dos imágenes y precios corregido
   assert.equal(new Set(catalog.map((p) => p.source.id)).size, 30);
   for (const p of catalog) {
     const correctedPrices = {
-      '74951': 500000,
-      '50252': 3500000,
-      '13122': 800000,
-      '1423054': 500000,
-      '454689': 300000,
-      '1486060': 200000,
+      74951: 500000,
+      50252: 3500000,
+      13122: 800000,
+      1423054: 500000,
+      454689: 300000,
+      55275: 500000,
+      806001: 300000,
+      692815: 800000,
+      USf322bfb4e972c7: 500000,
+      1486060: 200000,
     };
     assert.equal(p.priceCents, correctedPrices[p.source.id] ?? 1000000);
     assert.equal(p.currency, 'ARS');
-    assert.equal(p.source.license, 'CC0-1.0');
+    assert.equal(
+      p.source.license,
+      p._id === 'afe967a033dc7cd1d7fd2099'
+        ? 'MakerWorld Exclusive License'
+        : 'CC0-1.0',
+    );
     assert.equal(p.model, undefined);
     const photos = productGalleryImages(p);
     assert.equal(photos.length, 2);

@@ -1,0 +1,266 @@
+{
+  "date": "2026-11-19",
+  "catalogTotal": 58,
+  "missingOnLiveSite": 33,
+  "alreadyPendingFromUserFiles": 4,
+  "reviewedAdditional": 29,
+  "complete": 2,
+  "partial": 2,
+  "pending": 25,
+  "items": [
+    {
+      "productId": "d62fde842fa0e95488ce77ca",
+      "name": "Portafotos corazón tejido",
+      "sourceUrl": "https://makerworld.com/es/models/2280729-knitted-heart-photo-stand",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "b191b9b6985fa7e45799ce06",
+      "name": "Estuche para tarjetas SD y USB",
+      "sourceUrl": "https://makerworld.com/es/models/479663-media-storage-container",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "4fa6546bbd75e09a90e0cd83",
+      "name": "Soporte ajustable para celular",
+      "sourceUrl": "https://makerworld.com/es/models/914894-adjustable-phone-stand",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "d9030eb81cace95d35f2a668",
+      "name": "Portalápices para panel Skadis",
+      "sourceUrl": "https://makerworld.com/es/models/769733-ikea-skadis-simple-pen-or-tools-holder",
+      "checkedAt": "2026-11-19",
+      "status": "verified-complete",
+      "dimensions": {
+        "width": 35,
+        "height": 80,
+        "depth": 25
+      },
+      "evidence": "Las dimensiones son 35 x 25 x 80",
+      "scope": "Complete nominal dimensions from creator; millimeters inferred from product context, height is 80."
+    },
+    {
+      "productId": "3df31a88a4ae2f1f66c11f48",
+      "name": "Cuenco decorativo de cuerda",
+      "sourceUrl": "https://makerworld.com/es/models/13044-rope-bowl",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "26244f7e4f16ab7bc3bf5ad9",
+      "name": "Estuche de viaje para cepillo",
+      "sourceUrl": "https://makerworld.com/es/models/13128-toothbrush-travel-case",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "5afbb207db8cc4f6aa425532",
+      "name": "Cuenco decorativo tejido",
+      "sourceUrl": "https://makerworld.com/es/models/160651-knitted-bowl",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "03157f1c68423e396b1dd793",
+      "name": "Etiqueta con nombre personalizado",
+      "sourceUrl": "https://makerworld.com/es/models/2868843-customisable-nametag-commercial-use-allowed",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "62664d92a866feec2bbac075",
+      "name": "Gancho para puerta de 35 mm",
+      "sourceUrl": "https://makerworld.com/es/models/196347-35mm-over-door-hook-hanger",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "4f5c38dfbc2c85df191e5af6",
+      "name": "Bandeja modular para ducha",
+      "sourceUrl": "https://makerworld.com/es/models/855602-modular-shower-tray",
+      "checkedAt": "2026-11-19",
+      "status": "verified-partial",
+      "dimensions": {
+        "width": 200,
+        "depth": 80
+      },
+      "evidence": "Esta bandeja mide 200x80mm",
+      "scope": "Tray footprint only; suspension hooks are not 7/8/10 mm high, those numbers describe compatible glass thickness."
+    },
+    {
+      "productId": "74798b86c0a21421109dbb33",
+      "name": "Posavasos de trama tejida",
+      "sourceUrl": "https://makerworld.com/es/models/13127-woven-coasters",
+      "checkedAt": "2026-11-19",
+      "status": "verified-partial",
+      "dimensions": {
+        "height": 5
+      },
+      "evidence": "Su vaso se situará aproximadamente a 5 mm de la base.",
+      "scope": "Approximate support height only; do not infer coaster diameter from photograph."
+    },
+    {
+      "productId": "6234a380476ae537ea62952e",
+      "name": "Araña decorativa",
+      "sourceUrl": "https://makerworld.com/es/models/149284-spider",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "80c9b4319ac2dcdab7580350",
+      "name": "Casita encantada para luz LED",
+      "sourceUrl": "https://makerworld.com/es/models/35259-tea-light-haunted-house",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "3adf75a44416834d546b8aa8",
+      "name": "Gatito articulado con corazón",
+      "sourceUrl": "https://makerworld.com/es/models/145302-flexicat-for-valentine-s-day-heart-print-in-place",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "512a1cf568dd0eb17190b83e",
+      "name": "Llavero clicker personalizado",
+      "sourceUrl": "https://makerworld.com/es/models/3330650-name-fidget-clicker-keychain-mechanical-switch",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "5e4bcd314357caa6629505a7",
+      "name": "Módulo para torre hidropónica",
+      "sourceUrl": "https://makerworld.com/es/models/1526699-tower-hydroponic-system-part-1",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "37a7d764829ea8888ccc4cbb",
+      "name": "Cuadro de pueblo navideño",
+      "sourceUrl": "https://makerworld.com/es/models/764689-christmas-village-picture",
+      "checkedAt": "2026-11-19",
+      "status": "verified-complete",
+      "dimensions": {
+        "width": 200,
+        "height": 119,
+        "depth": 1.2
+      },
+      "evidence": "El modelo tiene un tamaño de 200 x 119 mm para el modelo normal. El A1 mini tiene 150 mm por 89 mm. La profundidad máxima es de 2 mm y la profundidad real es de 1.2 mm.",
+      "scope": "Normal version selected; 150 x 89 variant not used. Actual depth is 1.2 mm, not template maximum of 2 mm."
+    },
+    {
+      "productId": "6527e01a2b39478b95692e77",
+      "name": "Rosa decorativa con tallo",
+      "sourceUrl": "https://makerworld.com/es/models/208589-3d-printed-roses-for-all-occasions",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "56fbf8f421832767073b5726",
+      "name": "Farol decorativo de Halloween",
+      "sourceUrl": "https://makerworld.com/es/models/633095-halloween-lantern",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "50c969d4dbfb60bfba085a96",
+      "name": "Soporte minimalista para celular",
+      "sourceUrl": "https://makerworld.com/es/models/2320874-phone-stand",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "f68c7ee699857c0503a424b5",
+      "name": "Inicial navideña con alce",
+      "sourceUrl": "https://makerworld.com/es/models/2019132-christmas-tree-ornaments-abc-with-moose-motif",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "435cc64e28176f697367d8b5",
+      "name": "Estrella navideña articulada",
+      "sourceUrl": "https://makerworld.com/es/models/842674-fidget-christmas-star",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "1c1fdbd045b9b282fc765c95",
+      "name": "Farol de escenas navideñas",
+      "sourceUrl": "https://makerworld.com/es/models/746218-christmas-lantern",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "dfde1af601360453678326d2",
+      "name": "Adorno circular de paisaje navideño",
+      "sourceUrl": "https://makerworld.com/es/models/2111920-elegant-christmas-tree-ornaments",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "19791ec820e9cf6017230469",
+      "name": "Dado para intercambio de regalos",
+      "sourceUrl": "https://makerworld.com/es/models/840834-christmas-gift-exchange-dice-newly-added-files",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "b3840e2716d486541fb41027",
+      "name": "Mini gorro decorativo de Santa",
+      "sourceUrl": "https://makerworld.com/es/models/1093781-mini-santa-hat",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "35af41213acca01abc0159bb",
+      "name": "Adorno colgante de bombilla gigante",
+      "sourceUrl": "https://makerworld.com/es/models/2021138-jumbo-christmas-tree-light-hanging-bulb-vase-mode",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "ce21c0e688d52f64c52299f2",
+      "name": "Posavasos copo de nieve",
+      "sourceUrl": "https://makerworld.com/es/models/772789-snowflake-coaster-set",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    },
+    {
+      "productId": "3e8fcecd90b60b588fca74a5",
+      "name": "Adorno de arbolito glaseado",
+      "sourceUrl": "https://makerworld.com/es/models/862294-christmas-cake-ornament",
+      "checkedAt": "2026-11-19",
+      "status": "pending-model-file",
+      "reason": "Creator description does not state sufficient external dimensions. Download through MakerWorld did not complete; no measurements inferred from photos or print settings."
+    }
+  ],
+  "updateScope": "Only previously empty dimension fields. Preserve existing dimensions, description, price, photos and every other field. No commit or publication."
+}

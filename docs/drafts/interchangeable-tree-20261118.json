@@ -1,0 +1,92 @@
+{
+  "status": "ready-uncommitted",
+  "targetProductId": "aa541933f3162551c2b3378e",
+  "name": "Árbol navideño de piezas intercambiables",
+  "priceCents": 500000,
+  "dimensions": {
+    "width": 79.2,
+    "height": 98.5,
+    "depth": 79.19
+  },
+  "description": "Árbol navideño decorativo impreso en 3D, con cuerpo verde de aberturas en espiral y tronco que se une por rosca. Una pieza de la colección de árboles intercambiables del diseñador. El precio corresponde a un árbol con su tronco, como en las imágenes. Medidas de la copa espiral: aproximadamente 7,92 cm de diámetro y 9,85 cm de alto, sin contar el tronco roscado.",
+  "images": "unchanged",
+  "measurementScope": "Spiral crown only, excludes separate threaded trunk",
+  "selectedMesh": "3D/Objects/object_4.model",
+  "sourceFile": {
+    "file": "lattice-tree+fff.3mf",
+    "sha256": "07c270402f7a8f6c45f807959485498781f5075c7ead5362dc4486bb731132a2",
+    "objects": [
+      {
+        "mesh": "3D/Objects/object_4.model",
+        "sizeXYZmm": [
+          79.2,
+          79.1851,
+          98.5
+        ]
+      },
+      {
+        "mesh": "3D/Objects/object_2.model",
+        "sizeXYZmm": [
+          79.188,
+          79.2,
+          98.5
+        ]
+      },
+      {
+        "mesh": "3D/Objects/object_1.model",
+        "sizeXYZmm": [
+          79.2,
+          79.1851,
+          98.5
+        ]
+      },
+      {
+        "mesh": "3D/Objects/object_3.model",
+        "sizeXYZmm": [
+          79.1173,
+          79.1854,
+          98.5
+        ]
+      },
+      {
+        "mesh": "3D/Objects/object_8.model",
+        "sizeXYZmm": [
+          37.7735,
+          37.7676,
+          25.0
+        ]
+      },
+      {
+        "mesh": "3D/Objects/object_6.model",
+        "sizeXYZmm": [
+          23.5,
+          23.4963,
+          15.0047
+        ]
+      },
+      {
+        "mesh": "3D/Objects/object_7.model",
+        "sizeXYZmm": [
+          37.3788,
+          37.3793,
+          25.0
+        ]
+      },
+      {
+        "mesh": "3D/Objects/object_5.model",
+        "sizeXYZmm": [
+          79.1957,
+          79.1968,
+          98.5
+        ]
+      }
+    ]
+  },
+  "notes": [
+    "Five crowns and three separate trunks in file. Existing listing photograph selects spiral crown.",
+    "No build scaling; translations only.",
+    "Do not sum trunk and crown heights: threaded overlap is not a full additional trunk height.",
+    "Keep existing product, photos and source attribution; file used only to measure.",
+    "No commit or publication until user requests."
+  ]
+}

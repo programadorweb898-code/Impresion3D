@@ -1,0 +1,69 @@
+{
+  "status": "ready-uncommitted",
+  "targetProductId": "9fa5cd6ffc6c88fcbd9f2468",
+  "name": "Adorno de huella con nombre",
+  "preservePrice": false,
+  "currentPriceCents": 1000000,
+  "measuredFileDimensions": {
+    "width": 71.18,
+    "height": 81.11,
+    "depth": 4.96
+  },
+  "measurementText": "Medidas del archivo proporcionado: 7,12 cm de ancho, 8,11 cm de alto y 0,50 cm de espesor, incluyendo aro y relieves.",
+  "sourceFile": {
+    "file": "Personalized_Christmas_Paw_Ornament.3mf",
+    "sha256": "cb87c1797102c1f6460cb3b5e69cbcb7fc828c47f986c2f455c5bda63f1a89f2",
+    "scale": 0.670369614,
+    "assembledXYZmm": [
+      71.18180491384636,
+      81.11472406492506,
+      4.96073517711848
+    ],
+    "includes": "all 12 parts, hanging loop, hat, pads and name",
+    "boundsBeforeScale": {
+      "min": [
+        -52.649678015,
+        -8.99999996306633e-07,
+        0.0
+      ],
+      "max": [
+        53.5332447,
+        121.00000025,
+        7.40000005
+      ]
+    }
+  },
+  "designMetadata": {
+    "author": "Sofie",
+    "license": "Standard Digital File License",
+    "designModelId": "US401d60b671ae07",
+    "exampleName": "Milo"
+  },
+  "existingDesign": {
+    "author": "JBCreazioni",
+    "id": "806001",
+    "exampleName": "Luna",
+    "details": "paw with snowflakes, no Santa hat"
+  },
+  "notes": [
+    "Retain current snowflake design, photos and source attribution.",
+    "Measurements transferred from supplied file with explicit user confirmation.",
+    "Update price to ARS 3000.",
+    "No commit or publication until user requests."
+  ],
+  "userDecision": "Conservar el diseño actual",
+  "proposedFields": {
+    "priceCents": 300000,
+    "dimensions": {
+      "width": 71.18,
+      "height": 81.11,
+      "depth": 4.96
+    },
+    "description": "Adorno navideño plano con forma de huella, detalles de copos y un espacio para el nombre de tu mascota. Se cuelga del árbol por su aro superior. Coordinamos el nombre antes de fabricarlo; Luna es el ejemplo mostrado. Medidas aproximadas: 7,12 cm de ancho, 8,11 cm de alto y 0,50 cm de espesor, incluyendo el aro y los relieves."
+  },
+  "measurementAuthorization": {
+    "confirmedBy": "user",
+    "date": "2026-11-18",
+    "instruction": "Use the same dimensions despite the design difference; keep current design and set ARS 3000."
+  }
+}

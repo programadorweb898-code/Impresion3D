@@ -162,7 +162,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 35,
+      "height": 80,
+      "depth": 25
+    }
   },
   {
     "_id": "3df31a88a4ae2f1f66c11f48",
@@ -329,32 +334,35 @@
     "name": "Estante esquinero para ducha",
     "category": "Hogar",
     "shortDescription": "Aprovechá una esquina para ordenar el baño.",
-    "description": "Estante esquinero impreso en 3D con base calada de trama irregular y bordes elevados. Su diseño triangular permite reunir frascos y accesorios en una esquina del baño. Coordinamos la instalación y la compatibilidad con tu espacio. No incluye frascos ni fijaciones.",
+    "description": "Estante esquinero impreso en 3D con textura de piedra, base calada y bordes elevados. Su forma permite ordenar frascos y accesorios en una esquina del baño. Medidas aproximadas: 15,10 cm de ancho × 15,10 cm de profundidad × 2,05 cm de alto, tomadas del archivo proporcionado. No incluye frascos, accesorios ni fijaciones. Coordinamos la instalación y la compatibilidad con tu espacio. Diseño de Meșteșug Digital.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 500000,
     "currency": "ARS",
     "active": true,
     "image": {
-      "url": "/product-catalog/mw-106945-front.webp",
-      "width": 1000,
-      "height": 1000
+      "url": "/product-catalog/shower-stone-20261118-front.webp",
+      "width": 810,
+      "height": 1080
     },
     "gallery": {
       "context": {
-        "url": "/product-catalog/mw-106945-context.webp",
-        "width": 1000,
-        "height": 1000
+        "url": "/product-catalog/shower-stone-20261118-context.webp",
+        "width": 810,
+        "height": 1080
       }
     },
     "source": {
-      "platform": "MakerWorld",
-      "id": "106945",
-      "url": "https://makerworld.com/es/models/106945-corner-shower-shelf-fixed",
-      "author": "xchgre",
-      "license": "CC0-1.0",
-      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+      "platform": "Archivo 3MF",
+      "id": "USf322bfb4e972c7",
+      "author": "Meșteșug Digital",
+      "license": "MakerWorld Exclusive License"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Fotografías incluidas en el archivo proporcionado. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 150.99,
+      "height": 20.5,
+      "depth": 150.99
+    }
   },
   {
     "_id": "4f5c38dfbc2c85df191e5af6",
@@ -386,7 +394,11 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 200,
+      "depth": 80
+    }
   },
   {
     "_id": "b158873faf5b03e11b540971",
@@ -455,7 +467,10 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "height": 5
+    }
   },
   {
     "_id": "6234a380476ae537ea62952e",
@@ -494,9 +509,9 @@
     "name": "Adorno de huella con nombre",
     "category": "Navidad",
     "shortDescription": "La huella de tu mascota también puede decorar el árbol.",
-    "description": "Adorno navideño plano con forma de huella, detalles de copos y un espacio para el nombre de tu mascota. Se cuelga del árbol por su aro superior. Coordinamos el nombre antes de fabricarlo; Luna es el ejemplo mostrado.",
+    "description": "Adorno navideño plano con forma de huella, detalles de copos y un espacio para el nombre de tu mascota. Se cuelga del árbol por su aro superior. Coordinamos el nombre antes de fabricarlo; Luna es el ejemplo mostrado. Medidas aproximadas: 7,12 cm de ancho, 8,11 cm de alto y 0,50 cm de espesor, incluyendo el aro y los relieves.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 300000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -519,16 +534,21 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 71.18,
+      "height": 81.11,
+      "depth": 4.96
+    }
   },
   {
     "_id": "aa541933f3162551c2b3378e",
     "name": "Árbol navideño de piezas intercambiables",
     "category": "Navidad",
     "shortDescription": "Un árbol de diseño espiral para mesas y estantes.",
-    "description": "Árbol navideño decorativo impreso en 3D, con cuerpo verde de aberturas en espiral y tronco que se une por rosca. Una pieza de la colección de árboles intercambiables del diseñador. El precio corresponde a un árbol con su tronco, como en las imágenes.",
+    "description": "Árbol navideño decorativo impreso en 3D, con cuerpo verde de aberturas en espiral y tronco que se une por rosca. Una pieza de la colección de árboles intercambiables del diseñador. El precio corresponde a un árbol con su tronco, como en las imágenes. Medidas de la copa espiral: aproximadamente 7,92 cm de diámetro y 9,85 cm de alto, sin contar el tronco roscado.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 500000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -551,7 +571,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 79.2,
+      "height": 98.5,
+      "depth": 79.19
+    }
   },
   {
     "_id": "80c9b4319ac2dcdab7580350",
@@ -622,9 +647,9 @@
     "name": "Soporte compacto para celular",
     "category": "Accesorio",
     "shortDescription": "Un apoyo compacto con un borde de color.",
-    "description": "Soporte para celular de una sola pieza, con perfil curvo y un detalle de color en el borde. La base y el labio delantero sostienen el equipo sobre una mesa. Consultanos por la compatibilidad con tu celular y su funda. No incluye equipo.",
+    "description": "Soporte para celular de una sola pieza, con perfil curvo y un detalle de color en el borde. La base y el labio delantero sostienen el equipo sobre una mesa. Consultanos por la compatibilidad con tu celular y su funda. No incluye equipo. Medidas aproximadas: 7 cm de ancho, 8,12 cm de alto y 7,30 cm de profundidad.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 800000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -647,7 +672,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 70,
+      "height": 81.23,
+      "depth": 73
+    }
   },
   {
     "_id": "512a1cf568dd0eb17190b83e",
@@ -780,7 +810,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 200,
+      "height": 119,
+      "depth": 1.2
+    }
   },
   {
     "_id": "db589da55bcdc99e2954092b",

@@ -1,0 +1,55 @@
+[
+  {
+    "id": "d9030eb81cace95d35f2a668",
+    "sourceId": "769733",
+    "name": "Portalápices para panel Skadis",
+    "dimensions": {
+      "width": 35,
+      "height": 80,
+      "depth": 25
+    },
+    "measurementText": "Medidas aproximadas: 3,5 cm de ancho, 8 cm de alto y 2,5 cm de profundidad.",
+    "sourceUrl": "https://makerworld.com/es/models/769733-ikea-skadis-simple-pen-or-tools-holder",
+    "evidence": "Las dimensiones son 35 x 25 x 80",
+    "scope": "Complete nominal dimensions from creator; millimeters inferred from product context, height is 80."
+  },
+  {
+    "id": "4f5c38dfbc2c85df191e5af6",
+    "sourceId": "855602",
+    "name": "Bandeja modular para ducha",
+    "dimensions": {
+      "width": 200,
+      "depth": 80
+    },
+    "measurementText": "La superficie de la bandeja mide 20 cm de ancho por 8 cm de profundidad. La altura total está pendiente de confirmar.",
+    "sourceUrl": "https://makerworld.com/es/models/855602-modular-shower-tray",
+    "evidence": "Esta bandeja mide 200x80mm",
+    "scope": "Tray footprint only; suspension hooks are not 7/8/10 mm high, those numbers describe compatible glass thickness."
+  },
+  {
+    "id": "74798b86c0a21421109dbb33",
+    "sourceId": "13127",
+    "name": "Posavasos de trama tejida",
+    "dimensions": {
+      "height": 5
+    },
+    "measurementText": "El apoyo del vaso queda aproximadamente a 0,5 cm de la base. Las medidas laterales están pendientes de confirmar.",
+    "sourceUrl": "https://makerworld.com/es/models/13127-woven-coasters",
+    "evidence": "Su vaso se situará aproximadamente a 5 mm de la base.",
+    "scope": "Approximate support height only; do not infer coaster diameter from photograph."
+  },
+  {
+    "id": "37a7d764829ea8888ccc4cbb",
+    "sourceId": "764689",
+    "name": "Cuadro de pueblo navideño",
+    "dimensions": {
+      "width": 200,
+      "height": 119,
+      "depth": 1.2
+    },
+    "measurementText": "Medidas de la versión normal: 20 cm de ancho, 11,9 cm de alto y 0,12 cm de espesor.",
+    "sourceUrl": "https://makerworld.com/es/models/764689-christmas-village-picture",
+    "evidence": "El modelo tiene un tamaño de 200 x 119 mm para el modelo normal. El A1 mini tiene 150 mm por 89 mm. La profundidad máxima es de 2 mm y la profundidad real es de 1.2 mm.",
+    "scope": "Normal version selected; 150 x 89 variant not used. Actual depth is 1.2 mm, not template maximum of 2 mm."
+  }
+]

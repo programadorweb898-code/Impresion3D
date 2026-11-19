@@ -1,0 +1,73 @@
+{
+  "status": "ready-uncommitted",
+  "targetProductId": "afe967a033dc7cd1d7fd2099",
+  "name": "Estante esquinero para ducha",
+  "preservePrice": false,
+  "previousPriceCents": 1000000,
+  "proposedFields": {
+    "description": "Estante esquinero impreso en 3D con textura de piedra, base calada y bordes elevados. Su forma permite ordenar frascos y accesorios en una esquina del baño. Medidas aproximadas: 15,10 cm de ancho × 15,10 cm de profundidad × 2,05 cm de alto, tomadas del archivo proporcionado. No incluye frascos, accesorios ni fijaciones. Coordinamos la instalación y la compatibilidad con tu espacio. Diseño de Meșteșug Digital.",
+    "dimensions": {
+      "width": 150.99,
+      "height": 20.5,
+      "depth": 150.99
+    },
+    "image": {
+      "url": "/product-catalog/shower-stone-20261118-front.webp",
+      "width": 810,
+      "height": 1080
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/shower-stone-20261118-context.webp",
+        "width": 810,
+        "height": 1080
+      }
+    },
+    "imageNotice": "Fotografías incluidas en el archivo proporcionado. Los accesorios de ambientación no están incluidos.",
+    "source": {
+      "platform": "Archivo 3MF",
+      "id": "USf322bfb4e972c7",
+      "author": "Meșteșug Digital",
+      "license": "MakerWorld Exclusive License"
+    },
+    "priceCents": 500000
+  },
+  "sourceFile": {
+    "file": "Etajeră+baie+piatră.3mf",
+    "sha256": "553acf276b78167f46178afe5ae0f4fd1fce70161842e2e9c63662a6cc05e344",
+    "rawXYZmm": [
+      150.987999,
+      20.5004998,
+      150.9906922
+    ],
+    "bounds": {
+      "min": [
+        -75.4939957,
+        -10.2502499,
+        -75.4953461
+      ],
+      "max": [
+        75.4940033,
+        10.2502499,
+        75.4953461
+      ]
+    }
+  },
+  "designMetadata": {
+    "author": "Meșteșug Digital",
+    "title": "Stone Texture Corner Shower Shelf - No Drill",
+    "designModelId": "USf322bfb4e972c7",
+    "license": "MakerWorld Exclusive License"
+  },
+  "publicationNotes": [
+    "Commercial authorization confirmed explicitly by user.",
+    "Original xchgre/CC0 attribution replaced with metadata of supplied design.",
+    "Original embedded photographs retained at native size.",
+    "Measurements are footprint X/Z and height Y, without scaling.",
+    "Local pending update only; do not commit or publish until user requests."
+  ],
+  "commercialAuthorization": {
+    "confirmedBy": "user",
+    "date": "2026-11-18"
+  }
+}

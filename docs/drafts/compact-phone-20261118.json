@@ -1,0 +1,62 @@
+{
+  "status": "ready-uncommitted",
+  "targetProductId": "96662806919bd26a60e00b30",
+  "name": "Soporte compacto para celular",
+  "priceCents": 800000,
+  "dimensions": {
+    "width": 70,
+    "height": 81.23,
+    "depth": 73
+  },
+  "description": "Soporte para celular de una sola pieza, con perfil curvo y un detalle de color en el borde. La base y el labio delantero sostienen el equipo sobre una mesa. Consultanos por la compatibilidad con tu celular y su funda. No incluye equipo. Medidas aproximadas: 7 cm de ancho, 8,12 cm de alto y 7,30 cm de profundidad.",
+  "images": "unchanged",
+  "sourceFile": {
+    "file": "Phone+Stand+2(2).3mf",
+    "sha256": "d14f5063c9dc6dbc0e78d8d56675e8c6c9b907619a7fec7f0440cd1a74fa4a8c",
+    "parts": [
+      {
+        "mesh": "3D/Objects/object_29.model",
+        "min": [
+          -35.0,
+          -36.4992523,
+          -40.6139297
+        ],
+        "max": [
+          35.0,
+          36.4992523,
+          40.6139297
+        ],
+        "sizeXYZmm": [
+          70.0,
+          72.9985046,
+          81.2278594
+        ]
+      },
+      {
+        "mesh": "3D/Objects/object_27.model",
+        "min": [
+          -2.5,
+          -33.5198669,
+          -37.6332703
+        ],
+        "max": [
+          2.5,
+          33.5198669,
+          37.6332703
+        ],
+        "sizeXYZmm": [
+          5.0,
+          67.0397338,
+          75.2665406
+        ]
+      }
+    ],
+    "orientation": "original mesh X width, Y depth, Z height; build rotates sideways to print; no scaling"
+  },
+  "measurementScope": "Main support body, original CAD orientation, no scaling; color accents fit inside side channels.",
+  "notes": [
+    "Keep existing product, images and source attribution; no new listing.",
+    "File metadata declares remix CC0 but references an upstream BY-NC-SA model; no new licensing claim made in this measurement update.",
+    "No commit or publication until user requests."
+  ]
+}
