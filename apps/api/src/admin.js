@@ -1,5 +1,5 @@
 import { rateLimitMessage } from './rate-limit-message.js';
-import { pageNumber, pageMetadata, pageSize as limit } from './pagination.js';
+import { pageNumber, pageMetadata, catalogPageSize as limit } from './pagination.js';
 import { validate } from './http-validation.js';
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';

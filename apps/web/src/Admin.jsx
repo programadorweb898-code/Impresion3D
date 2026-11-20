@@ -6,7 +6,6 @@ import PhotoQuotes from './PhotoQuotes.jsx';
 import { ProductGalleryEditor } from './ProductGalleryEditor.jsx';
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
-import { Pagination } from './Pagination.jsx';
 import { ProductPhoto } from './ProductPhoto.jsx';
 import {
   productSchema,
@@ -114,23 +113,22 @@ export function Admin({ onCatalogChange }) {
   const [tab, setTab] = useState('orders'),
     [products, setProducts] = useState([]),
     [operations, setOperations] = useState(null),
-    [productPage, setProductPage] = useState({ page: 1, pages: 1, total: 0 }),
     [data, setData] = useState({ orders: [], page: 1, pages: 1, total: 0 }),
     [editing, setEditing] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
-    [loading, setLoading] = useState(true);
-  async function load(page = 1, productsPage = productPage.page) {
+    [loading, setLoading] = useState(true),
+    [productsOffset, setProductsOffset] = useState(0),
+    [productsTotal, setProductsTotal] = useState(0),
+    [hasMore, setHasMore] = useState(true);
+  async function load(page = 1) {
     setLoading(true);
     try {
-      const [items, orders, state] = await Promise.all([
-        api('/admin/products?page=' + productsPage),
+      const [orders, state] = await Promise.all([
         api('/admin/orders?page=' + page),
         api('/admin/operations'),
       ]);
-      setProducts(items.products);
-      setProductPage(items);
       setData(orders);
       setOperations(state);
     } catch (cause) {
@@ -141,8 +139,33 @@ export function Admin({ onCatalogChange }) {
       setLoading(false);
     }
   }
+  async function loadProducts(reset = false) {
+    if (reset) {
+      setProductsOffset(0);
+      setHasMore(true);
+      setProducts([]);
+    }
+    if (!hasMore) return;
+    setLoading(true);
+    try {
+      const page = Math.floor(productsOffset / 10) + 1;
+      const items = await api('/admin/products?page=' + page);
+      const newProducts = Array.isArray(items) ? items : items.products;
+      const total = Array.isArray(items) ? productsTotal : items.total;
+      setProducts((prev) => (reset ? newProducts : [...prev, ...newProducts]));
+      const nextOffset = productsOffset + newProducts.length;
+      setProductsOffset(nextOffset);
+      if (!Array.isArray(items)) setProductsTotal(items.total);
+      setHasMore(nextOffset < total);
+    } catch (cause) {
+      setError(cause?.message || 'No pudimos cargar los productos.');
+    } finally {
+      setLoading(false);
+    }
+  }
   useEffect(() => {
     void load();
+    void loadProducts(true);
   }, []);
   async function saveOrder(id, body) {
     setBusy(true);
@@ -171,7 +194,7 @@ export function Admin({ onCatalogChange }) {
     setError('');
     try {
       await api('/admin/products/' + id, { method: 'DELETE' });
-      await Promise.all([load(data.page), onCatalogChange()]);
+      await Promise.all([load(data.page), loadProducts(true), onCatalogChange()]);
       setNotice('Producto eliminado.');
     } catch (e) {
       setError(e.message);
@@ -220,7 +243,7 @@ export function Admin({ onCatalogChange }) {
         ),
       });
       setEditing(null);
-      await Promise.all([load(data.page), onCatalogChange()]);
+      await Promise.all([load(data.page), loadProducts(true), onCatalogChange()]);
       setNotice('Producto guardado.');
     } catch (e) {
       setError(e.message);
@@ -498,10 +521,7 @@ export function Admin({ onCatalogChange }) {
               </button>
             </form>
           )}
-          <p>
-            {productPage.total} productos · Página {productPage.page} de{' '}
-            {productPage.pages}
-          </p>
+          <p>{products.length} de {productsTotal} productos</p>
           <div className="admin-products">
             {products.map((p) => (
               <article className="order" key={p._id}>
@@ -510,41 +530,40 @@ export function Admin({ onCatalogChange }) {
                   product={p}
                   onUpdated={async () => {
                     setNotice('Foto de la ficha guardada.');
-                    await Promise.all([load(data.page), onCatalogChange()]);
+                    await Promise.all([load(data.page), loadProducts(true), onCatalogChange()]);
                   }}
                 />
                 <ProductPhoto
                   product={p}
                   onSaved={async () => {
                     setNotice('Foto guardada.');
-                    await Promise.all([load(data.page), onCatalogChange()]);
+                    await Promise.all([load(data.page), loadProducts(true), onCatalogChange()]);
                   }}
                 />
                 <p>
                   {p.active ? 'Publicado' : 'Oculto'} ·{' '}
                   {formatMoney(p.priceCents, p.currency)}
                 </p>
-                <button className="outline" onClick={() => setEditing(p)}>
-                  Editar {p.name}
-                </button>
-                <button
-                  className="outline danger"
-                  onClick={() => deleteProduct(p._id)}
-                  disabled={busy}
-                >
-                  Eliminar {p.name}
-                </button>
+                <div className="admin-actions">
+                  <button className="outline" onClick={() => setEditing(p)}>
+                    Editar {p.name}
+                  </button>
+                  <button
+                    className="outline danger"
+                    onClick={() => deleteProduct(p._id)}
+                    disabled={busy}
+                  >
+                    Eliminar {p.name}
+                  </button>
+                </div>
               </article>
             ))}
           </div>
-          <Pagination
-            page={productPage.page}
-            pages={productPage.pages}
-            busy={busy || loading}
-            onPage={(page) =>
-              load(data.page, page).catch((e) => setError(e.message))
-            }
-          />
+          {hasMore && !busy && !loading && (
+            <button className="primary" onClick={() => loadProducts()}>
+              Cargar más
+            </button>
+          )}
         </>
       )}
     </section>

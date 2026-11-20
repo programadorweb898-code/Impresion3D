@@ -573,6 +573,17 @@ select {
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
+.admin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.admin-actions button {
+  width: 100%;
+  display: block;
+  text-align: center;
+}
 .admin .error,
 .admin .notice {
   margin: 20px 0;
@@ -1031,6 +1042,7 @@ select {
   padding: 12px;
   border: 1px solid #d6dbce;
   background: white;
+  color: #1a1a1a;
   border-radius: 9px;
   font-size: 14px;
 }
@@ -2412,7 +2424,7 @@ textarea::placeholder {
 }
 .social-button {
   background: #fff;
-  color: var(--text);
+  color: #1a1a1a;
   color-scheme: light;
 }
 .social-button:disabled {
