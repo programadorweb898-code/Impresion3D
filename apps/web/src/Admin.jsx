@@ -525,57 +525,59 @@ export function Admin({ onCatalogChange }) {
               </button>
             </form>
           )}
-          <p>{products.length} de {productsTotal} productos</p>
-          <div className="admin-products">
-            {products.map((p) => (
-              <article className="order" key={p._id}>
-                <h3>{p.name}</h3>
-                <ProductGalleryEditor
-                  product={p}
-                  onUpdated={async () => {
-                    setNotice('Foto de la ficha guardada.');
-                    await Promise.all([load(data.page), loadProducts(true), onCatalogChange()]);
-                  }}
-                />
-                <ProductPhoto
-                  product={p}
-                  onSaved={async () => {
-                    setNotice('Foto guardada.');
-                    await Promise.all([load(data.page), loadProducts(true), onCatalogChange()]);
-                  }}
-                />
-                <p>
-                  {p.active ? 'Publicado' : 'Oculto'} ·{' '}
-                  {formatMoney(p.priceCents, p.currency)}
-                </p>
-                <div className="admin-actions">
-                  <button className="outline" onClick={() => setEditing(p)}>
-                    Editar {p.name}
-                  </button>
-                  <button
-                    className="outline danger"
-                    onClick={() => deleteProduct(p._id)}
-                    disabled={busy}
-                  >
-                    Eliminar {p.name}
-                  </button>
-                </div>
-              </article>
-            ))}
+          <div style={{ overflowAnchor: 'avoid' }}>
+            <p>{products.length} de {productsTotal} productos</p>
+            <div className="admin-products">
+              {products.map((p) => (
+                <article className="order" key={p._id}>
+                  <h3>{p.name}</h3>
+                  <ProductGalleryEditor
+                    product={p}
+                    onUpdated={async () => {
+                      setNotice('Foto de la ficha guardada.');
+                      await Promise.all([load(data.page), loadProducts(true), onCatalogChange()]);
+                    }}
+                  />
+                  <ProductPhoto
+                    product={p}
+                    onSaved={async () => {
+                      setNotice('Foto guardada.');
+                      await Promise.all([load(data.page), loadProducts(true), onCatalogChange()]);
+                    }}
+                  />
+                  <p>
+                    {p.active ? 'Publicado' : 'Oculto'} ·{' '}
+                    {formatMoney(p.priceCents, p.currency)}
+                  </p>
+                  <div className="admin-actions">
+                    <button className="outline" onClick={() => setEditing(p)}>
+                      Editar {p.name}
+                    </button>
+                    <button
+                      className="outline danger"
+                      onClick={() => deleteProduct(p._id)}
+                      disabled={busy}
+                    >
+                      Eliminar {p.name}
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+            {hasMore && !busy && !loading && (
+              <button
+                className="primary"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  loadProducts();
+                }}
+              >
+                Cargar más
+              </button>
+            )}
           </div>
-          {hasMore && !busy && !loading && (
-            <button
-              className="primary"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                loadProducts();
-              }}
-            >
-              Cargar más
-            </button>
-          )}
         </>
       )}
     </section>
