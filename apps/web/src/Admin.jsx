@@ -391,7 +391,7 @@ export function Admin({ onCatalogChange }) {
         <>
           <button
             className="primary"
-            style={{ marginBottom: '20px' }}
+            style={{ marginBlock: '20px 0' }}
             onClick={() => setEditing(emptyProduct)}
           >
             Nuevo producto
@@ -569,6 +569,7 @@ export function Admin({ onCatalogChange }) {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 loadProducts();
               }}
             >
