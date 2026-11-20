@@ -790,8 +790,8 @@ test('ficha conserva fotos, descripción y medidas; galería adaptable a móvil 
   await expect(page.locator('.product-detail-description')).toContainText(
     'Producto de prueba\nDescripción completa conservada en la ficha.',
   );
-  await expect(page.locator('.product-detail-dimensions')).toContainText(
-    'Ancho10 cm',
+  await expect(page.locator('.product-detail-dimensions-inline')).toContainText(
+    'Medidas: 10 cm',
   );
   await expect(page.locator('.product-gallery-stage > img')).toHaveAttribute(
     'src',
