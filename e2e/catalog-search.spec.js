@@ -66,8 +66,8 @@ test('las pestañas reutilizan la búsqueda dinámica y permiten volver a buscar
     .poll(() =>
       requests.some(
         (url) =>
-          url.searchParams.get('startsWith') === label.toLowerCase() &&
-          !url.searchParams.has('category'),
+          url.searchParams.get('category') === label &&
+          !url.searchParams.has('startsWith'),
       ),
     )
     .toBe(true);
