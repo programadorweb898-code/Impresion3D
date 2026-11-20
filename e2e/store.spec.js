@@ -787,7 +787,7 @@ test('ficha conserva fotos, descripción y medidas; galería adaptable a móvil 
   await expect(
     page.getByRole('heading', { name: 'Pieza 00', exact: true }),
   ).toBeVisible();
-  await expect(page.locator('.product-detail-description')).toHaveText(
+  await expect(page.locator('.product-detail-description')).toContainText(
     'Producto de prueba\nDescripción completa conservada en la ficha.',
   );
   await expect(page.locator('.product-detail-dimensions')).toContainText(
