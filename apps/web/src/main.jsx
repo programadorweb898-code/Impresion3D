@@ -128,6 +128,7 @@ function App() {
     }),
     [catalogOffset, setCatalogOffset] = useState(0),
     [catalogHasMore, setCatalogHasMore] = useState(true),
+    [catalogLoadingMore, setCatalogLoadingMore] = useState(false),
     [orderPage, setOrderPage] = useState({ page: 1, pages: 1 }),
     [ordersLoading, setOrdersLoading] = useState(false),
     [cartCatalog, setCartCatalog] = useState({
@@ -216,6 +217,14 @@ function App() {
     savedScrollPosition() || location.hash.slice(1) || null,
   );
   const lastHistoryUrl = useRef(null);
+  const catalogScrollRestore = useRef(null);
+  useLayoutEffect(() => {
+    const position = catalogScrollRestore.current;
+    if (!position) return;
+    catalogScrollRestore.current = null;
+    window.scrollTo({ left: position.x, top: position.y, behavior: 'instant' });
+  }, [products]);
+
   function saveCatalogContext() {
     rememberCatalog(catalogPage.page, category, {
       search,
@@ -334,6 +343,7 @@ function App() {
     setLoading(true);
     setCatalogOffset(0);
     setCatalogHasMore(true);
+    catalogScrollRestore.current = null;
     const query = new URLSearchParams({ page: '1' });
     const searchTerm = search.trim();
     if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
@@ -402,7 +412,7 @@ function App() {
     setCatalogHasMore(data.products.length < data.total);
   }
   async function loadMoreCatalog() {
-    if (!catalogHasMore || loading) return;
+    if (!catalogHasMore || loading || catalogLoadingMore) return;
     const page = Math.floor(catalogOffset / 10) + 1;
     const query = new URLSearchParams({ page: String(page) });
     const searchTerm = search.trim();
@@ -413,9 +423,10 @@ function App() {
     if (priceMax !== '')
       query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
     if (sort !== 'relevance') query.set('sort', sort);
-    setLoading(true);
+    setCatalogLoadingMore(true);
     try {
       const data = await api('/products?' + query);
+      catalogScrollRestore.current = { x: window.scrollX, y: window.scrollY };
       setProducts((prev) => [...prev, ...data.products]);
       setCatalogOffset(catalogOffset + data.products.length);
       setCatalogHasMore(catalogOffset + data.products.length < data.total);
@@ -428,7 +439,7 @@ function App() {
     } catch (e) {
       setError(e.message);
     } finally {
-      setLoading(false);
+      setCatalogLoadingMore(false);
     }
   }
   useEffect(() => {
@@ -477,14 +488,7 @@ function App() {
       window.removeEventListener('hashchange', onNavigate);
     };
   }, []);
-  useEffect(() => {
-    if (loading || !products.length) return;
-    const first = document.querySelector('#catalogo .product-card');
-    if (first) {
-      first.scrollIntoView({ behavior: 'instant', block: 'center' });
-    }
-  }, [catalogPage.page, products, loading]);
-  function openLogin() {
+   function openLogin() {
     if (view === 'catalog') saveCatalogContext();
     if (['product', 'offer'].includes(view) && !loginDestination.current)
       loginDestination.current = view;
@@ -1339,7 +1343,7 @@ function App() {
                     </p>
                   </div>
                 ) : (
-                  <div style={{ overflowAnchor: 'avoid' }}>
+                  <div>
                     <div className="grid-products" aria-busy={loading}>
                       {products.map((p, i) => (
                         <article
@@ -1423,18 +1427,16 @@ function App() {
                       </article>
                     ))}
                   </div>
-                  {catalogHasMore && !loading && (
+                  {catalogHasMore && (
                     <button
                       className="primary"
                       type="button"
-                      style={{ marginBlock: '20px 0', display: 'block', margin: '20px auto 0' }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        loadMoreCatalog();
-                      }}
+                      disabled={loading || catalogLoadingMore}
+                      aria-busy={catalogLoadingMore}
+                      style={{ display: 'block', margin: '20px auto 0' }}
+                      onClick={() => void loadMoreCatalog()}
                     >
-                      Cargar más
+                      {catalogLoadingMore ? 'Cargando más…' : 'Cargar más'}
                     </button>
                   )}
                 </div>
