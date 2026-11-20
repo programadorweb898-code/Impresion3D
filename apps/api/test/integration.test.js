@@ -288,17 +288,21 @@ test('catálogo e historial paginan sin mezclar usuarios; el carrito recupera pi
   );
   const adminFirst = await agent.get('/api/admin/products?page=1').expect(200);
   const adminSecond = await agent.get('/api/admin/products?page=2').expect(200);
-  assert.equal(adminFirst.body.products.length, 20);
-  assert.ok(adminSecond.body.products.length > 0);
+  const adminThird = await agent.get('/api/admin/products?page=3').expect(200);
+  assert.equal(adminFirst.body.products.length, 10);
+  assert.equal(adminSecond.body.products.length, 10);
+  assert.ok(adminThird.body.products.length > 0);
   assert.equal(
     new Set(
-      [...adminFirst.body.products, ...adminSecond.body.products].map(
-        (p) => p._id,
-      ),
+      [
+        ...adminFirst.body.products,
+        ...adminSecond.body.products,
+        ...adminThird.body.products,
+      ].map((p) => p._id),
     ).size,
     adminFirst.body.total,
   );
-  assert.equal((await agent.get('/api/admin/products')).body.length, 20);
+  assert.equal((await agent.get('/api/admin/products')).body.length, 10);
   await agent.get('/api/admin/products?page=0').expect(400);
 });
 test('ficha pública muestra descripción y medidas sin sesión; ocultos e IDs inválidos responden 404', async () => {
