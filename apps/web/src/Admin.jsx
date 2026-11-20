@@ -4,7 +4,7 @@ import DesignQuote from './DesignQuote.jsx';
 import { WorkerConnections } from './SlicingControls.jsx';
 import PhotoQuotes from './PhotoQuotes.jsx';
 import { ProductGalleryEditor } from './ProductGalleryEditor.jsx';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 import { ProductPhoto } from './ProductPhoto.jsx';
 import {
@@ -123,6 +123,21 @@ export function Admin({ onCatalogChange }) {
     [productsOffset, setProductsOffset] = useState(0),
     [productsTotal, setProductsTotal] = useState(0),
     [hasMore, setHasMore] = useState(true);
+  const pendingScrollRestore = useRef(null);
+
+  // Adding cards above the focused load-more button may move the viewport.
+  // Restore the exact position after React commits the new product list.
+  useLayoutEffect(() => {
+    const position = pendingScrollRestore.current;
+    if (!position) return;
+    pendingScrollRestore.current = null;
+    window.scrollTo({
+      left: position.x,
+      top: position.y,
+      behavior: 'instant',
+    });
+  }, [products]);
+
   async function load(page = 1) {
     setLoading(true);
     try {
@@ -149,6 +164,12 @@ export function Admin({ onCatalogChange }) {
       const items = await api('/admin/products?page=' + page);
       const newProducts = Array.isArray(items) ? items : items.products;
       const total = Array.isArray(items) ? productsTotal : items.total;
+      if (!reset) {
+        pendingScrollRestore.current = {
+          x: window.scrollX,
+          y: window.scrollY,
+        };
+      }
       setProducts((prev) => (reset ? newProducts : [...prev, ...newProducts]));
       const nextOffset = offset + newProducts.length;
       setProductsOffset(nextOffset);
@@ -522,7 +543,7 @@ export function Admin({ onCatalogChange }) {
               </button>
             </form>
           )}
-          <div style={{ overflowAnchor: 'avoid' }}>
+          <div>
             <p>{products.length} de {productsTotal} productos</p>
             {productsLoading && products.length === 0 && (
               <p role="status">Cargando productos…</p>
