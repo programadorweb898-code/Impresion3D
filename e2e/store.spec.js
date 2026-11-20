@@ -322,14 +322,50 @@ test('aviso del carrito respeta movimiento reducido y permite cierre manual', as
   await page.getByRole('button', { name: 'Cerrar notificación' }).click();
   await expect(page.locator('.toast')).toHaveCount(0);
 });
+test('visitantes y usuarios registrados cargan diez diseños por tanda sin desplazar el scroll', async ({ page }) => {
+  for (const authenticated of [false, true]) {
+    if (authenticated) await login(page);
+    else await page.goto('/');
+
+    await expect(page.locator('.product-card')).toHaveCount(10);
+    const loadMore = page.getByRole('button', { name: 'Cargar más', exact: true });
+    await loadMore.scrollIntoViewIfNeeded();
+    const before = await page.evaluate(() => window.scrollY);
+    await loadMore.click();
+    await expect(page.locator('.product-card')).toHaveCount(20);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(before);
+    await expect(loadMore).toBeVisible();
+
+    await loadMore.scrollIntoViewIfNeeded();
+    const nextBefore = await page.evaluate(() => window.scrollY);
+    await loadMore.click();
+    await expect(page.locator('.product-card')).toHaveCount(25);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(nextBefore);
+    await expect(loadMore).toHaveCount(0);
+  }
+});
+
+test('administración conserva el scroll al añadir más productos', async ({ page }) => {
+  await login(page, 0, 'admin-browser@example.com');
+  await menu(page, 'Administración');
+  await page.getByRole('button', { name: 'Productos', exact: true }).click();
+  await expect(page.locator('.admin-products > article')).toHaveCount(10);
+  const loadMore = page.getByRole('button', { name: 'Cargar más', exact: true });
+  await loadMore.scrollIntoViewIfNeeded();
+  const position = await page.evaluate(() => window.scrollY);
+  await loadMore.click();
+  await expect(page.locator('.admin-products > article')).toHaveCount(20);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(position);
+});
+
 test('menú móvil, páginas y categorías incluyen piezas fuera de la primera página', async ({
   page,
 }) => {
   await page.goto('/');
   await expect(page.locator('.product-card')).toHaveCount(10);
   await expect(page.locator('.product-card').first()).toContainText('100,50');
-  await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
-  await expect(page.locator('.product-card')).toHaveCount(10);
+  await page.getByRole('button', { name: 'Cargar más', exact: true }).click();
+  await expect(page.locator('.product-card')).toHaveCount(20);
   await selectCategory(page, 'Especial');
   await expect(page.locator('.product-card')).toHaveCount(1);
   await menu(page, 'Ingresar');
@@ -408,11 +444,11 @@ test('carrito combina páginas y recupera disponibilidad al volver a iniciar ses
     .first()
     .getByRole('button', { name: 'Agregar al carrito' })
     .click();
-  await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
-  await expect(page.locator('.product-card')).toHaveCount(10);
+  await page.getByRole('button', { name: 'Cargar más', exact: true }).click();
+  await expect(page.locator('.product-card')).toHaveCount(20);
   await page
     .locator('.product-card')
-    .first()
+    .nth(10)
     .getByRole('button', { name: 'Agregar al carrito' })
     .click();
   await page.evaluate(async () => {
@@ -554,9 +590,11 @@ test('administración pagina productos y muestra integraciones sólo al administ
   await login(page, 0, 'admin-browser@example.com');
   await menu(page, 'Administración');
   await page.getByRole('button', { name: 'Productos', exact: true }).click();
+  await expect(page.locator('.admin-products > article')).toHaveCount(10);
+  await page.getByRole('button', { name: 'Cargar más', exact: true }).click();
   await expect(page.locator('.admin-products > article')).toHaveCount(20);
-  await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
-  await expect(page.locator('.admin-products > article')).toHaveCount(5);
+  await page.getByRole('button', { name: 'Cargar más', exact: true }).click();
+  await expect(page.locator('.admin-products > article')).toHaveCount(25);
   await page
     .getByRole('button', { name: 'Estado del servicio', exact: true })
     .click();
