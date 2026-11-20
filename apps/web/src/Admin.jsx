@@ -389,7 +389,11 @@ export function Admin({ onCatalogChange }) {
         </>
       ) : (
         <>
-          <button className="primary" onClick={() => setEditing(emptyProduct)}>
+          <button
+            className="primary"
+            style={{ marginBottom: '20px' }}
+            onClick={() => setEditing(emptyProduct)}
+          >
             Nuevo producto
           </button>
           {editing && (
@@ -560,7 +564,14 @@ export function Admin({ onCatalogChange }) {
             ))}
           </div>
           {hasMore && !busy && !loading && (
-            <button className="primary" onClick={() => loadProducts()}>
+            <button
+              className="primary"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                loadProducts();
+              }}
+            >
               Cargar más
             </button>
           )}
