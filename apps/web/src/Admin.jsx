@@ -119,6 +119,7 @@ export function Admin({ onCatalogChange }) {
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [loading, setLoading] = useState(true),
+    [productsLoading, setProductsLoading] = useState(false),
     [productsOffset, setProductsOffset] = useState(0),
     [productsTotal, setProductsTotal] = useState(0),
     [hasMore, setHasMore] = useState(true);
@@ -140,27 +141,23 @@ export function Admin({ onCatalogChange }) {
     }
   }
   async function loadProducts(reset = false) {
-    if (reset) {
-      setProductsOffset(0);
-      setHasMore(true);
-      setProducts([]);
-    }
-    if (!hasMore) return;
-    setLoading(true);
+    if (!reset && (!hasMore || productsLoading)) return;
+    setProductsLoading(true);
     try {
-      const page = Math.floor(productsOffset / 10) + 1;
+      const offset = reset ? 0 : productsOffset;
+      const page = Math.floor(offset / 10) + 1;
       const items = await api('/admin/products?page=' + page);
       const newProducts = Array.isArray(items) ? items : items.products;
       const total = Array.isArray(items) ? productsTotal : items.total;
       setProducts((prev) => (reset ? newProducts : [...prev, ...newProducts]));
-      const nextOffset = productsOffset + newProducts.length;
+      const nextOffset = offset + newProducts.length;
       setProductsOffset(nextOffset);
       if (!Array.isArray(items)) setProductsTotal(items.total);
       setHasMore(nextOffset < total);
     } catch (cause) {
       setError(cause?.message || 'No pudimos cargar los productos.');
     } finally {
-      setLoading(false);
+      setProductsLoading(false);
     }
   }
   useEffect(() => {
@@ -285,7 +282,7 @@ export function Admin({ onCatalogChange }) {
           Estado del servicio
         </button>
         <button
-          disabled={busy || loading}
+          disabled={busy || loading || productsLoading}
           onClick={() => {
             setError('');
             load(data.page).catch((e) => setError(e.message));
@@ -304,7 +301,7 @@ export function Admin({ onCatalogChange }) {
           {notice}
         </p>
       )}
-      {loading ? (
+      {loading && tab !== 'products' ? (
         <p role="status">Cargando taller…</p>
       ) : tab === 'designs' ? (
         <>
@@ -527,6 +524,9 @@ export function Admin({ onCatalogChange }) {
           )}
           <div style={{ overflowAnchor: 'avoid' }}>
             <p>{products.length} de {productsTotal} productos</p>
+            {productsLoading && products.length === 0 && (
+              <p role="status">Cargando productos…</p>
+            )}
             <div className="admin-products">
               {products.map((p) => (
                 <article className="order" key={p._id}>
@@ -564,17 +564,15 @@ export function Admin({ onCatalogChange }) {
                 </article>
               ))}
             </div>
-            {hasMore && !busy && !loading && (
+            {hasMore && !busy && (
               <button
                 className="primary"
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  loadProducts();
-                }}
+                disabled={productsLoading}
+                aria-busy={productsLoading}
+                onClick={() => void loadProducts()}
               >
-                Cargar más
+                {productsLoading ? 'Cargando más…' : 'Cargar más'}
               </button>
             )}
           </div>
