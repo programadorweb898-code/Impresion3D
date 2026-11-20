@@ -126,6 +126,8 @@ function App() {
       pages: 1,
       categories: [],
     }),
+    [catalogOffset, setCatalogOffset] = useState(0),
+    [catalogHasMore, setCatalogHasMore] = useState(true),
     [orderPage, setOrderPage] = useState({ page: 1, pages: 1 }),
     [ordersLoading, setOrdersLoading] = useState(false),
     [cartCatalog, setCartCatalog] = useState({
@@ -330,7 +332,9 @@ function App() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    const query = new URLSearchParams({ page: String(catalogPage.page) });
+    setCatalogOffset(0);
+    setCatalogHasMore(true);
+    const query = new URLSearchParams({ page: '1' });
     const searchTerm = search.trim();
     if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
     if (category !== 'Todos') query.set('category', category);
@@ -353,6 +357,8 @@ function App() {
               total: data.total,
               categories: data.categories,
             }));
+            setCatalogOffset(data.products.length);
+            setCatalogHasMore(data.products.length < data.total);
           })
           .catch((e) => {
             if (active) {
@@ -370,13 +376,13 @@ function App() {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [catalogPage.page, category, search, priceMin, priceMax, sort]);
+  }, [category, search, priceMin, priceMax, sort]);
   useEffect(() => {
     if (view === 'orders' && user?.id && !ordersLoading && !orders.length)
       history(orderPage.page);
   }, [view, user?.id]);
   async function reloadCatalog() {
-    const query = new URLSearchParams({ page: String(catalogPage.page) });
+    const query = new URLSearchParams({ page: '1' });
     const searchTerm = search.trim();
     if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
     if (category !== 'Todos') query.set('category', category);
@@ -392,6 +398,38 @@ function App() {
       pages: data.pages,
       categories: data.categories,
     });
+    setCatalogOffset(data.products.length);
+    setCatalogHasMore(data.products.length < data.total);
+  }
+  async function loadMoreCatalog() {
+    if (!catalogHasMore || loading) return;
+    const page = Math.floor(catalogOffset / 10) + 1;
+    const query = new URLSearchParams({ page: String(page) });
+    const searchTerm = search.trim();
+    if (searchTerm) query.set('startsWith', searchTerm.toLowerCase());
+    if (category !== 'Todos') query.set('category', category);
+    if (priceMin !== '')
+      query.set('priceMin', String(Math.round(Number(priceMin) * 100)));
+    if (priceMax !== '')
+      query.set('priceMax', String(Math.round(Number(priceMax) * 100)));
+    if (sort !== 'relevance') query.set('sort', sort);
+    setLoading(true);
+    try {
+      const data = await api('/products?' + query);
+      setProducts((prev) => [...prev, ...data.products]);
+      setCatalogOffset(catalogOffset + data.products.length);
+      setCatalogHasMore(catalogOffset + data.products.length < data.total);
+      setCatalogPage((current) => ({
+        ...current,
+        pages: data.pages,
+        total: data.total,
+        categories: data.categories,
+      }));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     initializeNavigation();
@@ -1301,13 +1339,14 @@ function App() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid-products" aria-busy={loading}>
-                    {products.map((p, i) => (
-                      <article
-                        className="product-card"
-                        key={p._id}
-                        aria-labelledby={'product-' + p._id}
-                      >
+                  <div style={{ overflowAnchor: 'avoid' }}>
+                    <div className="grid-products" aria-busy={loading}>
+                      {products.map((p, i) => (
+                        <article
+                          className="product-card"
+                          key={p._id}
+                          aria-labelledby={'product-' + p._id}
+                        >
                         <a
                           className={
                             'product-art product-image-link color-' + p.color
@@ -1384,15 +1423,22 @@ function App() {
                       </article>
                     ))}
                   </div>
-                )}
-                <Pagination
-                  page={catalogPage.page}
-                  pages={catalogPage.pages}
-                  busy={loading}
-                  onPage={(page) =>
-                    setCatalogPage((current) => ({ ...current, page }))
-                  }
-                />
+                  {catalogHasMore && !loading && (
+                    <button
+                      className="primary"
+                      type="button"
+                      style={{ marginBlock: '20px 0', display: 'block', margin: '20px auto 0' }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        loadMoreCatalog();
+                      }}
+                    >
+                      Cargar más
+                    </button>
+                  )}
+                </div>
+              )}
               </section>
               <section id="proceso" className="process">
                 <div>
