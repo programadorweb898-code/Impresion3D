@@ -304,7 +304,7 @@
     "shortDescription": "Un punto extra para colgar detrás de la puerta.",
     "description": "Gancho impreso en 3D diseñado para colocarse sobre una puerta de hasta 35 mm de espesor. Su forma permite colgar accesorios livianos sin ocupar espacio de piso. Verificá el espesor y la holgura de tu puerta antes de pedirlo. No incluye bolso ni otros objetos.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 100000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -327,7 +327,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 25,
+      "height": 62,
+      "depth": 59.6
+    }
   },
   {
     "_id": "afe967a033dc7cd1d7fd2099",

@@ -1,3 +1,4 @@
+import { migrateDoorHook } from './door-hook-update.js';
 import {
   Product,
   Order,
@@ -104,6 +105,7 @@ await migratePawDimensionsPrice(Product);
 await migrateCompactPhone(Product);
 await migrateVerifiedDimensions(Product);
 await migrateWovenCoaster(Product);
+await migrateDoorHook(Product);
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,
