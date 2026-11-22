@@ -444,7 +444,7 @@
     "shortDescription": "Un detalle tejido debajo de tu vaso.",
     "description": "Posavasos circular impreso en 3D, con borde trenzado y centro de trama tejida. Ofrece una base decorativa para un vaso en mesas y escritorios. El precio corresponde a una unidad. No incluye vaso ni soporte para apilar.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 300000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -469,7 +469,9 @@
     },
     "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
     "dimensions": {
-      "height": 5
+      "width": 98.13,
+      "height": 6.6,
+      "depth": 98.13
     }
   },
   {

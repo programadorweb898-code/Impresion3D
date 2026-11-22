@@ -25,6 +25,7 @@ import { migrateLedTreeDimensions } from './led-tree-dimensions.js';
 import { migrateEnvelopeAndTreePrices } from './envelope-tree-update.js';
 import { migrateWovenPencilHolder } from './woven-pencil-holder-update.js';
 import { migrateB3Price } from './b3-price-update.js';
+import { migrateWovenCoaster } from './woven-coaster-update.js';
 import { migrateB3Dimensions } from './b3-dimensions-update.js';
 import { migrateCactusDimensionsPrice } from './cactus-dimensions-price.js';
 import { migrateMedalDimensionsPrice } from './medal-dimensions-price.js';
@@ -102,6 +103,7 @@ await migrateInterchangeableTree(Product);
 await migratePawDimensionsPrice(Product);
 await migrateCompactPhone(Product);
 await migrateVerifiedDimensions(Product);
+await migrateWovenCoaster(Product);
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,
