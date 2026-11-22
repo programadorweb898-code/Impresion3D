@@ -1,3 +1,4 @@
+import { migrateHydroPrice } from './hydro-price-update.js';
 import { migrateDoorHook } from './door-hook-update.js';
 import {
   Product,
@@ -106,6 +107,7 @@ await migrateCompactPhone(Product);
 await migrateVerifiedDimensions(Product);
 await migrateWovenCoaster(Product);
 await migrateDoorHook(Product);
+await migrateHydroPrice(Product);
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,
