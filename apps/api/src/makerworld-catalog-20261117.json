@@ -624,7 +624,7 @@
     "shortDescription": "Un gatito articulado con un detalle de corazón.",
     "description": "Figura de gato impresa en 3D con cuerpo y cola articulados y un corazón junto a su pata delantera. Sus segmentos permiten acomodarlo en distintas posiciones sobre una mesa o estante. Una pieza decorativa para regalar.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 200000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -647,7 +647,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 94.01,
+      "height": 8,
+      "depth": 37.06
+    }
   },
   {
     "_id": "96662806919bd26a60e00b30",

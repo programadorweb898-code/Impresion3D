@@ -1,3 +1,4 @@
+import { migrateFlexiCat } from './flexi-cat-update.js';
 import { migrateMinimalPhone } from './minimal-phone-update.js';
 import { migrateClickerPrice } from './clicker-price-update.js';
 import { migrateHydroPrice } from './hydro-price-update.js';
@@ -112,6 +113,7 @@ await migrateDoorHook(Product);
 await migrateHydroPrice(Product);
 await migrateClickerPrice(Product);
 await migrateMinimalPhone(Product);
+await migrateFlexiCat(Product);
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,
