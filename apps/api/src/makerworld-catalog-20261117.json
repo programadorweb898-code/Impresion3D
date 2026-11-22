@@ -969,7 +969,7 @@
     "shortDescription": "Un soporte de líneas simples para tu pantalla.",
     "description": "Soporte minimalista para celular impreso en 3D, con respaldo inclinado, perfil triangular y un labio delantero. Sirve para apoyar el equipo sobre el escritorio o una mesa de luz. Consultanos por la compatibilidad con tu celular y su funda. No incluye equipo.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 300000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -992,7 +992,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 54.01,
+      "height": 90.47,
+      "depth": 62.41
+    }
   },
   {
     "_id": "dfa1353cef54ee23ef970b72",
