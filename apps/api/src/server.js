@@ -1,3 +1,4 @@
+import { migrateToothbrushCasePrice } from './toothbrush-case-price-update.js';
 import { migrateRopeBowlPrice } from './rope-bowl-price-update.js';
 import { migrateAdjustablePhonePrice } from './adjustable-phone-price-update.js';
 import { migrateKnittedBowlPrice } from './knitted-bowl-price-update.js';
@@ -128,6 +129,7 @@ await migrateMediaCasePrice(Product);
 await migrateKnittedBowlPrice(Product);
 await migrateAdjustablePhonePrice(Product);
 await migrateRopeBowlPrice(Product);
+await migrateToothbrushCasePrice(Product);
 const store = MongoStore.create({
   client: mongoose.connection.getClient(),
   dbName: mongoose.connection.name,
