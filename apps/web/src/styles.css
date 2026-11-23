@@ -5105,3 +5105,9 @@ html {
   background: #fff;
   color-scheme: light;
 }
+
+/* Give delivery field help a little vertical breathing room. */
+.delivery-details #delivery-locality-help,
+.delivery-details #delivery-help {
+  margin-block: 5px;
+}
