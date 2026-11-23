@@ -1,16 +1,9 @@
-import { useState } from 'react';
 import {
   localityProvinces,
   provinceLocalities,
   getLocality,
 } from '@impresion3d/shared/localities';
-const searchable = (value) =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('es');
 export default function DeliveryLocation({ delivery, onChange }) {
-  const [search, setSearch] = useState('');
   // Georef includes both census localities and components with identical labels.
   // Keep one option per name/department, preserving an already selected ID.
   const byLabel = new Map();
@@ -20,14 +13,6 @@ export default function DeliveryLocation({ delivery, onChange }) {
       byLabel.set(key, item);
   }
   const localities = [...byLabel.values()];
-  const filtered = localities.filter((item) =>
-    searchable(item.name + ' ' + item.department).includes(
-      searchable(search.trim()),
-    ),
-  );
-  const selected = getLocality(delivery.localityId);
-  if (selected && !filtered.some((item) => item.id === selected.id))
-    filtered.unshift(selected);
   return (
     <>
       <label htmlFor="delivery-province">Provincia</label>
@@ -37,7 +22,6 @@ export default function DeliveryLocation({ delivery, onChange }) {
         required
         value={delivery.provinceId || ''}
         onChange={(event) => {
-          setSearch('');
           onChange({
             ...delivery,
             provinceId: event.target.value,
@@ -53,15 +37,6 @@ export default function DeliveryLocation({ delivery, onChange }) {
           </option>
         ))}
       </select>
-      <label htmlFor="delivery-locality-search">Buscar localidad</label>
-      <input
-        id="delivery-locality-search"
-        type="search"
-        placeholder="Buscá por nombre o partido"
-        disabled={!delivery.provinceId}
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-      />
       <label htmlFor="delivery-city">Localidad</label>
       <select
         id="delivery-city"
@@ -80,7 +55,7 @@ export default function DeliveryLocation({ delivery, onChange }) {
         }}
       >
         <option value="">Elegí una localidad de la lista</option>
-        {filtered.map((item) => (
+        {localities.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name} — {item.department}
           </option>
@@ -90,9 +65,9 @@ export default function DeliveryLocation({ delivery, onChange }) {
         El listado indica el partido o departamento para distinguir localidades
         con el mismo nombre. El código postal se ingresa aparte.
       </p>
-      {delivery.provinceId && !filtered.length && (
+      {delivery.provinceId && !localities.length && (
         <p role="status" className="small">
-          No encontramos localidades con esa búsqueda. Probá con otro nombre.
+          No hay localidades disponibles para esta provincia.
         </p>
       )}
     </>

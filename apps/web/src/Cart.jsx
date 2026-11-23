@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useRef, lazy, Suspense } from 'react';
 const DeliveryLocation = lazy(() => import('./DeliveryLocation.jsx'));
 import { api } from './api.js';
 import { offerPath, selectionCount } from '@impresion3d/shared';
@@ -26,6 +26,7 @@ export function Cart({
   refreshing,
   catalogError,
 }) {
+  const deliveryFields = useRef(null);
   const [quote, setQuote] = useState(null);
   const [quoting, setQuoting] = useState(false);
   const [quoteError, setQuoteError] = useState('');
@@ -48,6 +49,19 @@ export function Cart({
     onDelivery({ ...next, method: 'shipping', quoteId: undefined });
   }
   async function calculateShipping() {
+    setQuoteError('');
+    const fields = [...(deliveryFields.current?.elements || [])];
+    const invalid = fields.find((field) => field.willValidate && !field.validity.valid);
+    if (invalid) {
+      setQuoteError('Completá calle y altura, provincia, localidad y código postal para calcular el envío.');
+      invalid.focus({ preventScroll: true });
+      invalid.reportValidity();
+      return;
+    }
+    if (!delivery.provinceId || !delivery.localityId) {
+      setQuoteError('Elegí una provincia y una localidad de la lista.');
+      return;
+    }
     setQuoting(true);
     setQuoteError('');
     setQuote(null);
@@ -250,7 +264,7 @@ export function Cart({
                 {!confirmed || mixed ? '—' : money(total, currency)}
               </strong>
             </div>
-            <fieldset className="delivery-options" disabled={busy || quoting}>
+            <fieldset ref={deliveryFields} className="delivery-options" disabled={busy || quoting}>
               <legend>Entrega a domicilio</legend>
               <p className="small">
                 Ingresá el domicilio para conocer el costo antes de confirmar.
@@ -313,11 +327,7 @@ export function Cart({
                     refreshing ||
                     !!catalogError ||
                     unavailable ||
-                    mixed ||
-                    !delivery.localityId ||
-                    !delivery.provinceId ||
-                    !delivery.streetAddress?.trim() ||
-                    !delivery.postalCode?.trim()
+                    mixed
                   }
                   onClick={calculateShipping}
                 >

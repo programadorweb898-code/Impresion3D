@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 export function CartDrawer({
   open,
@@ -50,7 +50,7 @@ export function CartDrawer({
       animation.cancel();
     };
   }, [open, present]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!present) return;
     const dialog = ref.current;
     const previousOverflow = document.body.style.overflow;

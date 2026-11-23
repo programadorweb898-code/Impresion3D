@@ -5094,3 +5094,14 @@ html[data-scroll-restoring] #root {
 .product-card .card-actions {
   grid-template-columns: minmax(0, 1fr);
 }
+
+/* Reserve the page scrollbar even while a modal locks body scrolling. */
+html {
+  scrollbar-gutter: stable;
+}
+.cart-item select,
+.cart-item select option {
+  color: #000;
+  background: #fff;
+  color-scheme: light;
+}

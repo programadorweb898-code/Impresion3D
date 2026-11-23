@@ -304,7 +304,7 @@ function App() {
   const refreshingCart =
     !currentCartCatalog || ['idle', 'loading'].includes(cartCatalog.status);
   useEffect(() => {
-    if (!cartOpen || !cart.ready || !user?.id) return;
+    if (!cart.ready || !user?.id) return;
     let active = true;
     setCartCatalog((current) => ({
       key: cartKey,
@@ -331,7 +331,7 @@ function App() {
     return () => {
       active = false;
     };
-  }, [cartOpen, cart.ready, user?.id, cartIds, cartKey]);
+  }, [cart.ready, user?.id, cartIds, cartKey]);
   useEffect(() => {
     api('/auth/me')
       .then(setUser)
@@ -758,7 +758,8 @@ function App() {
     setCartRefresh((current) => current + 1);
   }
   function showCart() {
-    refreshCart();
+    // Data is prefetched when the signed-in cart changes; reuse it on reopen.
+    if (cartCatalogError) refreshCart();
     setCartOpen(true);
   }
   async function openCart() {
@@ -1583,7 +1584,7 @@ function App() {
       )}
       {user && !loginPage && (
         <CartDrawer
-          open={cartOpen}
+          open={cartOpen && (!refreshingCart || cartCatalogError)}
           returnFocusRef={cartButtonRef}
           busy={busy}
           error={error}
