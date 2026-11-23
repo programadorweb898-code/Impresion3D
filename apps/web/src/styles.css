@@ -5111,3 +5111,7 @@ html {
 .delivery-details #delivery-help {
   margin-block: 5px;
 }
+
+.delivery-details .delivery-quote-help {
+  margin-block: 5px;
+}

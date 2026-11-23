@@ -349,7 +349,7 @@ export function Cart({
                   </p>
                 )}
                 {!quoted && !quoteError && (
-                  <p className="small">
+                  <p className="small delivery-quote-help">
                     Calculá el envío para confirmar el total.
                   </p>
                 )}
