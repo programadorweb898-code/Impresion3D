@@ -1,3 +1,4 @@
+import PhotoQuoteForm from './PhotoQuoteForm.jsx';
 import { OrderDelivery } from './OrderDelivery.jsx';
 import { offerDefinitions, offerPath } from '@impresion3d/shared';
 import { OfferDetails } from './OfferDetails.jsx';
@@ -96,7 +97,6 @@ class AdminErrorBoundary extends Component {
 const Admin = lazy(() =>
   import('./Admin.jsx').then((module) => ({ default: module.Admin })),
 );
-const PhotoQuoteForm = lazy(() => import('./PhotoQuoteForm.jsx'));
 function Modal({ children, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -967,15 +967,13 @@ function App() {
               onCatalog={() => openCategory('Todos')}
             />
           ) : view === 'design' ? (
-            <Suspense
-              fallback={
-                <p role="status" data-page-loading>
-                  Cargando formulario de presupuesto…
-                </p>
-              }
-            >
-              <PhotoQuoteForm />
-            </Suspense>
+            authReady ? (
+              <PhotoQuoteForm account={user} />
+            ) : (
+              <p role="status" data-page-loading>
+                Cargando diseño personalizado…
+              </p>
+            )
           ) : view === 'offer' ? (
             !authReady || (user && !cart.ready) ? (
               <p role="status" data-page-loading>

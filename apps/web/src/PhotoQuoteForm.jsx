@@ -5,8 +5,8 @@ import PhotoQuotes from './PhotoQuotes.jsx';
 const maxBytes = 5 * 1024 * 1024;
 const accepted = ['image/jpeg', 'image/png', 'image/webp'];
 
-export default function PhotoQuoteForm() {
-  const [user, setUser] = useState(undefined);
+export default function PhotoQuoteForm({ account }) {
+  const [user, setUser] = useState(account);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState('');
@@ -14,7 +14,7 @@ export default function PhotoQuoteForm() {
   const [approximateSize, setApproximateSize] = useState('');
   const [details, setDetails] = useState('');
   const [method, setMethod] = useState('email');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(account?.email || '');
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
   const [requestId, setRequestId] = useState(() => crypto.randomUUID());
@@ -22,6 +22,11 @@ export default function PhotoQuoteForm() {
   const [error, setError] = useState('');
   const [sent, setSent] = useState(null);
   const [refresh, setRefresh] = useState(0);
+
+  useEffect(() => {
+    setUser(account);
+    setEmail((current) => current || account?.email || '');
+  }, [account]);
 
   useEffect(() => {
     let active = true;
@@ -35,7 +40,7 @@ export default function PhotoQuoteForm() {
         .catch(() => {
           if (active) setUser(null);
         });
-    check();
+    // Recheck only after returning from sign-in in another tab.
     window.addEventListener('focus', check);
     return () => {
       active = false;
