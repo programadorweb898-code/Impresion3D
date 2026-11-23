@@ -3191,6 +3191,19 @@ footer .footer-legal a {
   border-color: #414141;
   color: #f5f5f5;
 }
+/* Keep the drawer on one gray surface, including the nested checkout page. */
+.cart-drawer[open] {
+  --text: #f5f5f5;
+  --muted: #bcbcbc;
+  --surface: #191919;
+  --surface-raised: #252525;
+  --border: #414141;
+  background: var(--surface);
+  color: var(--text);
+}
+.cart-drawer .cart-page {
+  background: transparent;
+}
 .admin .small,
 .admin .description,
 .admin p:not(.error):not(.notice),
