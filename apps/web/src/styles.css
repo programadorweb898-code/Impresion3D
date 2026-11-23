@@ -5115,3 +5115,36 @@ html {
 .delivery-details .delivery-quote-help {
   margin-block: 5px;
 }
+
+/* Full-width custom design steps, separated into individual panels. */
+.design-page.photo-quote-page {
+  max-width: none;
+}
+.photo-quote-page .photo-quote-workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+.photo-quote-page .photo-quote-form {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+.photo-quote-page .photo-quote-form-heading,
+.photo-quote-page .photo-quote-form-section,
+.photo-quote-page .photo-quote-form-footer {
+  width: 100%;
+  margin: 0;
+  border: 1px solid #3d3445;
+  border-radius: 16px;
+  background: #141218;
+}
+.photo-quote-page .photo-quote-aside {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 700px) {
+  .photo-quote-page .photo-quote-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
