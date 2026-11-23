@@ -134,7 +134,7 @@
     "shortDescription": "Un dado para animar el intercambio de regalos.",
     "description": "Dado de doce caras impreso en 3D, con instrucciones de intercambio de regalos en inglés. Sirve para proponer una dinámica de juego durante una reunión navideña: cada lanzamiento indica una acción con los regalos. El precio corresponde a un dado; no incluye regalos.",
     "color": "sand",
-    "priceCents": 1000000,
+    "priceCents": 1070000,
     "currency": "ARS",
     "active": true,
     "image": {
@@ -157,7 +157,12 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos.",
+    "dimensions": {
+      "width": 89.63,
+      "height": 76.22,
+      "depth": 94.19
+    }
   },
   {
     "_id": "b3840e2716d486541fb41027",
