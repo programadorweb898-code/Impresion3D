@@ -1,3 +1,4 @@
+import { importCatalogPreviews } from './catalog-preview-import.js';
 import { migrateRopeBowlDimensions } from './rope-bowl-dimensions-update.js';
 import { migrateChristmasLanternPrice } from './christmas-lantern-price-update.js';
 import { migrateHauntedHousePrice } from './haunted-house-price-update.js';
@@ -161,6 +162,14 @@ const app = createApp({
 const server = app.listen(env.PORT, '0.0.0.0', () =>
   console.log(`API disponible en puerto ${env.PORT}`),
 );
+if (env.NODE_ENV === 'production' && imageStorage) {
+  importCatalogPreviews(imageStorage).catch((error) =>
+    console.error(
+      'No se completó la importación de imágenes del catálogo:',
+      error.message,
+    ),
+  );
+}
 const stopNotifications = startOrderNotifications(notifyOrder);
 for (const signal of ['SIGINT', 'SIGTERM'])
   process.on(signal, () =>

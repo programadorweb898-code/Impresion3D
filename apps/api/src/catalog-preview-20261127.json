@@ -1,0 +1,211 @@
+[
+  {
+    "_id": "98fcf02d430cd9384a96ce35",
+    "name": "Diorama Taller de Papá Noel",
+    "category": "Navidad",
+    "priceCents": 3800000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Escena en miniatura con Papá Noel, un duende, banco de trabajo y regalos sobre una base.",
+    "shortDescription": "Escena en miniatura con Papá Noel, un duende, banco de trabajo y regalos sobre una base.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "789921fe3206bf172486bb00",
+    "name": "Diorama Tren de Navidad",
+    "category": "Navidad",
+    "priceCents": 4200000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Locomotora, vagón de regalos y estación nevada sobre una base alargada.",
+    "shortDescription": "Locomotora, vagón de regalos y estación nevada sobre una base alargada.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "ae879ef4b5c4a4d65edfb971",
+    "name": "Centro de mesa de bautismo con bebé",
+    "category": "Hogar",
+    "priceCents": 2600000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Escena con un bebé en su cuna, una pila bautismal, una paloma y un arco con cruz.",
+    "shortDescription": "Escena con un bebé en su cuna, una pila bautismal, una paloma y un arco con cruz.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "fa464171f6c28bfb6a789654",
+    "name": "Centro de mesa de 15 con aro art déco",
+    "category": "Hogar",
+    "priceCents": 2200000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Número 15 en relieve con aro decorativo y base acanalada.",
+    "shortDescription": "Número 15 en relieve con aro decorativo y base acanalada.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "b0736f955da2cc91b5a37c6a",
+    "name": "Soporte de pared para control remoto",
+    "category": "Hogar",
+    "priceCents": 450000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Soporte para guardar un control remoto. Confirmá el tamaño del control al hacer tu pedido.",
+    "shortDescription": "Soporte para guardar un control remoto.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "1831952103540a9d7b3f8c54",
+    "name": "Set de cuatro guías adhesivas para cables",
+    "category": "Oficina",
+    "priceCents": 350000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Cuatro guías para ordenar cables sobre el escritorio o junto a la pared. No incluye cables.",
+    "shortDescription": "Cuatro guías para ordenar cables sobre el escritorio o junto a la pared.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "f191c4183a1ed43dcf813c2d",
+    "name": "Set de tres cierres para bolsas",
+    "category": "Hogar",
+    "priceCents": 400000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Tres clips reutilizables para cerrar bolsas.",
+    "shortDescription": "Tres clips reutilizables para cerrar bolsas.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "ac4c8669863b341414af2ba8",
+    "name": "Tutor geométrico para plantas trepadoras",
+    "category": "Jardín",
+    "priceCents": 550000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Tutor con estaca para guiar tallos en una maceta. No incluye planta ni maceta.",
+    "shortDescription": "Tutor con estaca para guiar tallos en una maceta.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "ff47bba934dc079b1b43d6ef",
+    "name": "Separador de libros con inicial en relieve",
+    "category": "Accesorio",
+    "priceCents": 250000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Separador delgado con inicial personalizable en relieve.",
+    "shortDescription": "Separador delgado con inicial personalizable en relieve.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "a92e1229348ecf9860e418c8",
+    "name": "Soporte plegable para anteojos de escritorio",
+    "category": "Oficina",
+    "priceCents": 500000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Apoyo de escritorio plegable para un par de anteojos. No incluye anteojos.",
+    "shortDescription": "Apoyo de escritorio plegable para un par de anteojos.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "d2396913c546ffc13421cbbc",
+    "name": "Soporte para auriculares de botón y su estuche",
+    "category": "Oficina",
+    "priceCents": 450000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Base de escritorio para apoyar un estuche de auriculares, con paso para el cable. No incluye estuche ni cable.",
+    "shortDescription": "Base de escritorio para apoyar un estuche de auriculares, con paso para el cable.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "d08834545b92aaf5c7486b79",
+    "name": "Organizador giratorio para cápsulas de café",
+    "category": "Hogar",
+    "priceCents": 1400000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Organizador de sobremesa con ranuras verticales para cápsulas. Consultá por el formato de tus cápsulas. No incluye cápsulas.",
+    "shortDescription": "Organizador de sobremesa con ranuras verticales para cápsulas.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "a962e98b8cb62abab7c0f779",
+    "name": "Bandeja apilable para tornillos y piezas chicas",
+    "category": "Oficina",
+    "priceCents": 550000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Bandeja con frente abierto para clasificar tornillos y piezas pequeñas. Precio por unidad.",
+    "shortDescription": "Bandeja con frente abierto para clasificar tornillos y piezas pequeñas.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "7a1119fcacaaf74e3d64a274",
+    "name": "Porta brochas de maquillaje con divisiones",
+    "category": "Hogar",
+    "priceCents": 700000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Organizador con compartimientos a distintas alturas. No incluye brochas.",
+    "shortDescription": "Organizador con compartimientos a distintas alturas.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "6ce2e9b97b026c52ecdc2a8a",
+    "name": "Porta sahumerios decorativo con inserto metálico",
+    "category": "Hogar",
+    "priceCents": 800000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Bandeja decorativa con inserto metálico para sostener el sahumerio y recoger las cenizas. No incluye sahumerio.",
+    "shortDescription": "Bandeja decorativa con inserto metálico para sostener el sahumerio y recoger las cenizas.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "a89116843b14e1d85eb76e31",
+    "name": "Atril de escritorio para recetas o tablet",
+    "category": "Oficina",
+    "priceCents": 1050000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Atril inclinado con reborde inferior para apoyar una tablet o un recetario. No incluye accesorios.",
+    "shortDescription": "Atril inclinado con reborde inferior para apoyar una tablet o un recetario.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "93732500824b842491972add",
+    "name": "Soporte de pared para escobas con clip",
+    "category": "Hogar",
+    "priceCents": 500000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Clip de pared para sujetar un mango. Consultá la compatibilidad con el diámetro de tu escoba.",
+    "shortDescription": "Clip de pared para sujetar un mango.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "efe7f3ca96c03cf15e0c151e",
+    "name": "Colgador para correas de mascotas con nombre",
+    "category": "Hogar",
+    "priceCents": 750000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Colgador de pared con tres ganchos y nombre personalizable. No incluye correas.",
+    "shortDescription": "Colgador de pared con tres ganchos y nombre personalizable.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  },
+  {
+    "_id": "8a6d4dc1b00e5ea179920c24",
+    "name": "Bandeja expositora para anillos",
+    "category": "Hogar",
+    "priceCents": 650000,
+    "currency": "ARS",
+    "active": true,
+    "description": "Bandeja ovalada con tres ranuras para ordenar anillos. No incluye joyas.",
+    "shortDescription": "Bandeja ovalada con tres ranuras para ordenar anillos.",
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+  }
+]

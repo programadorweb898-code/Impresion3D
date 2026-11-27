@@ -58,13 +58,13 @@ export function createImageStorage({ cloudName, apiKey, apiSecret }) {
     secure: true,
   };
   return {
-    async upload(buffer) {
+    async upload(buffer, { publicId } = {}) {
       const result = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           {
             ...credentials,
             resource_type: 'image',
-            public_id: 'impresion3d/products/' + randomUUID(),
+            public_id: publicId ?? 'impresion3d/products/' + randomUUID(),
             overwrite: false,
             timeout: 30000,
           },
