@@ -1,4 +1,5 @@
 import catalog from './makerworld-catalog-20261117.json' with { type: 'json' };
+import printablesCatalog from './printables-catalog-20261127.json' with { type: 'json' };
 import { Product } from './models.js';
 
 export const makerworldImportId = 'makerworld-catalog-20261117';
@@ -7,9 +8,17 @@ const normalize = (name) =>
 
 // A completed import never runs again: edits, hidden items and later deletions
 // remain under administrator control. Stable IDs also make partial retries safe.
-export async function migrateMakerworldCatalog() {
+export function migrateMakerworldCatalog() {
+  return importCatalog(makerworldImportId, catalog);
+}
+
+export function migratePrintablesCatalog() {
+  return importCatalog('printables-catalog-20261127', printablesCatalog);
+}
+
+async function importCatalog(importId, catalog) {
   const imports = Product.db.collection('catalogimports');
-  if (await imports.findOne({ _id: makerworldImportId })) return;
+  if (await imports.findOne({ _id: importId })) return;
   const existing = await Product.find({}, 'name source.id').lean();
   const names = new Set(existing.map((p) => normalize(p.name)));
   const sources = new Set(existing.map((p) => p.source?.id).filter(Boolean));
@@ -36,7 +45,7 @@ export async function migrateMakerworldCatalog() {
     );
   }
   await imports.updateOne(
-    { _id: makerworldImportId },
+    { _id: importId },
     {
       $setOnInsert: { completedAt: new Date(), sourceCount: catalog.length },
     },

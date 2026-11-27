@@ -82,11 +82,11 @@ export function ProductDetails({ id, onAdd, onContinue, inCart, authReady }) {
         {p.imageNotice && (
           <p className="small product-image-notice">{p.imageNotice}</p>
         )}
-        {p.source?.platform === 'MakerWorld' && (
+        {p.source?.platform && (
           <p className="small product-source">
             Diseño de {p.source.author} ·{' '}
             <a href={p.source.url} target="_blank" rel="noreferrer">
-              MakerWorld
+              {p.source.platform}
             </a>{' '}
             ·{' '}
             <a href={p.source.licenseUrl} target="_blank" rel="noreferrer">

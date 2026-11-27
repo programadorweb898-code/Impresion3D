@@ -1,0 +1,66 @@
+[
+  {
+    "_id": "48cc9f7b503f41d19d299c51",
+    "name": "Jabonera rectangular con drenaje",
+    "category": "Hogar",
+    "shortDescription": "Base perforada para jabón en barra.",
+    "description": "Jabonera rectangular impresa en 3D con bordes redondeados y perforaciones para escurrir el agua. No incluye jabón.",
+    "color": "white",
+    "priceCents": 450000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/pt-94315-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/pt-94315-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "Printables",
+      "id": "printables-94315",
+      "url": "https://www.printables.com/model/94315-soap-box-soap-dish",
+      "author": "Dima",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  },
+  {
+    "_id": "9be3bff4428cb7f72b07f125",
+    "name": "Soporte de escritorio para auriculares y joystick",
+    "category": "Oficina",
+    "shortDescription": "Un lugar para los accesorios de tu escritorio.",
+    "description": "Soporte impreso en 3D para colgar auriculares de vincha y apoyar un joystick. No incluye auriculares ni joystick.",
+    "color": "black",
+    "priceCents": 1250000,
+    "currency": "ARS",
+    "active": true,
+    "image": {
+      "url": "/product-catalog/pt-964190-front.webp",
+      "width": 1000,
+      "height": 1000
+    },
+    "gallery": {
+      "context": {
+        "url": "/product-catalog/pt-964190-context.webp",
+        "width": 1000,
+        "height": 1000
+      }
+    },
+    "source": {
+      "platform": "Printables",
+      "id": "printables-964190",
+      "url": "https://www.printables.com/model/964190-headphone-and-controller-stand",
+      "author": "Woods6",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+  }
+]
