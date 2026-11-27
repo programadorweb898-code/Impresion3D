@@ -12,8 +12,29 @@ export function migrateMakerworldCatalog() {
   return importCatalog(makerworldImportId, catalog);
 }
 
-export function migratePrintablesCatalog() {
-  return importCatalog('printables-catalog-20261127', printablesCatalog);
+export async function migratePrintablesCatalog() {
+  await importCatalog('printables-catalog-20261127', printablesCatalog);
+
+  const imports = Product.db.collection('catalogimports');
+  const correctionId = 'printables-catalog-20261127-dimensions';
+  if (await imports.findOne({ _id: correctionId })) return;
+  for (const { _id, source, dimensions, imageNotice } of printablesCatalog) {
+    await Product.updateOne(
+      {
+        _id,
+        'source.id': source.id,
+        'dimensions.width': null,
+        'dimensions.height': null,
+        'dimensions.depth': null,
+      },
+      { $set: { dimensions, imageNotice }, $inc: { __v: 1 } },
+    );
+  }
+  await imports.updateOne(
+    { _id: correctionId },
+    { $setOnInsert: { completedAt: new Date() } },
+    { upsert: true },
+  );
 }
 
 async function importCatalog(importId, catalog) {

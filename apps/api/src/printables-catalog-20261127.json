@@ -29,7 +29,12 @@
       "license": "CC BY 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos. Medidas aproximadas.",
+    "dimensions": {
+      "width": 115,
+      "height": 25,
+      "depth": 80
+    }
   },
   {
     "_id": "9be3bff4428cb7f72b07f125",
@@ -61,6 +66,11 @@
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
     },
-    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos."
+    "imageNotice": "Imágenes ilustrativas del diseño. Los accesorios de ambientación no están incluidos. Medidas aproximadas.",
+    "dimensions": {
+      "width": 160,
+      "height": 240,
+      "depth": 150
+    }
   }
 ]
