@@ -9,6 +9,7 @@ const normalizeName = (name) =>
 export async function importCatalogPreviews(imageStorage) {
   await importInitialCatalogPreviews(imageStorage);
   await updateBaptismPhoto(imageStorage);
+  await updateCatalogPreviewDimensions();
 }
 
 async function importInitialCatalogPreviews(imageStorage) {
@@ -68,6 +69,30 @@ async function updateBaptismPhoto(imageStorage) {
     });
     await Product.updateOne(filter, { $set: { 'gallery.context': image } });
   }
+  await imports.updateOne(
+    { _id: changeId },
+    { $setOnInsert: { completedAt: new Date() } },
+    { upsert: true },
+  );
+}
+
+async function updateCatalogPreviewDimensions() {
+  const imports = Product.db.collection('catalogimports');
+  const changeId = 'catalog-preview-dimensions-20261128';
+  if (await imports.findOne({ _id: changeId })) return;
+  await Product.bulkWrite(
+    catalog.map(({ _id, dimensions, imageNotice }) => ({
+      updateOne: {
+        filter: {
+          _id,
+          'dimensions.width': null,
+          'dimensions.height': null,
+          'dimensions.depth': null,
+        },
+        update: { $set: { dimensions, imageNotice }, $inc: { __v: 1 } },
+      },
+    })),
+  );
   await imports.updateOne(
     { _id: changeId },
     { $setOnInsert: { completedAt: new Date() } },

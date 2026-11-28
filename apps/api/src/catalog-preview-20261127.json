@@ -8,7 +8,12 @@
     "active": true,
     "description": "Escena en miniatura con Papá Noel, un duende, banco de trabajo y regalos sobre una base.",
     "shortDescription": "Escena en miniatura con Papá Noel, un duende, banco de trabajo y regalos sobre una base.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 200,
+      "height": 160,
+      "depth": 130
+    }
   },
   {
     "_id": "789921fe3206bf172486bb00",
@@ -19,7 +24,12 @@
     "active": true,
     "description": "Locomotora, vagón de regalos y estación nevada sobre una base alargada.",
     "shortDescription": "Locomotora, vagón de regalos y estación nevada sobre una base alargada.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 240,
+      "height": 130,
+      "depth": 120
+    }
   },
   {
     "_id": "ae879ef4b5c4a4d65edfb971",
@@ -30,7 +40,12 @@
     "active": true,
     "description": "Escena con un bebé en su cuna, una pila bautismal, una paloma y un arco con cruz.",
     "shortDescription": "Escena con un bebé en su cuna, una pila bautismal, una paloma y un arco con cruz.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 180,
+      "height": 185,
+      "depth": 110
+    }
   },
   {
     "_id": "fa464171f6c28bfb6a789654",
@@ -41,7 +56,12 @@
     "active": true,
     "description": "Número 15 en relieve con aro decorativo y base acanalada.",
     "shortDescription": "Número 15 en relieve con aro decorativo y base acanalada.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 180,
+      "height": 200,
+      "depth": 90
+    }
   },
   {
     "_id": "b0736f955da2cc91b5a37c6a",
@@ -52,7 +72,12 @@
     "active": true,
     "description": "Soporte para guardar un control remoto. Confirmá el tamaño del control al hacer tu pedido.",
     "shortDescription": "Soporte para guardar un control remoto.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 65,
+      "height": 100,
+      "depth": 40
+    }
   },
   {
     "_id": "1831952103540a9d7b3f8c54",
@@ -63,7 +88,12 @@
     "active": true,
     "description": "Cuatro guías para ordenar cables sobre el escritorio o junto a la pared. No incluye cables.",
     "shortDescription": "Cuatro guías para ordenar cables sobre el escritorio o junto a la pared.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas por unidad.",
+    "dimensions": {
+      "width": 25,
+      "height": 13,
+      "depth": 20
+    }
   },
   {
     "_id": "f191c4183a1ed43dcf813c2d",
@@ -74,7 +104,12 @@
     "active": true,
     "description": "Tres clips reutilizables para cerrar bolsas.",
     "shortDescription": "Tres clips reutilizables para cerrar bolsas.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas por unidad.",
+    "dimensions": {
+      "width": 100,
+      "height": 16,
+      "depth": 15
+    }
   },
   {
     "_id": "ac4c8669863b341414af2ba8",
@@ -85,7 +120,12 @@
     "active": true,
     "description": "Tutor con estaca para guiar tallos en una maceta. No incluye planta ni maceta.",
     "shortDescription": "Tutor con estaca para guiar tallos en una maceta.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 100,
+      "height": 200,
+      "depth": 5
+    }
   },
   {
     "_id": "ff47bba934dc079b1b43d6ef",
@@ -96,7 +136,12 @@
     "active": true,
     "description": "Separador delgado con inicial personalizable en relieve.",
     "shortDescription": "Separador delgado con inicial personalizable en relieve.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 30,
+      "height": 140,
+      "depth": 3
+    }
   },
   {
     "_id": "a92e1229348ecf9860e418c8",
@@ -107,7 +152,12 @@
     "active": true,
     "description": "Apoyo de escritorio plegable para un par de anteojos. No incluye anteojos.",
     "shortDescription": "Apoyo de escritorio plegable para un par de anteojos.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 100,
+      "height": 85,
+      "depth": 85
+    }
   },
   {
     "_id": "d2396913c546ffc13421cbbc",
@@ -118,7 +168,12 @@
     "active": true,
     "description": "Base de escritorio para apoyar un estuche de auriculares, con paso para el cable. No incluye estuche ni cable.",
     "shortDescription": "Base de escritorio para apoyar un estuche de auriculares, con paso para el cable.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 75,
+      "height": 55,
+      "depth": 50
+    }
   },
   {
     "_id": "d08834545b92aaf5c7486b79",
@@ -129,7 +184,12 @@
     "active": true,
     "description": "Organizador de sobremesa con ranuras verticales para cápsulas. Consultá por el formato de tus cápsulas. No incluye cápsulas.",
     "shortDescription": "Organizador de sobremesa con ranuras verticales para cápsulas.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 150,
+      "height": 240,
+      "depth": 150
+    }
   },
   {
     "_id": "a962e98b8cb62abab7c0f779",
@@ -140,7 +200,12 @@
     "active": true,
     "description": "Bandeja con frente abierto para clasificar tornillos y piezas pequeñas. Precio por unidad.",
     "shortDescription": "Bandeja con frente abierto para clasificar tornillos y piezas pequeñas.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 100,
+      "height": 75,
+      "depth": 140
+    }
   },
   {
     "_id": "7a1119fcacaaf74e3d64a274",
@@ -151,7 +216,12 @@
     "active": true,
     "description": "Organizador con compartimientos a distintas alturas. No incluye brochas.",
     "shortDescription": "Organizador con compartimientos a distintas alturas.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 110,
+      "height": 105,
+      "depth": 85
+    }
   },
   {
     "_id": "6ce2e9b97b026c52ecdc2a8a",
@@ -162,7 +232,12 @@
     "active": true,
     "description": "Bandeja decorativa con inserto metálico para sostener el sahumerio y recoger las cenizas. No incluye sahumerio.",
     "shortDescription": "Bandeja decorativa con inserto metálico para sostener el sahumerio y recoger las cenizas.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 220,
+      "height": 20,
+      "depth": 55
+    }
   },
   {
     "_id": "a89116843b14e1d85eb76e31",
@@ -173,7 +248,12 @@
     "active": true,
     "description": "Atril inclinado con reborde inferior para apoyar una tablet o un recetario. No incluye accesorios.",
     "shortDescription": "Atril inclinado con reborde inferior para apoyar una tablet o un recetario.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 180,
+      "height": 150,
+      "depth": 135
+    }
   },
   {
     "_id": "93732500824b842491972add",
@@ -184,7 +264,12 @@
     "active": true,
     "description": "Clip de pared para sujetar un mango. Consultá la compatibilidad con el diámetro de tu escoba.",
     "shortDescription": "Clip de pared para sujetar un mango.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 45,
+      "height": 55,
+      "depth": 45
+    }
   },
   {
     "_id": "efe7f3ca96c03cf15e0c151e",
@@ -195,7 +280,12 @@
     "active": true,
     "description": "Colgador de pared con tres ganchos y nombre personalizable. No incluye correas.",
     "shortDescription": "Colgador de pared con tres ganchos y nombre personalizable.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 180,
+      "height": 75,
+      "depth": 45
+    }
   },
   {
     "_id": "8a6d4dc1b00e5ea179920c24",
@@ -206,6 +296,11 @@
     "active": true,
     "description": "Bandeja ovalada con tres ranuras para ordenar anillos. No incluye joyas.",
     "shortDescription": "Bandeja ovalada con tres ranuras para ordenar anillos.",
-    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido."
+    "imageNotice": "Imágenes ilustrativas del diseño. La fabricación, las medidas y los colores se confirman al hacer el pedido. Medidas aproximadas.",
+    "dimensions": {
+      "width": 140,
+      "height": 25,
+      "depth": 85
+    }
   }
 ]
